@@ -12,7 +12,8 @@ import CAN_const
 
 
 class Agent:
-    address = 0
+    def __init__(self, addr=0):
+        self.address = addr
 
     def send(self, data):
         ser.write('>'+format(self.address, "x")+' '+data+"\r")
@@ -33,37 +34,47 @@ class Agent:
         ser.write("61 "+format(strefa, 'x')+format(adres, 'x'))
         self.address = strefa << 16 + adres
 
-    class Semafora:
-        def wlacz(self, led):
-            self.send(format(led, "x") + " 00")
 
-        def mrugaj(self, led):
-            self.send("00 " + format(led, "x"))
+class Semafora:
+    def __init__(self, agent):
+        self.agent = agent
 
-        def wylacz(self):
-            self.send(format(0x30, "x") + ' ' + format(0x30, "x"))
+    def wlacz(self, led):
+        self.agent.send(format(led, "x") + " 00")
+
+    def mrugaj(self, led):
+        self.agent.send("00 " + format(led, "x"))
+
+    def wylacz(self):
+        self.agent.send(format(0x30, "x") + ' ' + format(0x30, "x"))
 
 
-    class Zwrotnica:
-        def lewo(self):
-            self.send(format("31", "x"))
+class Zwrotnica:
+    def __init__(self, agent):
+        self.agent = agent
 
-        def prawo(self):
-            self.send(format("32", "x"))
+    def lewo(self):
+        self.agent.send(format("31", "x"))
 
-        def wylacz(self):
-            self.send(format("30", "x"))
+    def prawo(self):
+        self.agent.send(format("32", "x"))
 
-    class Balisa:
-        def wlacz(self, histereza):
-            self.send("33 "+format(histereza, "x"))
+    def wylacz(self):
+        self.agent.send(format("30", "x"))
+
+
+class Balisa:
+    def __init__(self, agent):
+        self.agent = agent
+
+    def wlacz(self, histereza):
+        self.agent.send("33 "+format(histereza, "x"))
 
 
 # configure the serial connections (the parameters differs on the device you are connecting to)
 ser = serial.Serial(
-    #port='/dev/ttyUSB1',
-    #port='COM3',
-    0,
+    # port='/dev/ttyUSB1',
+    port='COM3',
     baudrate=500,
     parity=serial.PARITY_ODD,
     stopbits=serial.STOPBITS_TWO,
@@ -77,12 +88,14 @@ else:
 print(ser.portstr)
 ser.write(format("master\r"))
 
+
 if __name__ == '__main__':
-    a1 = Agent
-    print(a1.skanuj(a1))
-    while 1:
-        a1.Zwrotnica.lewo()
+    a1 = Agent()
+    z1 = Zwrotnica(a1)
+    print(a1.skanuj())
+    for i in range(5):
+        z1.lewo()
         time.sleep(5)
-        a1.Zwrotnica.prawo()
+        z1.prawo()
         time.sleep(5)
     ser.close()
