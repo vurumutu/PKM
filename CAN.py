@@ -73,8 +73,8 @@ class Balisa:
 
 # configure the serial connections (the parameters differs on the device you are connecting to)
 ser = serial.Serial(
-    # port='/dev/ttyUSB1',
-    port='COM3',
+    # port='COM3'
+    port='COM21',
     baudrate=500,
     parity=serial.PARITY_ODD,
     stopbits=serial.STOPBITS_TWO,
