@@ -1,5 +1,7 @@
 import serial
 import time
+import threading
+import io
 import CAN_const
 
 # ramka:
@@ -10,25 +12,22 @@ import CAN_const
 # n: parameters
 # 1: '\r'
 
+semafor = []
+zwrotnica = []
+balisa = []
+
 
 class Agent:
-    def __init__(self, addr=0):
+    def __init__(self, addr='1F000000', strefa=''):
         self.address = addr
+        self.strefa = strefa
 
     def send(self, data):
-        ser.write('>'+format(self.address, "x")+' '+data+"\r")
+        ser.write(('>'+self.address+' '+data+"\r"))
 
-    def read(self, cmd):
-        ser.flushInput()
-        self.send(cmd)
-        time.sleep(1)
-        return ser.read_all()
-
-    def skanuj(self):
-        ser.flushInput()
-        self.send("1F000000 39")
-        time.sleep(1)
-        return ser.read_all()
+    @staticmethod
+    def skanuj():
+        ser.write(">1F000000 39\r")
 
     def zmien_adres(self, strefa, adres):
         ser.write("61 "+format(strefa, 'x')+format(adres, 'x'))
@@ -36,8 +35,8 @@ class Agent:
 
 
 class Semafora:
-    def __init__(self, agent):
-        self.agent = agent
+    def __init__(self, addr, strefa):
+        self.agent = Agent(addr, strefa)
 
     def wlacz(self, led):
         self.agent.send(format(led, "x") + " 00")
@@ -50,8 +49,8 @@ class Semafora:
 
 
 class Zwrotnica:
-    def __init__(self, agent):
-        self.agent = agent
+    def __init__(self, addr, strefa):
+        self.agent = Agent(addr, strefa)
 
     def lewo(self):
         self.agent.send(format("31", "x"))
@@ -64,32 +63,84 @@ class Zwrotnica:
 
 
 class Balisa:
-    def __init__(self, agent):
-        self.agent = agent
+    def __init__(self, addr, strefa):
+        self.agent = Agent(addr, strefa)
 
     def wlacz(self, histereza):
         self.agent.send("33 "+format(histereza, "x"))
 
+    def wylacz(self):
+        self.agent.send("30")
+
+
+### KONIEC KLAS ###
+def _readline():
+    ms = []
+    while True:
+        c = ser.read(1)
+        if c == '\r':
+            return ms
+        else:
+            ms.append(c)
+
+def can_odb():
+    while ser_raw.isOpen():
+        reading = ser.readline()
+        print('odebralem: '+reading)
+        handle_data(reading)
+    print('can_odb koniec')
+
+
+def handle_scan(data):
+    typ = data[1:3]
+    strefa = data[3:5]
+    adres = data[5:9]
+    if typ == '01': #Zwrotnica
+        zwrotnica.append(Zwrotnica(data[1:9], strefa))
+    elif typ == '02': #Semafor
+        s = Semafora(data[1:9], strefa)
+        semafor.append(s)
+    elif typ == '03': # Balisa
+        balisa.append(Balisa(data[1:9], strefa))
+        balisa[-1].wlacz(10)
+
+
+def handle_data(data):
+    dat = data.split('\r')
+    for d in dat:
+        handle_scan(d)
+
 
 # configure the serial connections (the parameters differs on the device you are connecting to)
-ser = serial.Serial(
+ser_raw = serial.Serial(
     # port='COM3'
     port='COM21',
-    baudrate=500,
-    parity=serial.PARITY_ODD,
-    stopbits=serial.STOPBITS_TWO,
-    bytesize=serial.SEVENBITS
+    baudrate=500000,
+    parity=serial.PARITY_NONE,
+    stopbits=serial.STOPBITS_ONE,
+    bytesize=serial.EIGHTBITS
 )
 
-if ser.isOpen():
+if ser_raw.isOpen():
     print("Serial is open: ")
 else:
     print("Serial is closed!!")
-print(ser.portstr)
-ser.write(format("master\r"))
+print(ser_raw.portstr)
 
+ser = io.TextIOWrapper(io.BufferedRWPair(ser_raw, ser_raw, 1),
+                       newline='\r',
+                       line_buffering=True)
+ser._CHUNK_SIZE = 1
+# listy agentow
+zwrotnica = []
+balisa = []
+semafor = []
 
-if __name__ == '__main__':
+# watek odbioru
+watek_odb = threading.Thread(target=can_odb)
+watek_odb.start()
+
+'''if __name__ == '__main__':
     a1 = Agent()
     z1 = Zwrotnica(a1)
     print(a1.skanuj())
@@ -98,4 +149,11 @@ if __name__ == '__main__':
         time.sleep(5)
         z1.prawo()
         time.sleep(5)
-    ser.close()
+    ser.close()'''
+
+ser.write(format("master\r"))
+Agent.skanuj()
+
+while True:
+    time.sleep(5)
+    print('suma: ' + str(len(balisa)+len(zwrotnica)+len(semafor)))
