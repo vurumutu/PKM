@@ -48,7 +48,15 @@ class Train(object):
         else:
             return 0
 
-    def move(self, velocity, course):
-        command = self.header(1) + self.address(self.locomotive) + self.speed(velocity) + self.direction(course)
+    def move(self, velocity, course=0):
+        command = self.header(1) + self.address(self.locomotive) + self.direction(course) + self.speed(velocity)
         # TODO Dodać xora do komendy
         return command
+
+    def menu(self):
+        print("1. Do przodu - max predkosc")
+        print("2. Do tylu - max predkosc")
+        print("3. Do przodu - ustal predkosc")
+        print("4. Do tylu - ustal predkosc")
+        print("5. Stop - zerowa predkosc")
+        print("0. Zakoncz")
