@@ -2,7 +2,6 @@
 
 import socket
 import threading
-import time
 from datetime import datetime
 from time import sleep
 
@@ -43,10 +42,10 @@ class Client(object):
                 self.connection.connect((address, TCP_PORT))
                 self.connected = True
                 self.__start_reader__()
-                print "%s : Połączono z sterownikiem" % time.ctime()
+                print str(datetime.now().strftime('%H:%M:%S')) + ": Połączono z sterownikiem"
 
             except socket.error as message:
-                print "%s : Nie udało sie połączyć z sterownikiem" % time.ctime()
+                print str(datetime.now().strftime('%H:%M:%S')) + ": Nie udało sie połączyć z sterownikiem"
                 print message
                 self.connected = False
 
