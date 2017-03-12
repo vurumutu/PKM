@@ -14,24 +14,25 @@ class Window(QtGui.QMainWindow):
         toolbar = QtGui.QHBoxLayout()
 
         #utworzenie obiektu tworzacego mape kolejowa
-        self.map = train_map.Railmap(5, 5, self.height()-50, self.width()-10, self)
+        self.map = train_map.Railmap(5, 5, self.height()-70, self.width()-10, self)
 
         #przyciski
         btn1 = QtGui.QPushButton("Sprawdz pozycje", self)
         btn1.clicked.connect(self.close_application)
         btn1.resize(btn1.minimumSizeHint())
-        btn1.move(10, self.height()-30)
+        #btn1.move(10, self.height()-30)
 
         btn2 = QtGui.QPushButton("Ustaw pociagi", self)
         btn2.clicked.connect(self.close_application)
         btn2.resize(btn2.minimumSizeHint())
-        btn2.move(120, self.height()-30)
+        #btn2.move(120, self.height()-30)
 
         toolbar.addWidget(btn1)
         toolbar.addWidget(btn2)
         #-------
 
-        self.create_slider(210,self.height()-50)
+        slider = self.create_slider(210,self.height()-50)
+        toolbar.addWidget(slider)
 
         #ustaienie ukladu okienka
         toolbar.setAlignment(QtCore.Qt.AlignBottom)
@@ -43,9 +44,10 @@ class Window(QtGui.QMainWindow):
         self.show()
 
     def create_slider(self, x, y):
+        layout = QtGui.QVBoxLayout()
         l1 = QtGui.QLabel("Predkosc", self)
         l1.setAlignment(QtCore.Qt.AlignCenter)
-        l1.move(x, y)
+        layout.addWidget(l1)
 
         slider_speed = QtGui.QSlider(QtCore.Qt.Horizontal, self)
         slider_speed.setMinimum(10)
@@ -53,10 +55,15 @@ class Window(QtGui.QMainWindow):
         slider_speed.setValue(20)
         slider_speed.setTickPosition(QtGui.QSlider.TicksBelow)
         slider_speed.setTickInterval(5)
-        slider_speed.move(x, y+20)
+        layout.addWidget(slider_speed)
 
-    def resizeEvent(self,resizeEvent):
-        self.map.setSize(self.height()-50, self.width()-10)
+        slider = QtGui.QWidget()
+        slider.setLayout(layout)
+
+        return slider
+
+    def resizeEvent(self, event):
+        self.map.setSize(self.height()-70, self.width()-10)
 
     def paintEvent(self, event):
         self.map.draw()
