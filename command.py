@@ -29,7 +29,8 @@ class Train(object):
         return address
 
     # Określenie prędkości
-    def speed(self, velocity):
+    @staticmethod
+    def speed(velocity):
         if velocity == 1:
             # TODO Dodać określenie odpowiedniej komendy dla danej prędkości
             return '1'
@@ -39,7 +40,8 @@ class Train(object):
             return 0
 
     # Określenie kierunku
-    def direction(self, course):
+    @staticmethod
+    def direction(course):
         if course == 1:
             # TODO Dodać określenie odpowiedniej komendy dla danego kierunku
             return '1'
@@ -50,13 +52,14 @@ class Train(object):
 
     def move(self, velocity, course=0):
         command = self.header(1) + self.address(self.locomotive) + self.direction(course) + self.speed(velocity)
-        # TODO Dodać xora do komendy
+        # TODO Dodać xor do komendy
         return command
 
-    def menu(self):
-        print("1. Do przodu - max predkosc")
-        print("2. Do tylu - max predkosc")
-        print("3. Do przodu - ustal predkosc")
-        print("4. Do tylu - ustal predkosc")
-        print("5. Stop - zerowa predkosc")
-        print("0. Zakoncz")
+    @staticmethod
+    def menu():
+        print("1. Do przodu - max prędkość")
+        print("2. Do tylu - max prędkość")
+        print("3. Do przodu - ustal prędkość")
+        print("4. Do tylu - ustal prędkość")
+        print("5. Stop - zerowa prędkość")
+        print("0. Zakończ")
