@@ -7,7 +7,7 @@ class Window(QtGui.QMainWindow):
 
     def __init__(self):
         super(Window, self).__init__()
-        self.setGeometry(50, 50, 500, 300)
+        self.setGeometry(50, 50, 1000, 300)
         self.setWindowTitle("PKM")
         self.setWindowIcon(QtGui.QIcon('ictrain.png'))
 
@@ -64,6 +64,7 @@ class Window(QtGui.QMainWindow):
 
     def resizeEvent(self, event):
         self.map.setSize(self.height()-70, self.width()-10)
+        self.map.setscale()
 
     def paintEvent(self, event):
         self.map.draw()
