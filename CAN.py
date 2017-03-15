@@ -2,7 +2,30 @@ import serial
 import time
 import threading
 import io
-import CAN_const
+
+
+# typy urzadzen
+TYP_NONE = 0x00
+TYP_Zwrotnica = 0x01
+TYP_Semafor = 0x02
+TYP_Balisa = 0x03
+
+# strefy
+STR_NONE = 0x00
+STR_Strzyza = 0x01
+STR_Kielpinek = 0x02
+STR_Rebiechowo = 0x03
+STR_Banino = 0x04
+STR_Wrzeszcz = 0x05
+
+#semafory
+LED_GREEN = 0x31
+LED_YELLOW1 = 0x32
+LED_RED = 0x33
+LED_YELLOW2 = 0x34
+LED_WHITE = 0x35
+LED_OFF = 0x30
+LED_GET = 0x39
 
 # ramka:
 # 1: '>'
@@ -27,7 +50,7 @@ class Agent:
 
     @staticmethod
     def skanuj():
-        ser.write(">1F000000 39\r")
+        ser.write(u'>1F000000 39\r')
 
     def zmien_adres(self, strefa, adres):
         ser.write("61 "+format(strefa, 'x')+format(adres, 'x'))
@@ -51,6 +74,8 @@ class Semafora:
 class Zwrotnica:
     def __init__(self, addr, strefa):
         self.agent = Agent(addr, strefa)
+        # self.state = None
+        # self.limiter = None
 
     def lewo(self):
         self.agent.send(format("31", "x"))
@@ -113,8 +138,8 @@ def handle_data(data):
 
 # configure the serial connections (the parameters differs on the device you are connecting to)
 ser_raw = serial.Serial(
-    # port='COM3'
-    port='COM21',
+    port='COM3',
+    # port='COM21',
     baudrate=500000,
     parity=serial.PARITY_NONE,
     stopbits=serial.STOPBITS_ONE,
@@ -151,9 +176,22 @@ watek_odb.start()
         time.sleep(5)
     ser.close()'''
 
-ser.write(format("master\r"))
+ser.write(u'master\r')
 Agent.skanuj()
+
 
 while True:
     time.sleep(5)
     print('suma: ' + str(len(balisa)+len(zwrotnica)+len(semafor)))
+    ser.write(u'>01020002 31 00\r')
+    print "r\n"
+    time.sleep(5)
+    ser.write(u'>01020002 32 00\r')
+    print "r\n"
+    time.sleep(5)
+    ser.write(u'>01020002 31 00\r')
+    print "r\n"
+    time.sleep(5)
+    ser.write(u'>01020002 32 00\r')
+    print "r\n"
+    break
