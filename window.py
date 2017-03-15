@@ -11,14 +11,14 @@ class Popup(QWidget):
         
         self.setGeometry(50, 100, 1000, 500)
         self.setWindowTitle('About')
-        self.initT()
+        self.initT() 
         
     def initT(self):      
 
         self.text = 'Cos tam cos tam i jeszcze wiecej, wykonawcy'
         self.show()
         
-#wpisywanie tekstu tekstu
+#tworzenie tekstu 
     def paintEvent(self, event):
 
         qp = QtGui.QPainter()
@@ -99,7 +99,6 @@ class Window(QtGui.QMainWindow):
         self.show()
 
     def doit(self):
-        
         self.w = Popup()
         self.w.show()
 
