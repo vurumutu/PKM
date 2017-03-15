@@ -6,4 +6,4 @@ Autorzy:
 
 ## moduł obsługi torowiska
 ### Autorzy: Karol Trzciński, Karol Dworakowski
-Python 3.4.4
+Python 2.7
