@@ -1,7 +1,36 @@
 import sys
 from PyQt4 import QtGui, QtCore
+from PyQt4.Qt import *
 
 import train_map
+
+#wyskakujące okno "About" 
+class Popup(QWidget):
+    def __init__(self):
+        QWidget.__init__(self)
+        
+        self.setGeometry(50, 100, 1000, 500)
+        self.setWindowTitle('About')
+        self.initT()
+        
+    def initT(self):      
+
+        self.text = 'Cos tam cos tam i jeszcze wiecej, wykonawcy'
+        self.show()
+        
+#wpisywanie tekstu tekstu
+    def paintEvent(self, event):
+
+        qp = QtGui.QPainter()
+        qp.begin(self)
+        self.drawText(event, qp)
+        qp.end()
+        
+    def drawText(self, event, qp):
+      
+        qp.setPen(QtGui.QColor(0, 0, 0))
+        qp.setFont(QtGui.QFont('Decorative', 10))
+        qp.drawText(event.rect(), QtCore.Qt.AlignCenter, self.text)
 
 class Window(QtGui.QMainWindow):
 
@@ -40,8 +69,39 @@ class Window(QtGui.QMainWindow):
         central_widget = QtGui.QWidget()
         central_widget.setLayout(toolbar)
         self.setCentralWidget(central_widget)
-
+        self.initUI()
         self.show()
+        
+      #tworzeie MENU  
+    def initUI(self):               
+        #Exit
+        exitAction = QtGui.QAction(QtGui.QIcon('exit.png'), '&Exit', self)        
+        exitAction.setShortcut('Ctrl+Q')
+        exitAction.setStatusTip('Exit application') #zamykanie
+        exitAction.triggered.connect(self.close_application)
+        #About
+        helpAction = QtGui.QAction(QtGui.QIcon('exit.png'), '&About', self)
+        helpAction.setShortcut('Ctrl+H')
+        helpAction.triggered.connect(self.doit) #wywolanie kolejnego okna
+        #self.connect(self.helpAction, SIGNAL("clicked()"), self.doit)
+        self.w = None
+        
+        self.statusBar()
+
+        menubar = self.menuBar()
+        fileMenu = menubar.addMenu('&File') #umieszczenie w menu "File"
+        fileMenu.addAction(exitAction)
+        fileMenu = menubar.addMenu('&Help')
+        fileMenu.addAction(helpAction) #umiezczenie w menu "About"
+        
+        self.setGeometry(300, 300, 1000, 800)
+        self.setWindowTitle('PKM')    
+        self.show()
+
+    def doit(self):
+        
+        self.w = Popup()
+        self.w.show()
 
     def create_slider(self, x, y):
         layout = QtGui.QVBoxLayout()
