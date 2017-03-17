@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
 
+# TODO Scalić TCP_connection i command w jeden plik train_controller po ukończeniu wszystkich testów sterownika
+# TODO Dodać do metod docstring
+
 
 class Train(object):
     # Klasa do obsługi sterownia pociągów
@@ -52,11 +55,12 @@ class Train(object):
 
     def move(self, velocity, course=0):
         command = self.header(1) + self.address(self.locomotive) + self.direction(course) + self.speed(velocity)
-        # TODO Dodać xor do komendy
+        # TODO Obliczanie xor do message (Dodanie nowej metody xor)
         return command
 
     @staticmethod
     def menu():
+        # TODO Usunąć kiedy scalono w train_controller
         print("1. Do przodu - max prędkość")
         print("2. Do tylu - max prędkość")
         print("3. Do przodu - ustal prędkość")

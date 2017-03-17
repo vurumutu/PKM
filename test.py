@@ -6,16 +6,19 @@ from time import sleep
 import os
 
 TCP_IP = '192.168.210.200'
+TCP_PORT = 5550
 
 
 def cls():
+    # TODO Sprawdzić działanie w konsoli - czyszczenie ekranu w obsłudze menu
     os.system('cls' if os.name == 'nt' else 'clear')
 
 
 def main():
     direction = {"Forward": 1, "Backward": 0}
     client = Client()
-    client.connect(TCP_IP)
+    client.connect(TCP_IP, TCP_PORT)
+    # TODO Rozbudowa menu do testów
     while True:
         numer = input("Podaj numer pociągu[1-7]: ")
         train = Train(numer)
