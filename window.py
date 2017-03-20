@@ -4,6 +4,9 @@ from PyQt4.Qt import *
 
 import train_map
 
+#uwaga pociag
+import train
+
 # wyskakujace okno "About"
 class Popup(QWidget):
     def __init__(self):
@@ -45,6 +48,9 @@ class Window(QtGui.QMainWindow):
 
         # utworzenie obiektu tworzacego mape kolejowa
         self.map = train_map.Railmap(5, 30, self.height()-120, self.width()-10, self)
+
+        #uwaga pociag
+        self.t = train.Train(20)
 
         # przyciski
         btn1 = QtGui.QPushButton("Sprawdz pozycje", self)
@@ -107,13 +113,18 @@ class Window(QtGui.QMainWindow):
         l1.setAlignment(QtCore.Qt.AlignCenter)
         layout.addWidget(l1)
 
-        slider_speed = QtGui.QSlider(QtCore.Qt.Horizontal, self)
-        slider_speed.setMinimum(10)
-        slider_speed.setMaximum(30)
-        slider_speed.setValue(20)
-        slider_speed.setTickPosition(QtGui.QSlider.TicksBelow)
-        slider_speed.setTickInterval(5)
-        layout.addWidget(slider_speed)
+        self.slider_speed = QtGui.QSlider(QtCore.Qt.Horizontal, self)
+        self.slider_speed.setMinimum(10)
+        self.slider_speed.setMaximum(30)
+        self.slider_speed.setValue(20)
+        self.slider_speed.setTickPosition(QtGui.QSlider.TicksBelow)
+        self.slider_speed.setTickInterval(5)
+        layout.addWidget(self.slider_speed)
+
+        #uwaga pociag
+        self.t.setValue(self.slider_speed.value())
+        print(self.t.getValue())
+        #
 
         slider = QtGui.QWidget()
         slider.setLayout(layout)
@@ -125,7 +136,11 @@ class Window(QtGui.QMainWindow):
         self.map.setscale()
 
     def paintEvent(self, event):
-        self.map.draw()
+        # uwaga pociag
+        self.t.setValue(self.slider_speed.value())
+        print(self.t.getValue())
+        #
+        self.map.draw(self.t.getValue())
 
     @staticmethod
     def close_application():

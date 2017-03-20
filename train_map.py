@@ -1,7 +1,6 @@
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
-
 class Railmap:
 
     def __init__(self, x, y, height, width, q_window):
@@ -43,7 +42,7 @@ class Railmap:
         self.line2.set_scale(self.scale)
         self.line3.set_scale(self.scale)
 
-    def draw(self):
+    def draw(self, x_t):
         paint = QPainter()
         paint.begin(self.d_QWindow)
         paint.setRenderHint(QPainter.Antialiasing)
@@ -61,9 +60,9 @@ class Railmap:
         paint.end()
 
         # rysowanie lini kolejowych
-        self.line1.draw_line(self.d_QWindow)
-        self.line2.draw_line(self.d_QWindow)
-        self.line3.draw_line(self.d_QWindow)
+        self.line1.draw_line(self.d_QWindow, x_t)
+        self.line2.draw_line(self.d_QWindow, x_t)
+        self.line3.draw_line(self.d_QWindow, x_t)
 
     # ustawienie wielkosci obszaru rysowania
     def set_size(self, height, width):
@@ -97,6 +96,11 @@ class Railline:
 
         # liczenie dlugosci calej lini kolejowej
         self.leng_line = self.count_leng_line()
+
+        # uwaga pociag, dlugosci pociagow
+        self.leng_train1 = 15
+        self.leng_train2 = 30
+        self.leng_train3 = 70
 
     def count_leng_line(self):
         if type(self.leng_railswitch) == int:
@@ -145,7 +149,7 @@ class Railline:
     # ---end---
 
     # rysowanie calej lini kolejowej
-    def draw_line(self, q_window):
+    def draw_line(self, q_window, x_t):
         # tworzenie kopi wektorow
         cstations = self.stations[:]
         crail_leng = self.leng_rails[:]
@@ -160,6 +164,9 @@ class Railline:
         paint = QPainter()
         paint.begin(q_window)
         paint.setRenderHint(QPainter.Antialiasing)
+
+        # uwaga pociag
+        self.draw_train(x_t, 200, paint)
 
         # -----------------------
         # rysowanie obiektow mapy
@@ -259,3 +266,20 @@ class Railline:
 
     # class Railswitch:
     # TODO
+
+    #uwaga pociag
+    def draw_train (self, x0, y0, paint):
+
+        width_sc = round(self.leng_train3)
+        height_sc = round(20)
+
+        y0 = y0 + 200
+
+        x1 = x0 + width_sc
+        y1 = y0
+
+        st_dim = QRect(x0, y0 - height_sc / 2, width_sc, height_sc)
+
+        paint.setBrush(Qt.yellow)
+        paint.drawRect(st_dim)
+        paint.setPen(Qt.darkGray)
