@@ -14,7 +14,7 @@ class Train(object):
     @staticmethod
     def header(order):
         if order == 1:
-            header = 'E4 10 '
+            header = 'E410 '
             return header
         elif order == 2:
             # TODO Dodać pozostałe rozkazy

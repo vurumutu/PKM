@@ -4,6 +4,8 @@ import socket
 import threading
 from datetime import datetime
 from time import sleep
+import binascii
+from command import Train
 
 TCP_PORT = 5550
 BUFFER_SIZE = 1024
@@ -55,8 +57,32 @@ class Client(object):
             self.connection.close()
             self.connected = False
 
+    def calculateXOR(self, message):
+        bytes = []
+        while message:
+            bytes.append(int(message[:2], 16))
+            message = message[2:]
+        for i in range(1, len(bytes)):
+            if i == 1:
+                xor = bytes[i-1] ^ bytes[i]
+            else:
+                xor ^= bytes[i]
+        if len(bytes) == 1:
+            xor = bytes[0]
+        if xor < 16:
+            xor = hex(xor)[2:]
+            xor = '0' + xor
+        else:
+            xor = hex(xor)[2:]
+        return xor
+
     def send(self, message):
         # Wysłanie wiadomości do hosta
         if self.connected:
+            xor = self.calculateXOR(message)
+            message += xor
+            message += 'fffe'
+            message = binascii.unhexlify(message)
             self.connection.send(message)
             print str(datetime.now().strftime('%H:%M:%S')) + ": Wysłano wiadomość: " + str(message)
+
