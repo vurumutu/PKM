@@ -39,14 +39,15 @@ semafor = []
 zwrotnica = []
 balisa = []
 
-
 class Agent:
-    def __init__(self, addr='1F000000', strefa=''):
+    def __init__(self, addr='1F000000', strefa='', l_addr=None):
         self.address = addr
         self.strefa = strefa
+        self.l_address = l_addr
 
     def send(self, data):
-        ser.write(('>'+self.address+' '+data+"\r"))
+        msg = '>'+self.address+' ' + data + '\r'
+        ser.write(msg.decode('unicode-escape')) # TODO wysylanie nie do konca dziala
 
     @staticmethod
     def skanuj():
@@ -57,9 +58,9 @@ class Agent:
         self.address = strefa << 16 + adres
 
 
-class Semafora:
-    def __init__(self, addr, strefa):
-        self.agent = Agent(addr, strefa)
+class Semafor:
+    def __init__(self, addr, strefa, l_addr):
+        self.agent = Agent(addr, strefa, l_addr)
 
     def wlacz(self, led):
         self.agent.send(format(led, "x") + " 00")
@@ -72,10 +73,10 @@ class Semafora:
 
 
 class Zwrotnica:
-    def __init__(self, addr, strefa):
-        self.agent = Agent(addr, strefa)
-        # self.state = None
-        # self.limiter = None
+    def __init__(self, addr, strefa, l_addr, stat, limit):
+        self.agent = Agent(addr, strefa, l_addr)
+        self.state = stat
+        self.limiter = limit
 
     def lewo(self):
         self.agent.send(format("31", "x"))
@@ -88,11 +89,14 @@ class Zwrotnica:
 
 
 class Balisa:
-    def __init__(self, addr, strefa):
-        self.agent = Agent(addr, strefa)
+    def __init__(self, addr, strefa, l_addr, stat, hist):
+        self.agent = Agent(addr, strefa, l_addr)
+        self.state = stat
+        self.histereza = hist
 
-    def wlacz(self, histereza):
-        self.agent.send("33 "+format(histereza, "x"))
+    def wlacz(self, hist):
+        self.histereza = hist
+        self.agent.send("33 " + format(self.histereza, "x"))
 
     def wylacz(self):
         self.agent.send("30")
@@ -119,15 +123,15 @@ def can_odb():
 def handle_scan(data):
     typ = data[1:3]
     strefa = data[3:5]
-    adres = data[5:9]
+    l_adres = data[5:9]
+    attr1 = data[10:12]
+    attr2 = data[13:15]
     if typ == '01': #Zwrotnica
-        zwrotnica.append(Zwrotnica(data[1:9], strefa))
+        zwrotnica.append(Zwrotnica(data[1:9], strefa, l_adres, attr1, attr2))
     elif typ == '02': #Semafor
-        s = Semafora(data[1:9], strefa)
-        semafor.append(s)
+        semafor.append(Semafor(data[1:9], strefa, l_adres))
     elif typ == '03': # Balisa
-        balisa.append(Balisa(data[1:9], strefa))
-        balisa[-1].wlacz(10)
+        balisa.append(Balisa(data[1:9], strefa, l_adres, attr1, attr2))
 
 
 def handle_data(data):
@@ -136,7 +140,7 @@ def handle_data(data):
         handle_scan(d)
 
 
-# configure the serial connections (the parameters differs on the device you are connecting to)
+#configure the serial connections (the parameters differs on the device you are connecting to)
 ser_raw = serial.Serial(
     port='COM3',
     # port='COM21',
@@ -165,7 +169,8 @@ semafor = []
 watek_odb = threading.Thread(target=can_odb)
 watek_odb.start()
 
-'''if __name__ == '__main__':
+'''
+if __name__ == '__main__':
     a1 = Agent()
     z1 = Zwrotnica(a1)
     print(a1.skanuj())
@@ -174,24 +179,39 @@ watek_odb.start()
         time.sleep(5)
         z1.prawo()
         time.sleep(5)
-    ser.close()'''
+    ser.close()
+    '''
 
 ser.write(u'master\r')
 Agent.skanuj()
+time.sleep(3)
+for balisas in balisa: # ustawiamy automatyczne zglaszanie i histereze
+    balisas.wlacz(0x81)
+time.sleep(3)
+print "test balis"
 
+#ser.write(u'>03040065 33 82\r')
+
+Agent.skanuj()
+
+# f = open('pkm_scan.txt', 'r')
+# data = f.read()
+# print data
 
 while True:
     time.sleep(5)
-    print('suma: ' + str(len(balisa)+len(zwrotnica)+len(semafor)))
-    ser.write(u'>01020002 31 00\r')
-    print "r\n"
-    time.sleep(5)
-    ser.write(u'>01020002 32 00\r')
-    print "r\n"
-    time.sleep(5)
-    ser.write(u'>01020002 31 00\r')
-    print "r\n"
-    time.sleep(5)
-    ser.write(u'>01020002 32 00\r')
-    print "r\n"
-    break
+    # print('suma: ' + str(len(balisa)+len(zwrotnica)+len(semafor)))
+    #print "rdy"
+    # print semafor
+    # ser.write(u'>01020002 31 00\
+    # print "r\n"
+    # time.sleep(5)
+    # ser.write(u'>01020002 32 00\r')
+    # print "r\n"
+    # time.sleep(5)
+    # ser.write(u'>01020002 31 00\r')
+    # print "r\n"
+    # time.sleep(5)
+    # ser.write(u'>01020002 32 00\r')
+    # print "r\n"
+    #break
