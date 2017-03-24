@@ -1,5 +1,9 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
+
 
 class Railmap:
 
@@ -57,7 +61,12 @@ class Railmap:
         paint.drawText(10, 110, "2. Kierunek WRZESZCZ -> OLIWA")
         paint.drawText(10, 170, "3. Kierunek WRZESZCZ -> OSOWA")
 
+        self.draw_legend(20, 230, paint)
+
         paint.end()
+        #print self.line1.scale
+        #print self.line2.scale
+        #print self.line3.scale
 
         # rysowanie lini kolejowych
         self.line1.draw_line(self.d_QWindow, x_t)
@@ -74,8 +83,27 @@ class Railmap:
         self.x = x
         self.y = y
 
-        # def draw_legend(self):
-        # TODO
+    def draw_legend(self, x, y, paint=QPainter()):
+        paint.setBrush(Qt.white)
+        legend = QRect(x, y, 200, 100)
+        paint.drawRect(legend)
+
+        paint.setPen(Qt.black)
+        paint.setFont(QFont('Arial', 11))
+        paint.drawText(x+10, y+20, "Opis mapy:")
+
+        leg_line = Railline()
+        leg_line.set_scale(1)
+        leg_line.draw_station(x+10, y+35, 80, 10, "", paint)
+        leg_line.draw_railswitch(x+45, y+52, 10, 6, paint)
+        leg_line.draw_sensor(x+50, y+68, 4, paint)
+        leg_line.draw_rail(x+10, y+85, 80, paint)
+
+        paint.setFont(QFont('Arial', 9))
+        paint.drawText(x + 100, y + 40, "stacja kolejowa")
+        paint.drawText(x + 100, y + 57, "zwrotnica")
+        paint.drawText(x + 100, y + 73, "czujnik")
+        paint.drawText(x + 100, y + 90, "odcinek torow")
 
 
 class Railline:
@@ -187,7 +215,7 @@ class Railline:
                 cstations.pop(0)
                 x, y = self.draw_station(x, y, leng, 10, name, paint)
             elif obj == 2:
-                self.draw_sensor(x, y, paint)
+                self.draw_sensor(x, y, 3, paint)
             elif obj == 3:
                 if type(self.leng_railswitch) == int:
                     x, y = self.draw_railswitch(x, y, self.leng_railswitch, 10, paint)
@@ -199,7 +227,7 @@ class Railline:
         paint.end()
 
     # rysowanie stacji kolejowej
-    def draw_station(self, x0, y0, leng, height, name, paint=QPainter()):
+    def draw_station(self, x0, y0, leng, height, name="", paint=QPainter()):
         width_sc = round(self.scale * leng)
         height_sc = round(self.scale * height)
         x1 = x0 + width_sc
@@ -232,13 +260,10 @@ class Railline:
 
     # rysowanie czujnikow
     @staticmethod
-    def draw_sensor(x0, y0, paint=QPainter()):
-        pen = QPen()
-        pen.setColor(Qt.red)
-        pen.setWidth(5)
-
-        paint.setPen(pen)
-        paint.drawPoint(x0, y0)
+    def draw_sensor(x0, y0, R, paint=QPainter()):
+        paint.setBrush(Qt.red)
+        d = R*2
+        paint.drawEllipse(x0-R, y0-R, d, d)
 
     # rysowanie zwrotnic
     def draw_railswitch(self, x0, y0, leng, height, paint=QPainter()):
@@ -247,13 +272,12 @@ class Railline:
         x1 = x0 + width_sc
         y1 = y0
 
-        sw_dim = QRect(x0, y0 - height_sc / 2, width_sc, height_sc)
-
+        switch = QPolygonF()
+        switch.append(QPointF(x0, y0 + height_sc))
+        switch.append(QPointF(x0, y0 - height_sc))
+        switch.append(QPointF(x1, y1))
         paint.setBrush(Qt.green)
-        paint.drawRect(sw_dim)
-
-        # ryswanie zwrotnic w postaci trojkatow
-        # TODO
+        paint.drawPolygon(switch)
 
         return x1, y1
 
