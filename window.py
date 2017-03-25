@@ -54,30 +54,46 @@ class Window(QtGui.QMainWindow):
 
         #uwaga pociag
         self.t = train.Train(20)
+        
+        #rozmieszczenie radiobuttonow i slidera 
+        button_space = QtGui.QHBoxLayout()
+        toolbar = QtGui.QVBoxLayout()
+        button_space.setContentsMargins(100, 0, 100, 100)
+        toolbar.setContentsMargins(100, 400, 100, 100)
+        
+        # radiobuttons
+        btn1 = QtGui.QRadioButton("Pociag nr 1", self)
+        btn1.clicked.connect(self.close_application)    # TO DO - funkcja zmieniająca poaciąg (sterowanie jego predkoscia)
+        
+        btn2 = QtGui.QRadioButton("Pociag nr 2", self)
+        btn2.clicked.connect(self.close_application)    # TO DO - funkcja zmieniająca poaciąg (sterowanie jego predkoscia)
+        
+        btn3 = QtGui.QRadioButton("Pociag nr 3", self)
+        btn3.clicked.connect(self.close_application)    # TO DO - funkcja zmieniająca poaciąg (sterowanie jego predkoscia)
+        
+        btn4 = QtGui.QRadioButton("Pociag nr 4", self)
+        btn4.clicked.connect(self.close_application)    # TO DO - funkcja zmieniająca poaciąg (sterowanie jego predkoscia)
 
-        # przyciski
-        btn1 = QtGui.QPushButton("Sprawdz pozycje", self)
-        btn1.clicked.connect(self.close_application)
-        btn1.resize(btn1.minimumSizeHint())
-
-        btn2 = QtGui.QPushButton("Ustaw pociagi", self)
-        btn2.clicked.connect(self.close_application)
-        btn2.resize(btn2.minimumSizeHint())
-
-        toolbar.addWidget(btn1)
-        toolbar.addWidget(btn2)
+        button_space.addWidget(btn1)
+        button_space.addWidget(btn2)
+        button_space.addWidget(btn3)
+        button_space.addWidget(btn4)
         # -------
-
+        
         slider = self.create_slider()
         toolbar.addWidget(slider)
 
         # ustaienie ukladu okienka
-        toolbar.setAlignment(QtCore.Qt.AlignBottom)
+        toolbar.setAlignment(QtCore.Qt.AlignCenter)
 
+    
         central_widget = QtGui.QWidget()
         central_widget.setLayout(toolbar)
+        toolbar.addLayout(button_space)
         self.setCentralWidget(central_widget)
+        
         self.initUI()
+        
         self.show()
 
     # tworzeie MENU
