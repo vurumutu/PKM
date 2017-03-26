@@ -3,6 +3,13 @@
 
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
+from enum import Enum
+
+class Turn(Enum):
+    left = 0
+    right = 1
+
+# Turn= Enum('left', 'right')
 
 
 class Railmap:
@@ -283,9 +290,6 @@ class Railline:
     def set_scale(self, scale):
         self.scale = scale
 
-    # class Railswitch:
-    # TODO
-
     #uwaga pociag
     def draw_train (self, x0, y0, paint, train_length):
 
@@ -301,3 +305,56 @@ class Railline:
 
         paint.setPen(Qt.darkGreen)
         paint.drawRect(st_dim)
+
+
+class Railswitch(QWidget):
+    def __init__(self, x, y, length=10, height=5, scale=1, parent = None):
+        QWidget.__init__(self, parent)
+        self.length = length
+        self.height = height
+        self.scale = scale
+        self.status = True
+
+        self.length_sc = round(self.scale * self.length)
+        self.height_sc = round(self.scale * self.height)
+
+        self.setGeometry(x, y, self.length_sc, 2*self.height_sc)
+
+    def set_status(self, status=True):
+        if type(self.status) == bool:
+            self.status = status
+
+    def set_scale(self, scale):
+        self.scale = scale
+        self.length_sc = round(self.scale * self.length)
+        self.height_sc = round(self.scale * self.height)
+
+    def draw_railswitch(self, x0=0, y0=0, turn=Turn.left, paint=QPainter()):
+        x1 = x0 + self.length_sc
+        y1 = y0
+
+        switch = QPolygonF()
+        if turn == Turn.right:
+            switch.append(QPointF(x0, y0 + self.height_sc))
+            switch.append(QPointF(x0, y0 - self.height_sc))
+            switch.append(QPointF(x1, y1))
+        else:
+            switch.append(QPointF(x1, y1 + self.height_sc))
+            switch.append(QPointF(x1, y1 - self.height_sc))
+            switch.append(QPointF(x0, y0))
+
+        str_status = "1"
+        color_status = Qt.green
+
+        if not self.status:
+            str_status = "0"
+            color_status = Qt.red
+
+        paint.setPen(Qt.black)
+        paint.setFont(QFont('Arial', round(10 * self.scale)))
+        paint.drawText(x0+self.length_sc/2, y0-10, str_status)
+
+        paint.setBrush(color_status)
+        paint.drawPolygon(switch)
+
+        return x1, y1
