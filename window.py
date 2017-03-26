@@ -53,31 +53,44 @@ class Window(QtGui.QMainWindow):
         self.map = train_map.Railmap(5, 30, self.height()-120, self.width()-10, self)
 
         #uwaga pociag
-        self.t = train.Train(20)
+        self.index_t = 1
+        self.train = train.Train(20, self.index_t)
         
         #rozmieszczenie radiobuttonow i slidera 
         button_space = QtGui.QHBoxLayout()
         toolbar = QtGui.QVBoxLayout()
-        button_space.setContentsMargins(100, 0, 100, 100)
+        label_space =QtGui.QHBoxLayout()
+        button_space.setContentsMargins(100, 0, 100, 20)
+        label_space.setContentsMargins(100, 0, 100, 20)
         toolbar.setContentsMargins(100, 400, 100, 100)
         
         # radiobuttons
-        btn1 = QtGui.QRadioButton("Pociag nr 1", self)
-        btn1.clicked.connect(self.close_application)    # TO DO - funkcja zmieniająca poaciąg (sterowanie jego predkoscia)
-        
-        btn2 = QtGui.QRadioButton("Pociag nr 2", self)
-        btn2.clicked.connect(self.close_application)    # TO DO - funkcja zmieniająca poaciąg (sterowanie jego predkoscia)
-        
-        btn3 = QtGui.QRadioButton("Pociag nr 3", self)
-        btn3.clicked.connect(self.close_application)    # TO DO - funkcja zmieniająca poaciąg (sterowanie jego predkoscia)
-        
-        btn4 = QtGui.QRadioButton("Pociag nr 4", self)
-        btn4.clicked.connect(self.close_application)    # TO DO - funkcja zmieniająca poaciąg (sterowanie jego predkoscia)
+        self.btn1 = QtGui.QRadioButton("Pociag nr 1", self)
+        self.btn1.clicked.connect(self.tUpdate)    # TO DO - funkcja zmieniająca poaciąg (sterowanie jego predkoscia)
 
-        button_space.addWidget(btn1)
-        button_space.addWidget(btn2)
-        button_space.addWidget(btn3)
-        button_space.addWidget(btn4)
+        self.btn2 = QtGui.QRadioButton("Pociag nr 2", self)
+        self.btn2.clicked.connect(self.tUpdate)    # TO DO - funkcja zmieniająca poaciąg (sterowanie jego predkoscia)
+
+        self.btn3 = QtGui.QRadioButton("Pociag nr 3", self)
+        self.btn3.clicked.connect(self.tUpdate)    # TO DO - funkcja zmieniająca poaciąg (sterowanie jego predkoscia)
+
+        self.btn4 = QtGui.QRadioButton("Pociag nr 4", self)
+        self.btn4.clicked.connect(self.tUpdate)    # TO DO - funkcja zmieniająca poaciąg (sterowanie jego predkoscia)
+
+        button_space.addWidget(self.btn1)
+        button_space.addWidget(self.btn2)
+        button_space.addWidget(self.btn3)
+        button_space.addWidget(self.btn4)
+
+        self.lab1 = QtGui.QLabel(str(self.train.getValue(1)))
+        self.lab2 = QtGui.QLabel(str(self.train.getValue(2)))
+        self.lab3 = QtGui.QLabel(str(self.train.getValue(3)))
+        self.lab4 = QtGui.QLabel(str(self.train.getValue(4)))
+
+        label_space.addWidget(self.lab1)
+        label_space.addWidget(self.lab2)
+        label_space.addWidget(self.lab3)
+        label_space.addWidget(self.lab4)
         # -------
         
         slider = self.create_slider()
@@ -86,10 +99,10 @@ class Window(QtGui.QMainWindow):
         # ustaienie ukladu okienka
         toolbar.setAlignment(QtCore.Qt.AlignCenter)
 
-    
         central_widget = QtGui.QWidget()
         central_widget.setLayout(toolbar)
         toolbar.addLayout(button_space)
+        toolbar.addLayout(label_space)
         self.setCentralWidget(central_widget)
         
         self.initUI()
@@ -118,7 +131,7 @@ class Window(QtGui.QMainWindow):
         fileMenu = menubar.addMenu('&Help')
         fileMenu.addAction(helpAction) #umiezczenie w menu "About"
 
-        self.setGeometry(300, 300, 1000, 800)
+        self.setGeometry(300, 200, 1000, 600)
         self.setWindowTitle('PKM')
         self.show()
 
@@ -138,11 +151,12 @@ class Window(QtGui.QMainWindow):
         self.slider_speed.setValue(20)
         self.slider_speed.setTickPosition(QtGui.QSlider.TicksBelow)
         self.slider_speed.setTickInterval(5)
+        self.slider_speed.valueChanged.connect(self.tUpdate)
         layout.addWidget(self.slider_speed)
 
         #uwaga pociag
-        self.t.setValue(self.slider_speed.value())
-        print(self.t.getValue())
+        self.train.setValue(self.slider_speed.value(),self.index_t)
+        print(self.train.getValue(self.index_t))
         #
 
         slider = QtGui.QWidget()
@@ -150,16 +164,34 @@ class Window(QtGui.QMainWindow):
 
         return slider
 
+    def tUpdate(self):
+        if self.btn1.isChecked():
+            self.index_t = 1
+            self.train.setValue(self.slider_speed.value(), self.index_t)
+            self.lab1.setText(str(self.train.getValue(self.index_t)))
+        elif self.btn2.isChecked():
+            self.index_t = 2
+            self.train.setValue(self.slider_speed.value(),self.index_t)
+            self.lab2.setText(str(self.train.getValue(self.index_t)))
+        elif self.btn3.isChecked():
+            self.index_t = 3
+            self.train.setValue(self.slider_speed.value(),self.index_t)
+            self.lab3.setText(str(self.train.getValue(self.index_t)))
+        elif self.btn4.isChecked():
+            self.index_t = 4
+            self.train.setValue(self.slider_speed.value(),self.index_t)
+            self.lab4.setText(str(self.train.getValue(self.index_t)))
+
     def resizeEvent(self, event):
         self.map.set_size(self.height()-120, self.width()-10)
         self.map.setscale()
 
     def paintEvent(self, event):
         # uwaga pociag
-        self.t.setValue(self.slider_speed.value())
-        print(self.t.getValue())
+        self.train.setValue(self.slider_speed.value(), self.index_t)
+        print(self.train.getValue(self.index_t))
         #
-        self.map.draw(self.t.getValue())
+        self.map.draw(self.train.getValue(self.index_t), self.train.getLength(self.index_t))
 
     @staticmethod
     def close_application():

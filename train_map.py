@@ -46,7 +46,7 @@ class Railmap:
         self.line2.set_scale(self.scale)
         self.line3.set_scale(self.scale)
 
-    def draw(self, x_t):
+    def draw(self, x_t, train_length):
         paint = QPainter()
         paint.begin(self.d_QWindow)
         paint.setRenderHint(QPainter.Antialiasing)
@@ -69,9 +69,9 @@ class Railmap:
         #print self.line3.scale
 
         # rysowanie lini kolejowych
-        self.line1.draw_line(self.d_QWindow, x_t)
-        self.line2.draw_line(self.d_QWindow, x_t)
-        self.line3.draw_line(self.d_QWindow, x_t)
+        self.line1.draw_line(self.d_QWindow, x_t, train_length)
+        self.line2.draw_line(self.d_QWindow, x_t, train_length)
+        self.line3.draw_line(self.d_QWindow, x_t, train_length)
 
     # ustawienie wielkosci obszaru rysowania
     def set_size(self, height, width):
@@ -125,11 +125,6 @@ class Railline:
         # liczenie dlugosci calej lini kolejowej
         self.leng_line = self.count_leng_line()
 
-        # uwaga pociag, dlugosci pociagow
-        self.leng_train1 = 15
-        self.leng_train2 = 30
-        self.leng_train3 = 70
-
     def count_leng_line(self):
         if type(self.leng_railswitch) == int:
             n = self.map_object.count(3)
@@ -177,7 +172,7 @@ class Railline:
     # ---end---
 
     # rysowanie calej lini kolejowej
-    def draw_line(self, q_window, x_t):
+    def draw_line(self, q_window, x_t, train_length):
         # tworzenie kopi wektorow
         cstations = self.stations[:]
         crail_leng = self.leng_rails[:]
@@ -194,7 +189,7 @@ class Railline:
         paint.setRenderHint(QPainter.Antialiasing)
 
         # uwaga pociag
-        self.draw_train(x_t, 200, paint)
+        self.draw_train(x_t, 200, paint, train_length)
 
         # -----------------------
         # rysowanie obiektow mapy
@@ -292,9 +287,9 @@ class Railline:
     # TODO
 
     #uwaga pociag
-    def draw_train (self, x0, y0, paint):
+    def draw_train (self, x0, y0, paint, train_length):
 
-        width_sc = round(self.leng_train3)
+        width_sc = round(train_length)
         height_sc = round(20)
 
         y0 = y0 + 200
@@ -304,6 +299,5 @@ class Railline:
 
         st_dim = QRect(x0, y0 - height_sc / 2, width_sc, height_sc)
 
-        paint.setBrush(Qt.yellow)
+        paint.setPen(Qt.darkGreen)
         paint.drawRect(st_dim)
-        paint.setPen(Qt.darkGray)
