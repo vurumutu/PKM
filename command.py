@@ -50,6 +50,16 @@ class Train(object):
         command = self.header(4) + self.address(self.locomotive) + self.speed(velocity, course)
         return command
 
+    def emergency_stop(self):
+        command = '80'
+        return command
+
+    def off_energy(self):
+        command = '2180'
+        return command
+
+    # TODO: dodanie pozostalych metod sterujcych pociągiem
+
     @staticmethod
     def menu():
         # TODO Usunąć kiedy scalono w train_controller
@@ -58,4 +68,5 @@ class Train(object):
         print("3. Do przodu - ustal prędkość")
         print("4. Do tylu - ustal prędkość")
         print("5. Stop - zerowa prędkość")
+        print("6. Wyłącz zasilanie pociągów") #klawisz off na pilocie
         print("0. Zakończ")

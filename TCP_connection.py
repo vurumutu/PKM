@@ -78,7 +78,7 @@ class Client(object):
         return xor
 
     def send(self, message):
-        # Wysłanie wiadomości do hosta
+        '''Wysłanie komend do hosta, zwraca wiadomość odebraną po wysłaniu danej komendy '''
         self.keep_alive(True)
         if self.connected:
             xor = self.calculateXOR(message)
@@ -89,9 +89,18 @@ class Client(object):
             self.connection.send(message)
             self.lock.release()
             print str(datetime.now().strftime('%H:%M:%S')) + ": Wysłano wiadomość: " + str(message)
-            # TODO Metoda ma zwracać odebraną wiadomość na podstawie wysłanej wiadomości (Dodanie nowej metody receive)
+            return self.receive()
 
-     #TODO Dodanie nowej metody receive)
+
     def receive(self):
-        return "Not added yet."
+        rcvd_msg = self.connection.recv(64) # received message
+        rcvd_msg =  binascii.hexlify(rcvd_msg)
+        rcvd_msg = rcvd_msg[4:]  #wycinanie nagłówka fffe
+        return rcvd_msg
+
+    def get_soft_version(self):
+        command = '2121'
+        self.send(command)
+
+
     # TODO Dodanie metod do obsługi poszczególnych rozkazów do sterownika nie związanych z obsługą pociągów

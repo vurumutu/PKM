@@ -40,6 +40,8 @@ def main():
                 msg = train.move(vel, direction["Backward"])  # do tylu z określoną prędkością
             elif key == 5:
                 msg = train.move(0)  # Stop
+            elif key == 6:
+                msg = train.off_energy()
             elif key == 0:
                 msg = train.move(0)  # Zakończ
                 client.send(msg)
