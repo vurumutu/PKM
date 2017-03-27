@@ -50,8 +50,12 @@ class Train(object):
         command = self.header(4) + self.address(self.locomotive) + self.speed(velocity, course)
         return command
 
-    def emergency_stop(self):
+    def stop_all_locomotives(self):
         command = '80'
+        return command
+
+    def stop_chosen_locomotive(self, locomotive):
+        command = '92000' + locomotive
         return command
 
     def off_energy(self):
