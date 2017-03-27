@@ -47,7 +47,7 @@ class Agent:
 
     def send(self, data):
         msg = '>'+self.address+' ' + data + '\r'
-        ser.write(msg.decode('unicode-escape')) # TODO wysylanie nie do konca dziala
+        ser.write(msg.decode('unicode-escape'))
 
     @staticmethod
     def skanuj():
@@ -186,32 +186,17 @@ ser.write(u'master\r')
 Agent.skanuj()
 time.sleep(3)
 for balisas in balisa: # ustawiamy automatyczne zglaszanie i histereze
-    balisas.wlacz(0x81)
-time.sleep(3)
+    time.sleep(0.1) # bez sleepa zapycha sie
 print "test balis"
 
-#ser.write(u'>03040065 33 82\r')
-
+time.sleep(1)
 Agent.skanuj()
 
 # f = open('pkm_scan.txt', 'r')
 # data = f.read()
 # print data
 
-while True:
-    time.sleep(5)
+#while True:
+    #time.sleep(5)
     # print('suma: ' + str(len(balisa)+len(zwrotnica)+len(semafor)))
-    #print "rdy"
-    # print semafor
-    # ser.write(u'>01020002 31 00\
-    # print "r\n"
-    # time.sleep(5)
-    # ser.write(u'>01020002 32 00\r')
-    # print "r\n"
-    # time.sleep(5)
-    # ser.write(u'>01020002 31 00\r')
-    # print "r\n"
-    # time.sleep(5)
-    # ser.write(u'>01020002 32 00\r')
-    # print "r\n"
     #break
