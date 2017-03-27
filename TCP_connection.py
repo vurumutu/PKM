@@ -7,6 +7,8 @@ import threading
 from datetime import datetime
 from time import sleep
 import binascii
+from command import Train
+
 
 class Client(object):
     # Klasa do obsługi połączenia z sterownikiem
@@ -56,17 +58,38 @@ class Client(object):
             self.connection.close()
             self.connected = False
 
+    def calculateXOR(self, message):
+        bytes = []
+        while message:
+            bytes.append(int(message[:2], 16))
+            message = message[2:]
+        for i in range(1, len(bytes)):
+            if i == 1:
+                xor = bytes[i-1] ^ bytes[i]
+            else:
+                xor ^= bytes[i]
+        if len(bytes) == 1:
+            xor = bytes[0]
+        if xor < 16:
+            xor = hex(xor)[2:]
+            xor = '0' + xor
+        else:
+            xor = hex(xor)[2:]
+        return xor
+
     def send(self, message):
         # Wysłanie wiadomości do hosta
         self.keep_alive(True)
         if self.connected:
-            message = 'fffe' + message
+            xor = self.calculateXOR(message)
+            message += xor
+            message += 'fffe'
             message = binascii.unhexlify(message)
             self.lock.acquire()
             self.connection.send(message)
             self.lock.release()
             print str(datetime.now().strftime('%H:%M:%S')) + ": Wysłano wiadomość: " + str(message)
-            # TODO Metoda ma zwracać odebraną wiadomość na podstawie wysłanej wiadomości
+            # TODO Metoda ma zwracać odebraną wiadomość na podstawie wysłanej wiadomości (Dodanie nowej metody receive)
 
      #TODO Dodanie nowej metody receive)
     def receive(self):
