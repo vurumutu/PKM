@@ -17,46 +17,61 @@ class Train(object):
     @staticmethod
     def header(order):
         if order == 1:
-            header = 'E4 10 '
+            header = 'E410'  # 14
             return header
         elif order == 2:
-            # TODO Dodać pozostałe rozkazy
-            return 2
+            header = 'E411'  # 27
+            return header
+        elif order == 3:
+            header = 'E412'  # 28
+            return header
+        elif order == 4:
+            header = 'E413'  # 127
+            return header
         else:
             return 0
 
     # Wybór lokomotywy
     @staticmethod
     def address(locomotive):
-        address = '00 0' + str(hex(locomotive)[2]) + ' '
+        address = '000' + str(hex(locomotive)[2]) + ' '
         return address
 
-    # Określenie prędkości
+    # Określenie prędkości i kierunku
     @staticmethod
-    def speed(velocity):
-        if velocity == 1:
-            # TODO Dodać określenie odpowiedniej komendy dla danej prędkości
-            return '1'
-        elif velocity == 2:
-            return 2
-        else:
-            return 0
+    def speed(velocity, course):
+        msg = hex(course * 128 + velocity)[2:]
+        if len(msg) == 1:
+            msg = '0' + msg
+        return msg
 
-    # Określenie kierunku
-    @staticmethod
-    def direction(course):
-        if course == 1:
-            # TODO Dodać określenie odpowiedniej komendy dla danego kierunku
-            return '1'
-        elif course == 2:
-            return 2
-        else:
-            return 0
-
+    # Tworzenie komendy do sterowania pociagiem
     def move(self, velocity, course=0):
-        command = self.header(1) + self.address(self.locomotive) + self.direction(course) + self.speed(velocity)
-        # TODO Obliczanie xor do message (Dodanie nowej metody xor)
+        command = self.header(4) + self.address(self.locomotive) + self.speed(velocity, course)
+        xor = self.xor(command)
+        command += xor
         return command
+
+    # Tworzenie xora do komendy
+    def xor(self, command):
+        parts = []
+        xor = ''
+        while command:
+            parts.append(int(command[:2], 16))
+            command = command[2:]
+        for i in range(1, len(parts)):
+            if i == 1:
+                xor = parts[i - 1] ^ parts[i]
+            else:
+                xor ^= parts[i]
+        if len(parts) == 1:
+            xor = parts[0]
+        if xor < 16:
+            xor = hex(xor)[2:]
+            xor = '0' + xor
+        else:
+            xor = hex(xor)[2:]
+        return xor
 
     @staticmethod
     def menu():
