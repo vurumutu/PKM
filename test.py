@@ -41,7 +41,7 @@ def main():
             elif key == 5:
                 msg = train.move(0)  # Stop
             elif key == 6:
-                msg = train.off_energy()
+                msg = train.stop_all_locomotives()
             elif key == 0:
                 msg = train.move(0)  # Zakończ
                 client.send(msg)
@@ -53,11 +53,11 @@ def main():
                 continue
             client.send(msg)
             sleep(1)  # Czekaj 1s
-        key1 = input(menu())
+        key1 = raw_input(menu())
         if key1 == 'q' or key1 == 'Q':
             break
         else:
-            pass
+            continue
     client.disconnect()
 
 

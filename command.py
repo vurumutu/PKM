@@ -34,7 +34,7 @@ class Train(object):
     # Wybór lokomotywy
     @staticmethod
     def address(locomotive):
-        address = '000' + str(hex(locomotive)[2]) + ' '
+        address = '000' + str(hex(locomotive)[2])
         return address
 
     # Określenie prędkości i kierunku
