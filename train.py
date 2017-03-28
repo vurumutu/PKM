@@ -6,16 +6,22 @@ from PyQt4.QtGui import *
 
 class Train:
 
-    def __init__(self, x, i):
-        self.x_t = [0, 100, 200, 50, 150, 250]      #x_t - pozycja pociagu
-        self.x_t[i] = x                             #i - numer pociagu
-        self.t_l = [15, 35, 70, 15, 35, 70]         #t_l - dlugosc pociagu
+    def __init__(self):                             #i - numer pociagu
+        self.t_x = [0, 50, 100, 150, 200, 250]      #t_x - pozycja pociagu
+        self.t_l = [73, 73, 34, 34, 16, 16]         #t_l - dlugosc pociagu
+        self.t_v = [0, 0, 0, 0, 0, 0]               #t_v - predkosc pociagu
 
     def setValue(self, x, i):
-        self.x_t[i] = x
+        self.t_x[i-1] = x
 
     def getValue(self, i):
-        return self.x_t[i]
+        return self.t_x[i-1]
 
     def getLength(self, i):
-        return self.t_l[i]
+        return self.t_l[i-1]
+
+    def setSpeed(self, v, i):
+        self.t_v[i-1] = v
+
+    def getSpeed(self,i):
+        return self.t_v[i-1]

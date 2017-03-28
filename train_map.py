@@ -195,7 +195,6 @@ class Railline:
         paint.begin(q_window)
         paint.setRenderHint(QPainter.Antialiasing)
 
-        # uwaga pociag
         self.draw_train(x_t, 200, paint, train_length)
 
         # -----------------------
@@ -290,13 +289,14 @@ class Railline:
     def set_scale(self, scale):
         self.scale = scale
 
-    #uwaga pociag
+    #rysowanie pociagu
     def draw_train (self, x0, y0, paint, train_length):
 
         width_sc = round(train_length)
         height_sc = round(20)
 
         y0 = y0 + 200
+        x0 = x0*10
 
         x1 = x0 + width_sc
         y1 = y0
