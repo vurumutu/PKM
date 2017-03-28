@@ -62,6 +62,14 @@ class Train(object):
         command = '2180'
         return command
 
+    def get_soft_version(self):
+        command = '2121'
+        return command
+
+    def get_status(self):
+        command = '2124'
+        return command
+
     # TODO: dodanie pozostalych metod sterujcych pociągiem
 
     @staticmethod

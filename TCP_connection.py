@@ -98,9 +98,5 @@ class Client(object):
         rcvd_msg = rcvd_msg[4:]  #wycinanie nagłówka fffe
         return rcvd_msg
 
-    def get_soft_version(self):
-        command = '2121'
-        self.send(command)
-
 
     # TODO Dodanie metod do obsługi poszczególnych rozkazów do sterownika nie związanych z obsługą pociągów
