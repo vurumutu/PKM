@@ -54,7 +54,7 @@ class Window(QtGui.QMainWindow):
         self.train = train.Train()
         self.index_t = 1    #numer wybranego pociagu
         
-        #rozmieszczenie radiobuttonow i slidera 
+        #rozmieszczenie radiobuttonow i slidera
         button_space = QtGui.QHBoxLayout()
         toolbar = QtGui.QVBoxLayout()
         label_space =QtGui.QHBoxLayout()

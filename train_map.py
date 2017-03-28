@@ -22,24 +22,40 @@ class Railmap:
         self.d_QWindow = q_window
         self.scale = 1
 
+        self.switch1 = Railswitch(q_window, 0, 0, 10, 5)
+        self.switch2 = Railswitch(q_window, 0, 0, 10, 5, 1, Turn.right)
+        self.switch3 = Railswitch(q_window, 0, 0, 20, 5)
+        self.switch4 = Railswitch(q_window, 0, 0, 10, 5, 1, Turn.right)
+
         # utworzenie lini OLIWA -> WRZESZCZ
         self.line1 = Railline(10, 80)
         self.line1.set_stations([100, "Wrzeszcz", 100, "Oliwa"])  # lista rzeczywistych odcinkow torow w cm
         self.line1.set_leng_rails([25, 5, 90, 50, 20, 20, 20, 20, 20, 300, 200, 10, 5, 40])  # lista stacji (dlugosc peronu, nazwa stacji)
         self.line1.set_map_object([1, 0, 2, 0, 3, 0, 2, 0, 2, 0, 2, 0, 2, 0, 2, 0, 2, 0, 2, 0, 2, 0, 1, 0, 3, 0, 2, 0])  # mapy obiektow - wektor
+        self.line1.set_railswitch([self.switch1, self.switch2])
 
         # utworzenie lini WRZESZCZ -> OLIWA
         self.line2 = Railline(10, 140)
         self.line2.set_stations([100, "Wrzeszcz", 100, "Oliwa"])  # lista rzeczywistych odcinkow torow w cm
         self.line2.set_leng_rails([25, 5, 90, 450, 200, 10, 5, 40])  # lista stacji (dlugosc peronu, nazwa stacji)
         self.line2.set_map_object([1, 0, 2, 0, 3, 0, 2, 0, 2, 0, 1, 0, 3, 0, 2, 0])  # mapy obiektow - wektor
+        self.line2.set_railswitch([self.switch1, self.switch2])
+        self.line2.set_negation(True)
 
         # utworzenie lini WRZESZCZ -> OSOWA
         self.line3 = Railline(10, 200)
         self.line3.set_stations([100, "Wrzeszcz", 100, "Strzyza", 100, "Osowa"])  # lista rzeczywistych odcinkow torow w cm
         self.line3.set_leng_rails([80, 100, 5, 135, 5, 35, 570, 245, 20, 10])  # lista stacji (dlugosc peronu, nazwa stacji)
         self.line3.set_map_object([1, 2, 0, 2, 0, 2, 0, 3, 0, 2, 0, 1, 0, 2, 0, 2, 0, 3, 0, 2, 0, 1])  # mapy obiektow - wektor
-        self.line3.set_leng_railswitch([20, 10])
+        self.line3.set_railswitch([self.switch3, self.switch4])
+
+        # utworzenie lini OSOWA -> WRZESZCZ
+        self.line4 = Railline(10, 260)
+        self.line4.set_stations([100, "Wrzeszcz", 100, "Strzyza", 100, "Osowa"])  # lista rzeczywistych odcinkow torow w cm
+        self.line4.set_leng_rails([80, 100, 5, 135, 5, 35, 570, 245, 20, 10])  # lista stacji (dlugosc peronu, nazwa stacji)
+        self.line4.set_map_object([1, 2, 0, 2, 0, 2, 0, 3, 0, 2, 0, 1, 0, 2, 0, 2, 0, 3, 0, 2, 0, 1])  # mapy obiektow - wektor
+        self.line4.set_railswitch([self.switch3, self.switch4])
+        self.line4.set_negation(True)
         self.setscale()
 
     # liczenie skali proporcjonalnej do rzeczywistych wymiarow
@@ -52,6 +68,12 @@ class Railmap:
         self.line1.set_scale(self.scale)
         self.line2.set_scale(self.scale)
         self.line3.set_scale(self.scale)
+        self.line4.set_scale(self.scale)
+
+        self.switch1.set_scale(self.scale)
+        self.switch2.set_scale(self.scale)
+        self.switch3.set_scale(self.scale)
+        self.switch4.set_scale(self.scale)
 
     def draw(self, x_t, train_length):
         paint = QPainter()
@@ -67,8 +89,10 @@ class Railmap:
         paint.drawText(10, 50, "1. Kierunek OLIWA -> WRZESZCZ")
         paint.drawText(10, 110, "2. Kierunek WRZESZCZ -> OLIWA")
         paint.drawText(10, 170, "3. Kierunek WRZESZCZ -> OSOWA")
+        paint.drawText(10, 230, "4. Kierunek OSOWA -> WRZESZCZ")
 
-        self.draw_legend(20, 230, paint)
+        self.draw_legend(20, 280, paint)
+        #self.switch1.draw_railswitch( self.switch1.x(), self.switch1.y(), paint)
 
         paint.end()
         #print self.line1.scale
@@ -79,6 +103,7 @@ class Railmap:
         self.line1.draw_line(self.d_QWindow, x_t, train_length)
         self.line2.draw_line(self.d_QWindow, x_t, train_length)
         self.line3.draw_line(self.d_QWindow, x_t, train_length)
+        self.line4.draw_line(self.d_QWindow, x_t, train_length)
 
     # ustawienie wielkosci obszaru rysowania
     def set_size(self, height, width):
@@ -114,30 +139,36 @@ class Railmap:
 
 
 class Railline:
-    def __init__(self, x=0, y=0, leng_rails=None, stations=None, map_object=None, leng_railswitch=10, scale=1):
+    def __init__(self, x=0, y=0, leng_rails=None, stations=None, map_object=None, railswitch=None, scale=1, neg = False):
         self.x = x
         self.y = y
-        self.leng_railswitch = leng_railswitch
         self.scale = scale
+        self.neg = neg
 
         # w przypadku braku wartosci ustaw jako pusta liste
         if leng_rails is None: leng_rails = []
         if stations is None: stations = []
         if map_object is None: map_object = []
+        if railswitch is None: railswitch = []
 
         self.leng_rails = leng_rails
         self.stations = stations
         self.map_object = map_object
+        self.railswitch = railswitch
 
         # liczenie dlugosci calej lini kolejowej
         self.leng_line = self.count_leng_line()
 
     def count_leng_line(self):
-        if type(self.leng_railswitch) == int:
-            n = self.map_object.count(3)
-            leng_line = sum(self.leng_rails) + sum(self.stations[::2]) + n * self.leng_railswitch
-        else:
-            leng_line = sum(self.leng_rails) + sum(self.stations[::2]) + sum(self.leng_railswitch)
+        #if type(self.leng_railswitch) == int:
+            #n = self.map_object.count(3)
+            #leng_line = sum(self.leng_rails) + sum(self.stations[::2]) + n * self.leng_railswitch
+        #else:
+        leng_switch = []
+        for switch in self.railswitch:
+            leng_switch.append(switch.length)
+
+        leng_line = sum(self.leng_rails) + sum(self.stations[::2]) + sum(leng_switch)
 
         return leng_line
 
@@ -155,10 +186,12 @@ class Railline:
         self.map_object = map_object
         self.leng_line = self.count_leng_line()
 
-    def set_leng_railswitch(self, leng_railswitch):
-        self.leng_railswitch = leng_railswitch
+    def set_railswitch(self, railswitch):
+        self.railswitch = railswitch
         self.leng_line = self.count_leng_line()
 
+    def set_negation(self, neg):
+        self.neg = neg
     # --------------------------
     # funkcje wstawiajace wartosc do listy
     # domyslnie wstawia na koniec listy
@@ -184,8 +217,9 @@ class Railline:
         cstations = self.stations[:]
         crail_leng = self.leng_rails[:]
         cobjects = self.map_object[:]
-        if type(self.leng_railswitch) != int:
-            cswitch = self.leng_railswitch[:]
+        cswitchs = self.railswitch[:]
+        #if type(self.leng_railswitch) != int:
+        #    cswitch = self.leng_railswitch[:]
 
         # kopie pozycji x i y
         x = self.x
@@ -218,12 +252,16 @@ class Railline:
             elif obj == 2:
                 self.draw_sensor(x, y, 3, paint)
             elif obj == 3:
-                if type(self.leng_railswitch) == int:
+                '''if type(self.leng_railswitch) == int:
                     x, y = self.draw_railswitch(x, y, self.leng_railswitch, 10, paint)
                 else:
                     leng = cswitch[0]
                     cswitch.pop(0)
-                    x, y = self.draw_railswitch(x, y, leng, 10, paint)
+                    x, y = self.draw_railswitch(x, y, leng, 10, paint)'''
+                switch = cswitchs[0]
+                cswitchs.pop(0)
+                x, y = switch.draw_railswitch(x, y, paint, self.neg)
+
 
         paint.end()
 
@@ -308,33 +346,62 @@ class Railline:
 
 
 class Railswitch(QWidget):
-    def __init__(self, x, y, length=10, height=5, scale=1, parent = None):
-        QWidget.__init__(self, parent)
+    def __init__(self, parent=None, x=0, y=0, length=10, height=5, scale=1, turn=Turn.left):
+        super(Railswitch, self).__init__(parent)
+        self.qwindow = parent
         self.length = length
         self.height = height
         self.scale = scale
+        self.turn = turn
         self.status = True
 
         self.length_sc = round(self.scale * self.length)
         self.height_sc = round(self.scale * self.height)
 
-        self.setGeometry(x, y, self.length_sc, 2*self.height_sc)
+        #self.setMinimumSize(1, 1)
+        self.setGeometry(x, y-self.height_sc, self.length_sc+2, 2*self.height_sc+10)
+        #self.setVisible(True)
+
+    def connect_switch(self, switch):
+        self.double_switch = switch
+
+    def set_turn(self,turn):
+        self.turn = turn
 
     def set_status(self, status=True):
         if type(self.status) == bool:
             self.status = status
+
+    def neg_status(self):
+        self.status = not self.status
 
     def set_scale(self, scale):
         self.scale = scale
         self.length_sc = round(self.scale * self.length)
         self.height_sc = round(self.scale * self.height)
 
-    def draw_railswitch(self, x0=0, y0=0, turn=Turn.left, paint=QPainter()):
+    def mousePressEvent(self, event):
+        #super(Railswitch, self).mousePressEvent(event)
+        self.repaint()
+        print("test")
+        self.neg_status()
+
+    def paintEvent(self, e):
+
+        qp = QPainter()
+        qp.begin(self)
+        #self.draw_railswitch(0,0,qp)
+        qp.end()
+
+    def xor(self, a, b):
+        return (a and not b) or (not a and b)
+
+    def draw_railswitch(self, x0=0, y0=0, paint=QPainter(), neg = False):
         x1 = x0 + self.length_sc
         y1 = y0
 
         switch = QPolygonF()
-        if turn == Turn.right:
+        if self.turn == Turn.right:
             switch.append(QPointF(x0, y0 + self.height_sc))
             switch.append(QPointF(x0, y0 - self.height_sc))
             switch.append(QPointF(x1, y1))
@@ -346,7 +413,7 @@ class Railswitch(QWidget):
         str_status = "1"
         color_status = Qt.green
 
-        if not self.status:
+        if not self.xor(self.status, neg):
             str_status = "0"
             color_status = Qt.red
 
