@@ -17,7 +17,9 @@ class About(QWidget):
 
     def initT(self):
 
-        self.text = ''
+        self.text = ('Projekt na zaliczenie przedmiotu Roboty Inteligentne 2017\n'
+                     'Program umozliwiajacy sterowanie makieta PKM \n'
+                     'oraz uruchamianie wczesniej ustalonego harmonogramu')
         self.show()
 
 # tworzenie tekstu
