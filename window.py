@@ -152,12 +152,13 @@ class Window(QtGui.QMainWindow):
         self.setCentralWidget(central_widget)
         
         self.przyciski_zwrotnice()
+
         self.initUI()
         self.show()
         
     def przyciski_zwrotnice(self):  
 # tor 1     
-        self.lbl1 = QtGui.QLabel("Tor 1", self)    
+        '''self.lbl1 = QtGui.QLabel("Tor 1", self)
         self.lbl1.move(620, 320)
         
         t1z1 = QtGui.QPushButton('Zwrotnica 1', self)
@@ -168,9 +169,9 @@ class Window(QtGui.QMainWindow):
         t1z2 = QtGui.QPushButton('Zwrotnica 2', self)
         t1z2.clicked.connect(QtCore.QCoreApplication.instance().quit)
         t1z2.resize(t1z2.sizeHint())
-        t1z2.move(600, 380) 
+        t1z2.move(600, 380)
 # tor 2    
-        self.lbl2 = QtGui.QLabel("Tor 2", self)    
+        self.lbl2 = QtGui.QLabel("Tor 2", self)
         self.lbl2.move(720, 320)
         
         t2z1 = QtGui.QPushButton('Zwrotnica 1', self)
@@ -181,31 +182,33 @@ class Window(QtGui.QMainWindow):
         t2z2 = QtGui.QPushButton('Zwrotnica 2', self)
         t2z2.clicked.connect(QtCore.QCoreApplication.instance().quit)
         t2z2.resize(t2z2.sizeHint())
-        t2z2.move(700, 380) 
+        t2z2.move(700, 380) '''
 # tor 3      
-        self.lbl1 = QtGui.QLabel("Tor 3", self)    
-        self.lbl1.move(820, 320)
+        self.lbl1 = QtGui.QLabel("Trasa: Oliwa <-> Wrzeszcz", self)
+        self.lbl1.move(715, 320)
+        self.lbl1.resize(200, 20)
         
         t3z1 = QtGui.QPushButton('Zwrotnica 1', self)
-        t3z1.clicked.connect(QtCore.QCoreApplication.instance().quit)
+        t3z1.clicked.connect(self.change_state_switch1)
         t3z1.resize(t3z1.sizeHint())
-        t3z1.move(800, 350) 
+        t3z1.move(745, 350)
         
         t3z2 = QtGui.QPushButton('Zwrotnica 2', self)
-        t3z2.clicked.connect(QtCore.QCoreApplication.instance().quit)
+        t3z2.clicked.connect(self.change_state_switch2)
         t3z2.resize(t3z2.sizeHint())
-        t3z2.move(800, 380) 
+        t3z2.move(745, 380)
 # tor 4    
-        self.lbl1 = QtGui.QLabel("Tor 4", self)    
-        self.lbl1.move(920, 320)
+        self.lbl2 = QtGui.QLabel("Trasa: Osowa <-> Wrzeszcz", self)
+        self.lbl2.move(855, 320)
+        self.lbl2.resize(200, 20)
         
-        t4z1 = QtGui.QPushButton('Zwrotnica 1', self)
-        t4z1.clicked.connect(QtCore.QCoreApplication.instance().quit)
+        t4z1 = QtGui.QPushButton('Zwrotnica 3', self)
+        t4z1.clicked.connect(self.change_state_switch3)
         t4z1.resize(t4z1.sizeHint())
         t4z1.move(900, 350) 
         
-        t4z2 = QtGui.QPushButton('Zwrotnica 2', self)
-        t4z2.clicked.connect(QtCore.QCoreApplication.instance().quit)
+        t4z2 = QtGui.QPushButton('Zwrotnica 4', self)
+        t4z2.clicked.connect(self.change_state_switch4)
         t4z2.resize(t4z2.sizeHint())
         t4z2.move(900, 380)
         
@@ -300,6 +303,22 @@ class Window(QtGui.QMainWindow):
             self.train.setValue(self.slider_speed.value(),self.index_t)
             self.lab4.setText(str(self.train.getValue(self.index_t)))
             self.repaint()
+
+    def change_state_switch1(self):
+        self.map.switch1.neg_status()
+        self.repaint()
+
+    def change_state_switch2(self):
+        self.map.switch2.neg_status()
+        self.repaint()
+
+    def change_state_switch3(self):
+        self.map.switch3.neg_status()
+        self.repaint()
+
+    def change_state_switch4(self):
+        self.map.switch4.neg_status()
+        self.repaint()
 
     def resizeEvent(self, event):
         self.map.set_size(self.height()-120, self.width()-10)
