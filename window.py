@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
 import sys
 from PyQt4 import QtGui, QtCore
 from PyQt4.Qt import *
@@ -8,8 +7,7 @@ from PyQt4.Qt import *
 import train_map
 import train
 
-# wyskakujace okno "About"
-class Popup(QWidget):
+class About(QWidget):
     def __init__(self):
         QWidget.__init__(self)
 
@@ -19,7 +17,7 @@ class Popup(QWidget):
 
     def initT(self):
 
-        self.text = 'Cos tam cos tam i jeszcze wiecej, wykonawcy'
+        self.text = ''
         self.show()
 
 # tworzenie tekstu
@@ -34,6 +32,43 @@ class Popup(QWidget):
 
         qp.setPen(QtGui.QColor(0, 0, 0))
         qp.setFont(QtGui.QFont('Decorative', 10))
+        qp.drawText(event.rect(), QtCore.Qt.AlignCenter, self.text)
+
+#okno authors
+class Authors(QWidget):
+    def __init__(self):
+        QWidget.__init__(self)
+
+        self.setGeometry(50, 100, 1000, 500)
+        self.setWindowTitle('Authors')
+        self.initT()
+
+    def initT(self):
+
+        self.text = ('Sklad grupy:\n\n' 
+                     'Wojciech Zgliniecki - Leader\n '
+                     'Dworakowski Karol\n'
+                     'Filipkiewicz Marlena\n'
+                     'Pawlowski Franciszek\n'
+                     'Rogaszewski Pawel\n'
+                     'Sendrowicz Mateusz\n'
+                     'Sternicki Pawel\n'
+                     'Trzcinski Karol\n'
+                     'Zbikowski Bartosz\n')
+        self.show()
+
+# tworzenie tekstu
+    def paintEvent(self, event):
+
+        qp = QtGui.QPainter()
+        qp.begin(self)
+        self.drawText(event, qp)
+        qp.end()
+
+    def drawText(self, event, qp):
+
+        qp.setPen(QtGui.QColor(0, 0, 0))
+        qp.setFont(QtGui.QFont('Calibri', 12))
         qp.drawText(event.rect(), QtCore.Qt.AlignCenter, self.text)
 
 
@@ -116,10 +151,64 @@ class Window(QtGui.QMainWindow):
         toolbar.addLayout(label_space)
         self.setCentralWidget(central_widget)
         
+        self.przyciski_zwrotnice()
         self.initUI()
-        
         self.show()
-
+        
+    def przyciski_zwrotnice(self):  
+# tor 1     
+        self.lbl1 = QtGui.QLabel("Tor 1", self)    
+        self.lbl1.move(620, 320)
+        
+        t1z1 = QtGui.QPushButton('Zwrotnica 1', self)
+        t1z1.clicked.connect(QtCore.QCoreApplication.instance().quit) 
+        t1z1.resize(t1z1.sizeHint())
+        t1z1.move(600, 350)       
+        
+        t1z2 = QtGui.QPushButton('Zwrotnica 2', self)
+        t1z2.clicked.connect(QtCore.QCoreApplication.instance().quit)
+        t1z2.resize(t1z2.sizeHint())
+        t1z2.move(600, 380) 
+# tor 2    
+        self.lbl2 = QtGui.QLabel("Tor 2", self)    
+        self.lbl2.move(720, 320)
+        
+        t2z1 = QtGui.QPushButton('Zwrotnica 1', self)
+        t2z1.clicked.connect(QtCore.QCoreApplication.instance().quit)
+        t2z1.resize(t2z1.sizeHint())
+        t2z1.move(700, 350) 
+        
+        t2z2 = QtGui.QPushButton('Zwrotnica 2', self)
+        t2z2.clicked.connect(QtCore.QCoreApplication.instance().quit)
+        t2z2.resize(t2z2.sizeHint())
+        t2z2.move(700, 380) 
+# tor 3      
+        self.lbl1 = QtGui.QLabel("Tor 3", self)    
+        self.lbl1.move(820, 320)
+        
+        t3z1 = QtGui.QPushButton('Zwrotnica 1', self)
+        t3z1.clicked.connect(QtCore.QCoreApplication.instance().quit)
+        t3z1.resize(t3z1.sizeHint())
+        t3z1.move(800, 350) 
+        
+        t3z2 = QtGui.QPushButton('Zwrotnica 2', self)
+        t3z2.clicked.connect(QtCore.QCoreApplication.instance().quit)
+        t3z2.resize(t3z2.sizeHint())
+        t3z2.move(800, 380) 
+# tor 4    
+        self.lbl1 = QtGui.QLabel("Tor 4", self)    
+        self.lbl1.move(920, 320)
+        
+        t4z1 = QtGui.QPushButton('Zwrotnica 1', self)
+        t4z1.clicked.connect(QtCore.QCoreApplication.instance().quit)
+        t4z1.resize(t4z1.sizeHint())
+        t4z1.move(900, 350) 
+        
+        t4z2 = QtGui.QPushButton('Zwrotnica 2', self)
+        t4z2.clicked.connect(QtCore.QCoreApplication.instance().quit)
+        t4z2.resize(t4z2.sizeHint())
+        t4z2.move(900, 380)
+        
     # tworzeie MENU
     def initUI(self):
         # Exit
@@ -131,25 +220,34 @@ class Window(QtGui.QMainWindow):
         helpAction = QtGui.QAction(QtGui.QIcon('exit.png'), '&About', self)
         helpAction.setShortcut('Ctrl+H')
         helpAction.triggered.connect(self.doit) #wywolanie kolejnego okna
-        # self.connect(self.helpAction, SIGNAL("clicked()"), self.doit)
+        # Authors
+        authorsAction = QtGui.QAction(QtGui.QIcon('exit.png'), '&Authors', self)
+        authorsAction.setShortcut('Ctrl+A')
+        authorsAction.triggered.connect(self.doitA)
         self.w = None
+        self.a = None
 
         self.statusBar()
 
         menubar = self.menuBar()
         fileMenu = menubar.addMenu('&File') #umieszczenie w menu "File"
         fileMenu.addAction(exitAction)
-        fileMenu = menubar.addMenu('&Help')
-        fileMenu.addAction(helpAction) #umiezczenie w menu "About"
+        fileMenu2 = menubar.addMenu('&Help')
+        fileMenu2.addAction(helpAction) #umiezczenie w menu "About"
+        fileMenu2.addAction(authorsAction) #umiezczenie w menu "Authors"
 
         self.setGeometry(300, 200, 1000, 600)
         self.setWindowTitle('PKM')
         self.show()
 
     def doit(self):
-        self.w = Popup()
+        self.w = About()
         self.w.show()
-
+        
+    def doitA(self):
+        self.a = Authors()
+        self.a.show()
+        
     def create_slider(self):
         layout = QtGui.QVBoxLayout()
         l1 = QtGui.QLabel("Predkosc", self)
