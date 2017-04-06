@@ -1,7 +1,10 @@
 import serial
 import time
+import timeit
 import threading
 import io
+
+
 
 
 # typy urzadzen
@@ -126,11 +129,22 @@ def handle_scan(data):
     l_adres = data[5:9]
     attr1 = data[10:12]
     attr2 = data[13:15]
+
     if typ == '01': #Zwrotnica
+        for x in zwrotnica:
+            if x.l_addr == l_adres:
+                return None
         zwrotnica.append(Zwrotnica(data[1:9], strefa, l_adres, attr1, attr2))
+
     elif typ == '02': #Semafor
         semafor.append(Semafor(data[1:9], strefa, l_adres))
     elif typ == '03': # Balisa
+        for x in balisa:
+            if x.l_addr == l_adres:
+                print 'balisa ' + l_adres + '\t' #+ end - start
+                return None
+                # start = timeit.timeit()
+                # end = timeit.timeit()
         balisa.append(Balisa(data[1:9], strefa, l_adres, attr1, attr2))
 
 
@@ -138,7 +152,6 @@ def handle_data(data):
     dat = data.split('\r')
     for d in dat:
         handle_scan(d)
-
 
 #configure the serial connections (the parameters differs on the device you are connecting to)
 ser_raw = serial.Serial(
@@ -184,13 +197,21 @@ if __name__ == '__main__':
 
 ser.write(u'master\r')
 Agent.skanuj()
-time.sleep(3)
-for balisas in balisa: # ustawiamy automatyczne zglaszanie i histereze
-    time.sleep(0.1) # bez sleepa zapycha sie
-print "test balis"
+
+print len(zwrotnica)
+print len(zwrotnica)
+print len(balisa)
 
 time.sleep(1)
-Agent.skanuj()
+for balisas in balisa: # ustawiamy automatyczne zglaszanie i histereze
+    balisas.wlacz(0x70)
+    time.sleep(0.1) # bez sleepa zapycha sie
+
+print "test balis"
+
+
+# time.sleep(1)
+# Agent.skanuj()
 
 # f = open('pkm_scan.txt', 'r')
 # data = f.read()
