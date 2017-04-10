@@ -42,6 +42,7 @@ semafor = []
 zwrotnica = []
 balisa = []
 
+
 class Agent:
     def __init__(self, addr='1F000000', strefa='', l_addr=None):
         self.address = addr
@@ -118,34 +119,52 @@ def _readline():
 def can_odb():
     while ser_raw.isOpen():
         reading = ser.readline()
-        print('odebralem: '+reading)
+        #print('odebralem: '+reading)
         handle_data(reading)
     print('can_odb koniec')
 
 
+time1 = 0
+last_time1 = 0
 def handle_scan(data):
+    global time1
+    global last_time1
+
+
     typ = data[1:3]
     strefa = data[3:5]
     l_adres = data[5:9]
     attr1 = data[10:12]
     attr2 = data[13:15]
 
-    if typ == '01': #Zwrotnica
-        for x in zwrotnica:
-            if x.l_addr == l_adres:
-                return None
+
+    if typ == '01' and len(zwrotnica) < 49:
+    # do mierzenia czasu
+        # for x in zwrotnica:
+        #     if x.l_addr == l_adres:
+        #         return None
         zwrotnica.append(Zwrotnica(data[1:9], strefa, l_adres, attr1, attr2))
 
-    elif typ == '02': #Semafor
+    elif typ == '02' and len(semafor) < 49: #Semafor
         semafor.append(Semafor(data[1:9], strefa, l_adres))
-    elif typ == '03': # Balisa
-        for x in balisa:
-            if x.l_addr == l_adres:
-                print 'balisa ' + l_adres + '\t' #+ end - start
-                return None
-                # start = timeit.timeit()
-                # end = timeit.timeit()
+    elif typ == '03' and len(balisa) < 49: # Balisa
+        # for x in balisa:
+        #     if x.l_addr == l_adres:
+        #         print 'balisa ' + l_adres + '\t' #+ end - start
+        #         return None
+        #         last_time = time
+        #         time = timeit.timeit()
+        #         print time-last_time
         balisa.append(Balisa(data[1:9], strefa, l_adres, attr1, attr2))
+    if typ == '03' and data[16:18] <'70': # wieksze tyl mniejsze przod
+        #print data[16:18]
+        # print u'time1 ' + str(time1)
+        # print u'last_time ' + str(last_time1)
+        last_time1 = time1
+        time1 = time.clock() # aktualny czas
+        print u'balisa ' + l_adres + u'\t' + str(time1 - last_time1)
+        #print (time1 - last_time1)
+
 
 
 def handle_data(data):
@@ -198,9 +217,6 @@ if __name__ == '__main__':
 ser.write(u'master\r')
 Agent.skanuj()
 
-print len(zwrotnica)
-print len(zwrotnica)
-print len(balisa)
 
 time.sleep(1)
 for balisas in balisa: # ustawiamy automatyczne zglaszanie i histereze
@@ -208,7 +224,9 @@ for balisas in balisa: # ustawiamy automatyczne zglaszanie i histereze
     time.sleep(0.1) # bez sleepa zapycha sie
 
 print "test balis"
-
+print len(zwrotnica)
+print len(zwrotnica)
+print len(balisa)
 
 # time.sleep(1)
 # Agent.skanuj()
