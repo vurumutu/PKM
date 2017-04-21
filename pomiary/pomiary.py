@@ -1,34 +1,31 @@
+import numpy as np
 from matplotlib import pyplot as plt
-from scipy.signal import *
-from scipy.integrate import odeint
-from scipy.optimize import fmin
+from scipy.optimize import curve_fit
 
-def read(name):
-    time = []
-    y = []
-    with open(name) as plik:
-        for line in plik.readlines():
-            linie = line.split()
-            time.append(float(linie[0].strip()))
-            y.append(float(linie[1].strip()))
-    return time, y
+time = []
 
-def sumData(data):
-    for i in range(1, len(data)):
-        data[i] = data[i]+data[i-1]
-    return data
+with open("p1f.txt") as file:
+    for line in file.readlines():
+        lines = line.split()
+        time = np.append(time, float(lines[2].strip()))
 
-timeT1F, yT1F = read('Train1Forward.txt')
-timeT1B, yT1B = read('Train1Backward.txt')
-timeT2F, yT2F = read('Train2Forward.txt')
-timeT2B, yT2B = read('Train2Backward.txt')
-timeT5, yT5 = read('Train5.txt')
-timeT6, yT6 = read('Train6.txt')
-timeT1F = sumData(timeT1F)
-timeT1B = sumData(timeT1B)
-timeT2F = sumData(timeT2F)
-timeT2B = sumData(timeT2B)
-timeT5 = sumData(timeT5)
-timeT6 = sumData(timeT6)
+t = []
+a = 0
+for i in range(0, len(time)):
+    a += time[i]
+    t = np.append(t, a)
+
+time = time[1:]
+velocity = 20/time  # cm per second
+# prędkość początkowa 0
+velocity = np.insert(velocity, 0, 0)
 
 
+z = np.polyfit(t, velocity, 3)
+
+p = np.poly1d(z)
+xp = np.linspace(min(t), (max(t)), 200)
+y = p(xp)
+print(y)
+plt.plot(t, velocity, '.', xp, p(xp), 'g')
+plt.show()
