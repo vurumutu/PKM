@@ -12,16 +12,16 @@ class Train:
         self.t_v = [0, 0, 0, 0, 0, 0]               #t_v - predkosc pociagu
 
     def setValue(self, x, i):
-        self.t_x[i-1] = x
+        self.t_x[i] = x
 
-    def getValue(self, i):
-        return self.t_x[i-1]
+    def getValue(self):  #zwraca polozenia wszystkich pociagow, zeby latwiej bylo te dane przesylac - pozniej wyciagamy z tego odpowiedni sklad
+        return self.t_x
 
-    def getLength(self, i):
-        return self.t_l[i-1]
+    def getLength(self):    #z dlugosciami jest tak samo
+        return self.t_l
 
     def setSpeed(self, v, i):
-        self.t_v[i-1] = v
+        self.t_v[i] = v
 
     def getSpeed(self,i):
-        return self.t_v[i-1]
+        return self.t_v[i]

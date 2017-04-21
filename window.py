@@ -6,6 +6,7 @@ from PyQt4.Qt import *
 
 import train_map
 import train
+import train_auto
 
 class About(QWidget):
     def __init__(self):
@@ -82,6 +83,8 @@ class Window(QtGui.QMainWindow):
         self.setWindowTitle("PKM")
         self.setWindowIcon(QtGui.QIcon('ictrain.png'))
 
+        self.timerTable = train_auto.TimeTable(self)
+
         toolbar = QtGui.QHBoxLayout()
 
         # utworzenie obiektu tworzacego mape kolejowa
@@ -89,7 +92,7 @@ class Window(QtGui.QMainWindow):
 
         #utworzenie obektu zapwierajacego informacje o pociagach
         self.train = train.Train()
-        self.index_t = 1    #numer wybranego pociagu
+        self.index_t = 4    #numer wybranego pociagu - 1, bo numerujemy tablice od 0
         
         #rozmieszczenie radiobuttonow i slidera
         button_space = QtGui.QHBoxLayout()
@@ -126,12 +129,12 @@ class Window(QtGui.QMainWindow):
         button_space.addWidget(self.btn5)
         button_space.addWidget(self.btn6)
 
-        self.lab1 = QtGui.QLabel(str(self.train.getValue(1)))
-        self.lab2 = QtGui.QLabel(str(self.train.getValue(2)))
-        self.lab3 = QtGui.QLabel(str(self.train.getValue(3)))
-        self.lab4 = QtGui.QLabel(str(self.train.getValue(4)))
-        self.lab5 = QtGui.QLabel(str(self.train.getValue(5)))
-        self.lab6 = QtGui.QLabel(str(self.train.getValue(6)))
+        self.lab1 = QtGui.QLabel(str(self.train.getValue()[0]))
+        self.lab2 = QtGui.QLabel(str(self.train.getValue()[1]))
+        self.lab3 = QtGui.QLabel(str(self.train.getValue()[2]))
+        self.lab4 = QtGui.QLabel(str(self.train.getValue()[3]))
+        self.lab5 = QtGui.QLabel(str(self.train.getValue()[4]))
+        self.lab6 = QtGui.QLabel(str(self.train.getValue()[5]))
 
         label_space.addWidget(self.lab1)
         label_space.addWidget(self.lab2)
@@ -220,7 +223,7 @@ class Window(QtGui.QMainWindow):
         exitAction = QtGui.QAction(QtGui.QIcon('exit.png'), '&Exit', self)
         exitAction.setShortcut('Ctrl+Q')
         exitAction.setStatusTip('Exit application') #zamykanie
-        exitAction.triggered.connect(self.close_application)
+        exitAction.triggered.connect(close_application)
         # About
         helpAction = QtGui.QAction(QtGui.QIcon('exit.png'), '&About', self)
         helpAction.setShortcut('Ctrl+H')
@@ -276,34 +279,34 @@ class Window(QtGui.QMainWindow):
     #aktualizacjia wyboru pociagu
     def tUpdate(self):
         if self.btn1.isChecked():
-            self.index_t = 1
+            self.index_t = 0
             self.train.setValue(self.slider_speed.value(), self.index_t)
-            self.lab1.setText(str(self.train.getValue(self.index_t)))
+            self.lab1.setText(str(self.train.getValue()[self.index_t]))
             self.repaint()
         elif self.btn2.isChecked():
-            self.index_t = 2
+            self.index_t = 1
             self.train.setValue(self.slider_speed.value(),self.index_t)
-            self.lab2.setText(str(self.train.getValue(self.index_t)))
+            self.lab2.setText(str(self.train.getValue()[self.index_t]))
             self.repaint()
         elif self.btn3.isChecked():
-            self.index_t = 3
+            self.index_t = 2
             self.train.setValue(self.slider_speed.value(),self.index_t)
-            self.lab3.setText(str(self.train.getValue(self.index_t)))
+            self.lab3.setText(str(self.train.getValue()[self.index_t]))
             self.repaint()
         elif self.btn4.isChecked():
-            self.index_t = 4
+            self.index_t = 3
             self.train.setValue(self.slider_speed.value(),self.index_t)
-            self.lab4.setText(str(self.train.getValue(self.index_t)))
+            self.lab4.setText(str(self.train.getValue()[self.index_t]))
             self.repaint()
         elif self.btn5.isChecked():
-            self.index_t = 5
+            self.index_t = 4
             self.train.setValue(self.slider_speed.value(),self.index_t)
-            self.lab4.setText(str(self.train.getValue(self.index_t)))
+            self.lab4.setText(str(self.train.getValue()[self.index_t]))
             self.repaint()
         elif self.btn6.isChecked():
-            self.index_t = 6
+            self.index_t = 5
             self.train.setValue(self.slider_speed.value(),self.index_t)
-            self.lab4.setText(str(self.train.getValue(self.index_t)))
+            self.lab4.setText(str(self.train.getValue()[self.index_t]))
             self.repaint()
 
     def change_state_switch1(self):
@@ -328,11 +331,17 @@ class Window(QtGui.QMainWindow):
 
     def paintEvent(self, event):
         self.train.setValue(self.slider_speed.value(), self.index_t)
-        self.map.draw(self.train.getValue(self.index_t), self.train.getLength(self.index_t))
+        self.map.draw(self.train.getValue(), self.train.getLength())
 
-    @staticmethod
-    def close_application():
-        sys.exit()
+    def timerEvent(self, event):
+        for i in range(4):
+            if event.timerId() == self.timerTable.timers[i].timerId():
+                self.timerTable.updateTimers(i)
+                self.train.setValue(self.timerTable.positionTable[i][self.timerTable.licznik[i]],i)
+                self.repaint()
+
+def close_application():
+    sys.exit()
 
 def run():
     app = QtGui.QApplication(sys.argv)
