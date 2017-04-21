@@ -8,6 +8,29 @@ import train_map
 import train
 import train_auto
 
+#Okno logowania
+class Login(QtGui.QDialog):
+    def __init__(self, parent=None):
+        super(Login, self).__init__(parent)
+        self.setGeometry(1000, 500, 500, 500)
+        self.setWindowTitle('Logowanie')
+        self.textName = QtGui.QLineEdit(self)
+        self.textPass = QtGui.QLineEdit(self)
+        self.buttonLogin = QtGui.QPushButton('Login', self)
+        self.buttonLogin.clicked.connect(self.handleLogin)
+        layout = QtGui.QVBoxLayout(self)
+        layout.addWidget(self.textName)
+        layout.addWidget(self.textPass)
+        layout.addWidget(self.buttonLogin)
+        
+#login i hasło
+    def handleLogin(self):
+        if (self.textName.text() == 'user' and
+            self.textPass.text() == 'user1'):
+            self.accept()
+        else:
+            QtGui.QMessageBox.warning(
+                self, 'Error', 'Bad user or password')
 class About(QWidget):
     def __init__(self):
         QWidget.__init__(self)
@@ -345,7 +368,10 @@ def close_application():
 
 def run():
     app = QtGui.QApplication(sys.argv)
-    GUI = Window()
-    sys.exit(app.exec_())
+    login = Login()
+    if login.exec_() == QtGui.QDialog.Accepted:
+        GUI = Window()
+        GUI.show()
+        sys.exit(app.exec_())
 
 run()
