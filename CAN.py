@@ -4,9 +4,6 @@ import timeit
 import threading
 import io
 
-
-
-
 # typy urzadzen
 TYP_NONE = 0x00
 TYP_Zwrotnica = 0x01
@@ -126,17 +123,17 @@ def can_odb():
 
 time1 = 0
 last_time1 = 0
+
+# funkcja parsujaca pojedyncza komende/odpowiedz
 def handle_scan(data):
     global time1
     global last_time1
-
 
     typ = data[1:3]
     strefa = data[3:5]
     l_adres = data[5:9]
     attr1 = data[10:12]
     attr2 = data[13:15]
-
 
     if typ == '01' and len(zwrotnica) < 49:
     # do mierzenia czasu
@@ -166,7 +163,7 @@ def handle_scan(data):
         #print (time1 - last_time1)
 
 
-
+# obsluga ciagu wejsciowego z CAN
 def handle_data(data):
     dat = data.split('\r')
     for d in dat:
@@ -188,10 +185,12 @@ else:
     print("Serial is closed!!")
 print(ser_raw.portstr)
 
+# aby obejsc domyslne konczenie ramki znakiem '\n' i konczyc ja '\r'
 ser = io.TextIOWrapper(io.BufferedRWPair(ser_raw, ser_raw, 1),
                        newline='\r',
                        line_buffering=True)
-ser._CHUNK_SIZE = 1
+ser._CHUNK_SIZE = 1 # pojedyncza wielkosc bufora odbiorczego, aby nie wprowadzac opoznien
+
 # listy agentow
 zwrotnica = []
 balisa = []
