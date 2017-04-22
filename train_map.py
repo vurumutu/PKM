@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import math
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from enum import Enum
@@ -27,10 +28,16 @@ class Railmap:
         self.d_QWindow = q_window
         self.scale = 1
 
-        self.switch1 = Railswitch(q_window, 0, 0, 10, 5)
-        self.switch2 = Railswitch(q_window, 0, 0, 10, 5, 1, Turn.right)
-        self.switch3 = Railswitch(q_window, 0, 0, 20, 5)
-        self.switch4 = Railswitch(q_window, 0, 0, 10, 5, 1, Turn.right)
+        img_rail = self.load_image("Pictures/rail.png")
+        img_railcomb = self.load_image("Pictures/rail_comb.png")
+        img_sation = self.load_image("Pictures/railsation.png")
+
+        self.images = [img_rail, img_railcomb, img_sation]
+
+        self.switch1 = Railswitch(q_window, 0, 0, 10, 6)
+        self.switch2 = Railswitch(q_window, 0, 0, 10, 6, 1, Turn.right)
+        self.switch3 = Railswitch(q_window, 0, 0, 20, 6)
+        self.switch4 = Railswitch(q_window, 0, 0, 23, 6, 1, Turn.right)
 
         # utworzenie lini OLIWA -> WRZESZCZ
         self.line1 = Railline(10, 80)
@@ -47,18 +54,18 @@ class Railmap:
         self.line2.set_railswitch([self.switch1, self.switch2])
         self.line2.set_negation(True)
 
-        # utworzenie lini WRZESZCZ -> OSOWA
+        # utworzenie lini WRZESZCZ -> KIEŁPINEK
         self.line3 = Railline(10, 210)
-        self.line3.set_stations([100, "Wrzeszcz", 100, "Strzyza", 100, "Osowa"])  # lista rzeczywistych odcinkow torow w cm #
-        self.line3.set_leng_rails([80, 100, 5, 135, 5, 35, 523, 245, 20, 10])  # lista stacji (dlugosc peronu, nazwa stacji)
-        self.line3.set_map_object([1, 2, 4, 2, 4, 2, 4, 3, 0, 2, 0, 1, 0, 2, 0, 2, 0, 3, 4, 2, 4, 1])  # mapy obiektow - wektor
+        self.line3.set_stations([100, "Wrzeszcz", 106, "Strzyza", 101.5, "Kielpinek"])  # lista rzeczywistych odcinkow torow w cm #
+        self.line3.set_leng_rails([80, 100, 5, 249, 6, 37, 523, 234, 21.5, 10.5, 12.5])  # lista stacji (dlugosc peronu, nazwa stacji)
+        self.line3.set_map_object([1, 2, 4, 2, 4, 2, 4, 3, 0, 2, 0, 1, 0, 2, 0, 2, 0, 3, 4, 2, 4, 1, 4])  # mapy obiektow - wektor
         self.line3.set_railswitch([self.switch3, self.switch4])
 
-        # utworzenie lini OSOWA -> WRZESZCZ
+        # utworzenie lini KIEŁPINEK -> WRZESZCZ
         self.line4 = Railline(10, 275)
-        self.line4.set_stations([100, "Wrzeszcz", 100, "Strzyza", 100, "Osowa"])  # lista rzeczywistych odcinkow torow w cm
-        self.line4.set_leng_rails([80, 100, 5, 135, 5, 35, 503, 245, 20, 10])  # lista stacji (dlugosc peronu, nazwa stacji)
-        self.line4.set_map_object([1, 2, 4, 2, 4, 2, 4, 3, 0, 2, 0, 1, 0, 2, 0, 2, 0, 3, 4, 2, 4, 1])  # mapy obiektow - wektor
+        self.line4.set_stations([100, "Wrzeszcz", 106, "Strzyza", 101.5, "Kielpinek"])  # lista rzeczywistych odcinkow torow w cm
+        self.line4.set_leng_rails([80, 100, 5, 243, 6, 37, 503, 235, 21.5, 10.5, 12.5])  # lista stacji (dlugosc peronu, nazwa stacji)
+        self.line4.set_map_object([1, 2, 4, 2, 4, 2, 4, 3, 0, 2, 0, 1, 0, 2, 0, 2, 0, 3, 4, 2, 4, 1, 4])  # mapy obiektow - wektor
         self.line4.set_railswitch([self.switch3, self.switch4])
         self.line4.set_negation(True)
         self.setscale()
@@ -79,6 +86,25 @@ class Railmap:
         self.switch2.set_scale(self.scale)
         self.switch3.set_scale(self.scale)
         self.switch4.set_scale(self.scale)
+
+        #self.rail = self.rail.scaled(round(float(self.scale * 50)), round(float(self.scale * 40)))
+
+    def load_image(self, path):
+        try:
+            image = QImage()
+            image.load(path)
+            if image.isNull():
+                result = QMessageBox.critical(self.d_QWindow, 'Blad', "Wystapil problem podczas wczytania pliku",
+                                              QMessageBox.Ok)
+                raise Exception('Problem z wczytaniem pliku')
+            else:
+                return image
+
+        except IOError:
+            pass
+
+        return None
+
 
     def draw(self, x_t, train_length):
         paint = QPainter()
@@ -101,10 +127,10 @@ class Railmap:
         paint.end()
 
         # rysowanie lini kolejowych
-        self.line1.draw_line(self.d_QWindow, x_t[self.train1], train_length[self.train1])
-        self.line2.draw_line(self.d_QWindow, x_t[self.train2], train_length[self.train2])
-        self.line3.draw_line(self.d_QWindow, x_t[self.train3], train_length[self.train3])
-        self.line4.draw_line(self.d_QWindow, x_t[self.train4], train_length[self.train4])
+        self.line1.draw_line(self.d_QWindow, x_t[self.train1], train_length[self.train1], self.images)
+        self.line2.draw_line(self.d_QWindow, x_t[self.train2], train_length[self.train2], self.images)
+        self.line3.draw_line(self.d_QWindow, x_t[self.train3], train_length[self.train3], self.images)
+        self.line4.draw_line(self.d_QWindow, x_t[self.train4], train_length[self.train4], self.images)
 
     # ustawienie wielkosci obszaru rysowania
     def set_size(self, height, width):
@@ -116,10 +142,9 @@ class Railmap:
         self.x = x
         self.y = y
 
-    @staticmethod
-    def draw_legend(x, y, paint=QPainter()):
+    def draw_legend(self, x, y, paint=QPainter()):
         paint.setBrush(Qt.white)
-        legend = QRect(x, y, 250, 110)
+        legend = QRect(x, y, 250, 120)
         paint.drawRect(legend)
 
         paint.setPen(Qt.black)
@@ -128,11 +153,11 @@ class Railmap:
 
         leg_line = Railline()
         leg_line.set_scale(1)
-        leg_line.draw_station(x+10, y+35, 80, 10, "", paint)
+        leg_line.draw_station(x+10, y+35, 80, 10, "", self.images[2], paint)
         leg_line.draw_railswitch(x+45, y+52, 10, 6, paint)
         leg_line.draw_sensor(x+50, y+68, 4, paint)
-        leg_line.draw_rail(x+10, y+85, 80, 1, paint)
-        leg_line.draw_rail(x+10, y+100, 80, 2, paint)
+        leg_line.draw_rail(x+10, y+85, 80, self.images[0], paint)
+        leg_line.draw_rail(x+10, y+105, 80, self.images[1], paint)
 
         paint.setPen(Qt.black)
         paint.setFont(QFont('Arial', 9))
@@ -140,7 +165,7 @@ class Railmap:
         paint.drawText(x + 100, y + 57, "zwrotnica")
         paint.drawText(x + 100, y + 73, "czujnik")
         paint.drawText(x + 100, y + 90, "odcinek torow")
-        paint.drawText(x + 100, y + 105, "wspolny odcinek torow")
+        paint.drawText(x + 100, y + 110, "wspolny odcinek torow")
 
 
 class Railline:
@@ -217,14 +242,16 @@ class Railline:
     # ---end---
 
     # rysowanie calej lini kolejowej
-    def draw_line(self, q_window, x_t, train_length):
+    def draw_line(self, q_window, x_t, train_length, images = None):
         # tworzenie kopi wektorow
         cstations = self.stations[:]
         crail_leng = self.leng_rails[:]
         cobjects = self.map_object[:]
         cswitchs = self.railswitch[:]
-        #if type(self.leng_railswitch) != int:
-        #    cswitch = self.leng_railswitch[:]
+
+        img_rail = images[0]
+        img_railcomb = images[1]
+        img_sation = images[2]
 
         # kopie pozycji x i y
         x = self.x
@@ -244,84 +271,97 @@ class Railline:
         # 1 - stacja
         # 2 - czujnik
         # 3 - zwrotnica
+        # 4 - wspólny odcinek torow
         # -----------------------
         for obj in cobjects:
             if obj == 0:
                 leng = crail_leng[0]
                 crail_leng.pop(0)
-                x, y = self.draw_rail(x, y, leng, 1, paint)
+                x, y = self.draw_rail(x, y, leng, img_rail, paint)
             elif obj == 1:
                 leng = cstations[0]
                 cstations.pop(0)
                 name = cstations[0]
                 cstations.pop(0)
-                x, y = self.draw_station(x, y, leng, 10, name, paint)
+                x, y = self.draw_station(x, y, leng, 20, name, img_sation, paint)
             elif obj == 2:
                 self.draw_sensor(x, y, 3, paint)
             elif obj == 3:
-                '''if type(self.leng_railswitch) == int:
-                    x, y = self.draw_railswitch(x, y, self.leng_railswitch, 10, paint)
-                else:
-                    leng = cswitch[0]
-                    cswitch.pop(0)
-                    x, y = self.draw_railswitch(x, y, leng, 10, paint)'''
                 switch = cswitchs[0]
                 cswitchs.pop(0)
+                self.draw_rail(x, y, switch.length, img_rail, paint)
                 x, y = switch.draw_railswitch(x, y, paint, self.neg)
             elif obj == 4:
                 leng = crail_leng[0]
                 crail_leng.pop(0)
-                x, y = self.draw_rail(x, y, leng, 2, paint)
+                x, y = self.draw_rail(x, y, leng, img_railcomb, paint)
 
         self.draw_endrail(x, y, paint)
 
         paint.end()
 
     # rysowanie stacji kolejowej
-    def draw_station(self, x0, y0, leng, height, name="", paint=QPainter()):
+    def draw_station(self, x0, y0, leng, height, name="", img=QImage(), paint=QPainter()):
         width_sc = round(self.scale * leng)
         height_sc = round(self.scale * height)
         x1 = x0 + width_sc
         y1 = y0
-        dy_text = round(self.scale * 15)
+        dy_text = round(self.scale * 20)
 
         st_dim = QRect(x0, y0 - height_sc / 2, width_sc, height_sc)
         text_dim = QRect(x0, y0 - height_sc / 2 - dy_text, width_sc, height_sc + 5)
 
-        paint.setPen(Qt.black)
+        img = img.scaled(width_sc, height_sc)
+        pixmap = QPixmap.fromImage(img)
+        paint.drawPixmap(st_dim, pixmap)
+        '''paint.setPen(Qt.black)
         paint.setBrush(Qt.darkBlue)
         paint.drawRect(st_dim)
         paint.setPen(Qt.darkGray)
-        paint.drawLine(x0, y0, x1, y1)
+        paint.drawLine(x0, y0, x1, y1)'''
         paint.setPen(Qt.black)
         paint.setFont(QFont('Arial', round(10 * self.scale)))
         paint.drawText(text_dim, Qt.AlignCenter, name)
 
         return x1, y1
 
-    # rysowanie odcinkow torow
-    def draw_rail(self, x0, y0, leng, size, paint=QPainter()):
+    # rysowanie odcinkow torow( leng - dlugosc odcinka torow)
+    def draw_rail(self, x0, y0, leng, img = QImage(), paint=QPainter()):
         len_sc = round(self.scale * leng)
         x1 = x0 + len_sc
         y1 = y0
 
-        pencil = QPen()
+        '''pencil = QPen()
         pencil.setColor(Qt.black)
         pencil.setWidth(size)
 
         paint.setPen(pencil)
-        paint.drawLine(x0, y0, x1, y1)
-        paint.setPen(Qt.NoPen)
+        #paint.drawLine(x0, y0, x1, y1)
+        paint.setPen(Qt.NoPen)'''
+
+        img = img.scaled(round(float(self.scale * 50)), round(float(self.scale * 35)))
+        pixmap = QPixmap.fromImage(img)
+
+        n_pieces = int(len_sc/pixmap.width())
+        carry = len_sc - n_pieces*pixmap.width()
+        x = x0
+        y = y0 - round(pixmap.height()/2)
+        for i in range(n_pieces):
+            paint.drawPixmap(x, y, pixmap)
+            x += pixmap.width()
+        if carry > 0.0:
+            fragpixmap = pixmap.copy(QRect(0, 0, carry, pixmap.height()))
+            paint.drawPixmap(x, y, fragpixmap)
 
         return x1, y1
 
     # rysowanie czujnikow
-    @staticmethod
-    def draw_sensor(x0, y0, R, paint=QPainter()):
+    def draw_sensor(self, x0, y0, R, paint=QPainter()):
         paint.setBrush(Qt.red)
-        d = R*2
+        R_sc = round(self.scale * R)
+        d = R_sc*2
         paint.setPen(Qt.black)
-        paint.drawEllipse(x0-R, y0-R, d, d)
+        paint.drawEllipse(x0-R_sc, y0-R_sc, d, d)
 
     # rysowanie zwrotnic
     def draw_railswitch(self, x0, y0, leng, height, paint=QPainter()):
@@ -341,9 +381,9 @@ class Railline:
 
     # rysowanie końca linni
     def draw_endrail(self, x0, y0, paint=QPainter()):
-        leng = round(5.0*self.scale)
+        leng = round(10.0*self.scale)
 
-        paint.setPen(QPen(Qt.black, 1))
+        paint.setPen(QPen(Qt.black, round(3*self.scale)))
         paint.drawLine(x0, y0-leng, x0, y0+leng)
 
     def set_position(self, x, y):

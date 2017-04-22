@@ -226,7 +226,7 @@ class Window(QtGui.QMainWindow):
         t3z2.resize(t3z2.sizeHint())
         t3z2.move(745, 380)
 # tor 4    
-        self.lbl2 = QtGui.QLabel("Trasa: Osowa <-> Wrzeszcz", self)
+        self.lbl2 = QtGui.QLabel("Trasa: Kielpinek <-> Wrzeszcz", self)
         self.lbl2.move(855, 320)
         self.lbl2.resize(200, 20)
         
