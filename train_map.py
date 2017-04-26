@@ -39,30 +39,30 @@ class Railmap:
         self.switch3 = Railswitch(q_window, 0, 0, 20, 6)
         self.switch4 = Railswitch(q_window, 0, 0, 23, 6, 1, Turn.right)
 
-        # utworzenie lini OLIWA -> WRZESZCZ
-        self.line1 = Railline(10, 80)
-        self.line1.set_stations([100, "Wrzeszcz", 100, "Oliwa"])  # lista rzeczywistych odcinkow torow w cm #miedzy stacjami jest chyba 767
+        # utworzenie lini OSOWA -> WRZESZCZ
+        self.line1 = Railline(15, 85)
+        self.line1.set_stations([100, "Wrzeszcz", 100, "Osowa"])  # lista rzeczywistych odcinkow torow w cm #miedzy stacjami jest chyba 767
         self.line1.set_leng_rails([25, 5, 90, 50, 20, 20, 20, 20, 20, 300, 197, 10, 5, 40])  # lista stacji (dlugosc peronu, nazwa stacji)
         self.line1.set_map_object([1, 4, 2, 4, 3, 0, 2, 0, 2, 0, 2, 0, 2, 0, 2, 0, 2, 0, 2, 0, 2, 0, 1, 0, 3, 4, 2, 4])  # mapy obiektow - wektor
         self.line1.set_railswitch([self.switch1, self.switch2])
 
-        # utworzenie lini WRZESZCZ -> OLIWA
-        self.line2 = Railline(10, 145)
-        self.line2.set_stations([100, "Wrzeszcz", 100, "Oliwa"])  # lista rzeczywistych odcinkow torow w cm
+        # utworzenie lini WRZESZCZ -> OSOWA
+        self.line2 = Railline(15, 155)
+        self.line2.set_stations([100, "Wrzeszcz", 100, "Osowa"])  # lista rzeczywistych odcinkow torow w cm
         self.line2.set_leng_rails([25, 5, 90, 450, 200, 10, 5, 40])  # lista stacji (dlugosc peronu, nazwa stacji)
         self.line2.set_map_object([1, 4, 2, 4, 3, 0, 2, 0, 2, 0, 1, 0, 3, 4, 2, 4])  # mapy obiektow - wektor
         self.line2.set_railswitch([self.switch1, self.switch2])
         self.line2.set_negation(True)
 
         # utworzenie lini WRZESZCZ -> KIEŁPINEK
-        self.line3 = Railline(10, 210)
+        self.line3 = Railline(15, 225)
         self.line3.set_stations([100, "Wrzeszcz", 106, "Strzyza", 101.5, "Kielpinek"])  # lista rzeczywistych odcinkow torow w cm #
         self.line3.set_leng_rails([80, 100, 5, 249, 6, 37, 523, 234, 21.5, 10.5, 12.5])  # lista stacji (dlugosc peronu, nazwa stacji)
         self.line3.set_map_object([1, 2, 4, 2, 4, 2, 4, 3, 0, 2, 0, 1, 0, 2, 0, 2, 0, 3, 4, 2, 4, 1, 4])  # mapy obiektow - wektor
         self.line3.set_railswitch([self.switch3, self.switch4])
 
         # utworzenie lini KIEŁPINEK -> WRZESZCZ
-        self.line4 = Railline(10, 275)
+        self.line4 = Railline(15, 295)
         self.line4.set_stations([100, "Wrzeszcz", 106, "Strzyza", 101.5, "Kielpinek"])  # lista rzeczywistych odcinkow torow w cm
         self.line4.set_leng_rails([80, 100, 5, 243, 6, 37, 503, 235, 21.5, 10.5, 12.5])  # lista stacji (dlugosc peronu, nazwa stacji)
         self.line4.set_map_object([1, 2, 4, 2, 4, 2, 4, 3, 0, 2, 0, 1, 0, 2, 0, 2, 0, 3, 4, 2, 4, 1, 4])  # mapy obiektow - wektor
@@ -70,9 +70,10 @@ class Railmap:
         self.line4.set_negation(True)
         self.setscale()
 
+
     # liczenie skali proporcjonalnej do rzeczywistych wymiarow
     def setscale(self):
-        margin = 5
+        margin = 15
         self.scale = (self.width - 2 * margin + 0.) / (self.line3.leng_line + 0.)
         self.update_scales()
 
@@ -117,12 +118,12 @@ class Railmap:
 
         paint.setPen(Qt.black)
         paint.setFont(QFont('Arial', 10))
-        paint.drawText(10, 50, "1. Kierunek OLIWA -> WRZESZCZ")
-        paint.drawText(10, 115, "2. Kierunek WRZESZCZ -> OLIWA")
-        paint.drawText(10, 180, "3. Kierunek WRZESZCZ -> OSOWA")
-        paint.drawText(10, 245, "4. Kierunek OSOWA -> WRZESZCZ")
+        paint.drawText(10, 50, "1. Kierunek OSOWA -> WRZESZCZ")
+        paint.drawText(10, 120, "2. Kierunek WRZESZCZ -> OSOWA")
+        paint.drawText(10, 190, "3. Kierunek WRZESZCZ -> KIELPINEK")
+        paint.drawText(10, 260, "4. Kierunek KIELPINEK -> WRZESZCZ")
 
-        self.draw_legend(20, 293, paint)
+        self.draw_legend(20, 320, paint)
 
         paint.end()
 
@@ -153,7 +154,7 @@ class Railmap:
 
         leg_line = Railline()
         leg_line.set_scale(1)
-        leg_line.draw_station(x+10, y+35, 80, 10, "", self.images[2], paint)
+        leg_line.draw_station(x+10, y+35, 80, 20, "", self.images[2], paint)
         leg_line.draw_railswitch(x+45, y+52, 10, 6, paint)
         leg_line.draw_sensor(x+50, y+68, 4, paint)
         leg_line.draw_rail(x+10, y+85, 80, self.images[0], paint)
@@ -261,7 +262,7 @@ class Railline:
         paint.begin(q_window)
         paint.setRenderHint(QPainter.Antialiasing)
 
-        self.draw_train(x_t, y, paint, train_length)
+
 
         self.draw_endrail(x, y, paint)
 
@@ -298,6 +299,9 @@ class Railline:
 
         self.draw_endrail(x, y, paint)
 
+        paint.setBrush(Qt.NoBrush)
+        self.draw_train(x_t, y, paint, train_length)
+
         paint.end()
 
     # rysowanie stacji kolejowej
@@ -314,11 +318,6 @@ class Railline:
         img = img.scaled(width_sc, height_sc)
         pixmap = QPixmap.fromImage(img)
         paint.drawPixmap(st_dim, pixmap)
-        '''paint.setPen(Qt.black)
-        paint.setBrush(Qt.darkBlue)
-        paint.drawRect(st_dim)
-        paint.setPen(Qt.darkGray)
-        paint.drawLine(x0, y0, x1, y1)'''
         paint.setPen(Qt.black)
         paint.setFont(QFont('Arial', round(10 * self.scale)))
         paint.drawText(text_dim, Qt.AlignCenter, name)
@@ -399,7 +398,7 @@ class Railline:
         width_sc = round(train_length*self.scale)
         height_sc = round(20*self.scale)
 
-        st_dim = QRect(x0, y0 - height_sc / 2, width_sc, height_sc)
+        st_dim = QRect(x0*self.scale, y0 - height_sc / 2, width_sc, height_sc)
 
         paint.setPen(Qt.darkGreen)
         paint.drawRect(st_dim)

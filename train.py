@@ -8,7 +8,7 @@ class Train:
 
     def __init__(self):                             #i - numer pociagu
         self.t_x = [0, 50, 100, 150, 200, 250]      #t_x - pozycja pociagu
-        self.t_l = [73, 73, 34, 34, 16, 16]         #t_l - dlugosc pociagu
+        self.t_l = [73, 73, 16, 16, 34, 34]         #t_l - dlugosc pociagu
         self.t_v = [0, 0, 0, 0, 0, 0]               #t_v - predkosc pociagu
 
     def setValue(self, x, i):
