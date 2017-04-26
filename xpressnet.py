@@ -86,7 +86,7 @@ class Client(object):
                 self.connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 self.connection.connect((self.address, self.port))
                 self.connected = True
-                threading._start_new_thread(self.keep_alive, False)
+                threading._start_new_thread(self.keep_alive, (False,))
                 print str(datetime.now().strftime('%H:%M:%S')) + ": Połączono z sterownikiem"
 
             except socket.error as message:
@@ -114,7 +114,7 @@ class Client(object):
         if self.connected:
             xor = self.calculate_xor(message)
             message += xor
-            message += 'fffe'
+            message = 'fffe' + message
             msg = binascii.unhexlify(message)
             self.lock.acquire()
             self.connection.send(msg)
