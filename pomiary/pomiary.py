@@ -1,9 +1,11 @@
+# -*- coding: utf-8 -*-
 from math import *
 import numpy as np
-import matplotlib.pyplot as plt
 from scipy.optimize import fmin
+from scipy import signal
 
-def getTF(name):
+
+def get_tf(name):
     time = []
 
     with open(name) as file:
@@ -54,9 +56,24 @@ def getTF(name):
     #in order: k, T1, T2
     return result[3], result[0], result[1]
 
-p1f = getTF('p1f.txt')
-p1b = getTF('p1b.txt')
-p2f = getTF('p2f.txt')
-p2b = getTF('p2b.txt')
-p5 = getTF('p5.txt')
-p6 = getTF('p6.txt')
+p1f = get_tf('p1f.txt')
+p1b = get_tf('p1b.txt')
+p2f = get_tf('p2f.txt')
+p2b = get_tf('p2b.txt')
+p5 = get_tf('p5.txt')
+p6 = get_tf('p6.txt')
+print("p1f: ", p1f)
+t1f = signal.TransferFunction(p1f[0], [p1f[1]*p1f[2], (p1f[1]+p1f[2]), 1])
+print("p1b: ", p1b)
+t1b = signal.TransferFunction(p1b[0], [p1b[1]*p1b[2], (p1b[1]+p1b[2]), 1])
+print("p2f: ", p2f)
+t2f = signal.TransferFunction(p2f[0], [p2f[1]*p2f[2], (p2f[1]+p2f[2]), 1])
+print("p2b: ", p2b)
+t2b = signal.TransferFunction(p2b[0], [p2b[1]*p2b[2], (p2b[1]+p2b[2]), 1])
+print("p5: ", p5)
+t5 = signal.TransferFunction([0, 0, p5[0]], [p5[1]*p5[2], (p5[1]+p5[2]), 1])
+print("p6: ", p6)
+t6 = signal.TransferFunction(p6[0], [p6[1]*p6[2], (p6[1]+p6[2]), 1])
+print("t5:", t5)
+# s5 = t5.to_ss()
+# print("s5: ", s5)

@@ -1,0 +1,35 @@
+# Pierwszy poci¹g do przodu
+A = np.array([[-1.782, -0.7939], [1, 0]])
+B = np.array([[4], [0]])
+C = np.array([[0, 7.248]])
+D = np.array([[0]])
+
+# Pierwszy poci¹g do ty³u
+A = np.array([[-1.684, -0.7092], [1, 0]])
+B = np.array([[4], [0]])
+C = np.array([[0, 6.389]])
+D = np.array([[0]])
+
+# Drugi poci¹g do przodu
+A = np.array([[-7.422, -3.443], [4, 0]])
+B = np.array([[8], [0]])
+C = np.array([[0, 11.65]])
+D = np.array([[0]])
+
+# Drugi poci¹g do ty³u
+A = np.array([[-8.483, -4.486], [4, 0]])
+B = np.array([[8], [0]])
+C = np.array([[0, 15.01]])
+D = np.array([[0]])
+
+# Pi¹ty poci¹g
+A = np.array([[-2.67, -1.783], [1, 0]])
+B = np.array([[8], [0]])
+C = np.array([[0, 6.998]])
+D = np.array([[0]])
+
+# Szósty poci¹g
+A = np.array([[-2.152, -1.158], [1, 0]])
+B = np.array([[4], [0]])
+C = np.array([[0, 4.773]])
+D = np.array([[0]])
