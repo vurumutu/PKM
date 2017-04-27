@@ -16,15 +16,16 @@ Za pomocą protokołów TCP/IP
 ### Autorzy:
 Paweł, Franek, Bartek
 
-## Interfejs urzytkownika
+## Interfejs użytkownika
 W PyQt4
 ### Autorzy:
-Marlena, Mateusz, Bartek
+Marlena, Mateusz, Paweł
 
 ## Pomiary charakterystyk obiektów
 Lokomotyw
 ### Autorzy:
-Karol, Paweł, Franek i inni
+Karol, Paweł, Franek, Bartosz
+
 
 ## Sterowanie obiektem
 
