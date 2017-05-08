@@ -3,15 +3,17 @@ import matplotlib.pyplot as plt
 import time
 
 distances = [203, 230, 624, 272]
-times = [53.9750874511, 27.5069689903, 18.1354904881, 7.80411009911]
+times = [18.1354904881, 27.5069689903, 53.9750874511, 7.80411009911]
+times = [7.08, 6.68, 17.55, 7.9]
 
 class train:
     def __init__(self):
         self.dT = 0.1
         #initial state
-        self.X = np.mat([[0.],  # x
+        self.X = np.mat([[0.],
                         [0.],  # v
-                        [0.]], dtype=float)
+                        [0.]], # x
+                        dtype=float)
         self.P = np.mat([[1., 0., 0.],  # initial wariance
                         [0., 1., 0.],
                         [0., 0., 1.]], dtype=float)
@@ -19,43 +21,50 @@ class train:
         self.A = np.mat([[-1.782, -0.7939, 0],
                         [1, 0, 0], # predkosc
                         [0, 1, 0]], dtype=float) # droga
-        self.B = np.mat([[28.992],
+        self.B = np.mat([[0.44603076],
                         [0.],
                         [0.]], dtype=float)
         self.C = np.mat([[0., 0., 1.],
                         [0., 1., 0.]], dtype=float)
         #variances
-        self.Q = np.mat([[0.025, 0., 0.], # process variance
-                        [0., 0.025, 0.],
-                        [0., 0., 0.025]], dtype=float)
-        self.R = np.mat([[0.1, 0.], # sensor variance
-                        [0., 1.0]], dtype=float)
-        self.motorPower = 45.
+        self.Q = np.mat([[50., 0., 0.], # process variance
+                        [0., 7.0, 0.],
+                        [0., 0., 35.]], dtype=float)
+        self.R = np.mat([[3.1, 0.], # sensor variance
+                        [0., 3.1]], dtype=float)
+        self.motorPower = 65.
         self.updateTime = 0.
+        self.updatePosition = 0.
+        self.simulateTime = 0.
 
     def position(self):
-        return self.X[2, 0]
+        return (self.C*self.X)[0, 0]
 
     def velocity(self):
-        return self.X[1, 0]
+        return (self.C*self.X)[1, 0]
 
-    def simulate(self, time):
-        """ podaj czas z przyszlosci do ktorego mam
-        symulowac pociag """
-        if time < self.updateTime-self.dT:
+    def simulate(self, time, updatestate=True):
+        """ podaj czas z przyszlosci do ktorego mam symulowac pociag
+        jezeli updatestate bedzie false, to zmienne pociagu zostana zachowane"""
+        if time < self.simulateTime-self.dT:
+            print(time, " < ", self.simulateTime)
             raise Exception('Nie cofaj czasu!')
-        X, P, t = np.copy(self.X), np.copy(self.P), self.updateTime
+        X, P, t = np.copy(self.X), np.copy(self.P), self.simulateTime
         while t < time:
             t += self.dT
-            X += (self.A*X + self.B*self.motorPower) * self.dT
-            P += (self.A*P*self.A.transpose() + self.Q) * self.dT
+            X += ( (self.A*X + self.B*self.motorPower)) * (self.dT )
+            P += ( (self.A*P*self.A.transpose() + self.Q)) * (self.dT )
+        if updatestate:
+            self.X = X
+            self.P = P
+            self.simulateTime = t
         return X, P
 
     def predict(self, time):
         ''' parametrem jest aktualny czas, zwracana jest macierz,
-        nie mozna cofac czasu'''
-        X, P = self.simulate(time)
-        return self.C*(self.A*X + self.B*self.motorPower)
+        nie mozna cofac czasu, domyslnie nie aktualizuje zmiennych pociagu'''
+        X, P = self.simulate(time, updatestate=False)
+        return self.C*X
 
     def update(self, distance):
         """ aktualizuje system wzgledem aktualnego czasu
@@ -63,13 +72,16 @@ class train:
         dt = time.time() - self.updateTime
         self.updatesym(distance, dt)
 
-    def updatesym(self, distance, dt):
+    def updatesym(self, distance, dt, freshstate=False):
         ''' podaj przejechana odleglosc od ostatniej aktualizacji
         oraz czas jaki minal na jej przejechanie'''
-        Xpom = np.mat([[distance],
+        Xpom = np.mat([[self.updatePosition + distance],
                         [distance / dt]])
         # predykcja
-        Xprio, Pprio = self.simulate(self.updateTime+dt)
+        if not freshstate:
+            Xprio, Pprio = self.simulate(self.updateTime+dt, False)
+        else:
+            Xprio, Pprio = self.X, self.P
         # korekcja
         e = Xpom - self.C*Xprio
         temp = self.C*Pprio*self.C.transpose() + self.R*dt
@@ -79,105 +91,57 @@ class train:
         self.X = Xprio + K*e
         self.P = (I - K*self.C) * Pprio
         self.updateTime += dt
+        self.updatePosition = self.position()
 
 
 t = train()
+
+# zmienne do wyswietlania
 tim = [0.]
+timpred = [0.]
 X = [0.]
 V = [0.]
 pom = [0.]
 pred = [0.]
-vpred = [0.]
 vpom = [0.]
+vpred = [0.]
+var = [0.]
 
+# symuluj przejazd
 for i in range(len(distances)):
-    x, p = t.simulate(times[i])
-    pred.append(x[2, 0])
-    vpred.append(p[1, 0])
-    t.updatesym(distances[i], times[i])
+    temptime = 0
+    while temptime < times[i]:
+        x, p = t.simulate(t.simulateTime + t.dT, updatestate=True)
+        pred.append(t.position())
+        vpred.append(t.velocity())
+        timpred.append(t.simulateTime)
+        temptime += t.dT
+    t.updatesym(distances[i], times[i], freshstate=True)
     X.append(t.position())
     V.append(t.velocity())
+    var.append(t.P[1, 1])
 
     pom.append(pom[-1]+distances[i])
     vpom.append(distances[i]/times[i])
     tim.append(tim[-1]+times[i])
 
-print('time ', tim)
-print('X ', X)
+# wyswietl wyniki
 plt.figure(1)
-plt.plot(tim, X)
-plt.plot(tim, pom, 'o')
-plt.plot(tim, pred, 'x')
+plt.plot(tim, X, 'x', label='filtr')
+plt.plot(tim, pom, 'o', label='pomiar')
+plt.plot(timpred, pred, label='predykcja')
+plt.legend(loc='best')
+plt.title('droga')
 
 plt.figure(2)
-plt.plot(tim, vpom)
-plt.plot(tim, vpred)
-#plt.legend()
+plt.plot(tim, V, 'x', label='filtr')
+plt.plot(tim, vpom, 'o', label='pomiar')
+plt.plot(timpred, vpred, label='predykcja')
+plt.legend(loc='best')
+plt.title('predkosc')
+
+plt.figure(3)
+plt.plot(tim, var)
+plt.title('wariancja predkosci')
+
 plt.show()
-
-T = 1
-A = np.mat([[1, 0, T, 0],
-            [0, 1, 0, T],
-            [0, 0, 1, 0],
-            [0, 0, 0, 1]])
-B = np.mat([[0, 0],
-            [0, 0],
-            [1, 0],
-            [0, 1]])
-C = np.mat([[1, 0, 0, 0],
-            [0, 1, 0, 0]])
-Q = np.mat([[0.025, 0],
-            [0, 0.025]])
-R = np.mat([[2.0, 0],
-            [0, 2.0]])
-
-
-pom = []
-shist = []
-Phist = []
-
-with open('lab7_dane/measurements4.txt') as f:
-    for l in f.readlines():
-        s = l.split()
-        pom.append([float(s[0]), float(s[1])])
-pom = np.array(pom)
-
-s = np.mat([[pom[0, 0]],
-            [pom[0, 1]],
-            [0],
-            [0]])
-P = np.mat([[5, 0, 0, 0],
-          [0, 5, 0, 0],
-          [0, 0, 5, 0],
-          [0, 0, 0, 5]])
-xest = 0
-shist.append(s)
-Phist.append(P)
-
-for z in pom:
-    # predykcja
-    sest = A*np.mat(shist[-1])
-    print(sest)
-    Pest = A*np.mat(Phist[-1])*A.transpose() + B*Q*B.transpose()
-    # korekcja
-    e = np.mat(z).transpose() - C*sest
-    S = C*Pest*C.transpose() + R
-    K = Pest*C.transpose()*(S**-1)
-    # aktualizacja
-    shist.append((sest + K*e))
-    Phist.append(((np.eye(4) - K*C) * Pest))
-
-
-x, y = [], []
-for s in shist:
-    x.append(s[0][0, 0])
-    y.append(s[1][0, 0])
-
-
-plt.plot(pom[:, 0], pom[:, 1], 'x', label='pomiar')
-plt.plot(pom[:, 0], pom[:, 1])
-plt.plot(x, y, 'o--', label='filtr')
-plt.plot(x, y, '--')
-plt.grid()
-plt.legend()
-#plt.show()
