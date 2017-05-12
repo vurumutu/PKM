@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 import serial
 import time
 import timeit
@@ -78,12 +81,15 @@ class Zwrotnica:
         self.agent = Agent(addr, strefa, l_addr)
         self.state = stat
         self.limiter = limit
+        #self.addr = addr
 
     def lewo(self):
-        self.agent.send(format("31", "x"))
+        #self.agent.send(format("31", "x"))
+        self.agent.send("31")
 
     def prawo(self):
-        self.agent.send(format("32", "x"))
+        #self.agent.send(format("32", "x"))
+        self.agent.send("32")
 
     def wylacz(self):
         self.agent.send(format("30", "x"))
@@ -116,7 +122,7 @@ def _readline():
 def can_odb():
     while ser_raw.isOpen():
         reading = ser.readline()
-        #print('odebralem: '+reading)
+        print('odebralem: '+reading)
         handle_data(reading)
     print('can_odb koniec')
 
@@ -171,7 +177,7 @@ def handle_data(data):
 
 #configure the serial connections (the parameters differs on the device you are connecting to)
 ser_raw = serial.Serial(
-    port='COM3',
+    port='COM6',
     # port='COM21',
     baudrate=500000,
     parity=serial.PARITY_NONE,
@@ -226,6 +232,51 @@ print "test balis"
 print len(zwrotnica)
 print len(zwrotnica)
 print len(balisa)
+lista3 = [32]
+lista = [0, 1, 3, 4, 6, 7, 11, 12, 13, 15, 17, 18, 20, 21, 22, 23, 24, 30, 31, 38]
+lista2 = [2, 5, 9, 10, 14, 16, 17, 32, 33, 34, 35, 36, 37, 39, 40, 41, 42]
+
+"""while True:
+    for y in zwrotnica:
+        if y.agent.address == '010003DC': # 0102000B 0102000C 01020001
+            y.lewo() # 010003DC 0100047B 010003DF
+            time.sleep(1)
+            y.prawo()
+            time.sleep(1)"""
+        # if y.agent.address == '01020001': # 0102000B 0102000C 01020001
+        #     y.lewo()
+        #     time.sleep(1)
+        #     y.prawo()
+        #     time.sleep(1)
+        # if y.agent.address == '0102000B': # 0102000B 0102000C 01020001
+        #     y.lewo()
+        #     time.sleep(1)
+        #     y.prawo()
+        #     time.sleep(1)
+        # if y.agent.address == '0102000C': # 0102000B 0102000C 01020001
+        #     y.lewo()
+        #     time.sleep(1)
+        #     y.prawo()
+        #     time.sleep(1)
+        # x = lista3[y]
+        # for i in range(1):
+        #     print("Test zwrotnicy: " + str(x))
+        #     print("Adres: " + str(zwrotnica[x].addr))
+        #     time.sleep(1)
+        #     zwrotnica[x].prawo()
+        #     time.sleep(1)
+        #     zwrotnica[x].lewo()
+
+
+# szukanie zwrotnic po adresach oraz
+# tworzenie listy znalezionych zwrotnic
+addr_zwrotnic = ['0102000B', '0102000C', '010003DF', '01020001']
+zwrotnice_ = []
+for zwrot in zwrotnica:
+    for address in addr_zwrotnic:
+        if zwrot.agent.address == address:
+            zwrotnice_.append(zwrot)
+
 
 # time.sleep(1)
 # Agent.skanuj()

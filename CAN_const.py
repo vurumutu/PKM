@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 # autor: Karol Trzciński
 
 # typy urzadzen

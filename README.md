@@ -1,9 +1,6 @@
 # PKM
 Projekt PKM1
 
-Autorzy:
-  Karol Trzciński
-
-## moduł obsługi torowiska
-### Autorzy: Karol Trzciński, Karol Dworakowski
+## GUI PKM
+### Autorzy: Mateusz Sendrowicz, Paweł Rogaszewski, Marlena Filipkiewicz
 Python 2.7
