@@ -2,9 +2,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import time
 
-distances = [203, 230, 624, 272]
-times = [18.1354904881, 27.5069689903, 53.9750874511, 7.80411009911]
-times = [7.08, 6.68, 17.55, 7.9]
 
 class train:
     def __init__(self):
@@ -18,21 +15,21 @@ class train:
                         [0., 1., 0.],
                         [0., 0., 1.]], dtype=float)
         # object model
-        self.A = np.mat([[-1.782, -0.7939, 0],
-                        [1, 0, 0], # predkosc
+        self.A = np.mat([[-1.141, -0.4455, 0],
+                        [0.5, 0, 0], # predkosc
                         [0, 1, 0]], dtype=float) # droga
-        self.B = np.mat([[0.4],#[0.44603076],
-                        [0.1],
+        self.B = np.mat([[4],#[0.44603076],
+                        [0],
                         [0.]], dtype=float)
-        self.C = np.mat([[0., 0., 1.],
-                        [0., 1., 0.]], dtype=float)
+        self.C = np.mat([[0., 0., 4.067],
+                        [0., 4.067, 0.]], dtype=float)
         #variances
-        self.Q = np.mat([[500., 0., 0.], # process variance
-                        [0., 7000.0, 0.],
-                        [0., 0., 3500000.]], dtype=float)
+        self.Q = np.mat([[50., 0., 0.], # process variance
+                        [0., 70.0, 0.],
+                        [0., 0., 3500.]], dtype=float)
         self.R = np.mat([[3.1, 0.], # sensor variance
-                        [0., 300000.1]], dtype=float)
-        self.motorPower = 55.
+                        [0., 30.1]], dtype=float)
+        self.motorPower = 1.0
         self.updateTime = 0.
         self.updatePosition = 0.
         self.simulateTime = 0.
@@ -56,7 +53,7 @@ class train:
         P = self.A*P*self.A.transpose() + self.Q * (t-self.updateTime)
         if updatestate:
             self.X = X
-            self.P = P
+            #self.P = P
             self.simulateTime = t
         return X, P
 
@@ -82,6 +79,7 @@ class train:
             Xprio, Pprio = self.simulate(self.updateTime+dt, False)
         else:
             Xprio, Pprio = self.X, self.P
+        Pprio = self.A*self.P*self.A.transpose() + self.Q * dt
         # korekcja
         e = Xpom - self.C*Xprio
         temp = self.C*Pprio*self.C.transpose() + self.R*dt
@@ -94,62 +92,69 @@ class train:
         self.updatePosition = self.position()
 
 
-t = train()
+if __name__ == "__main__":
+    distances = [203, 230, 624, 272]
+    times = [18.1354904881, 27.5069689903, 53.9750874511, 7.80411009911]
+    times = [7.08, 6.68, 17.55, 7.9]
 
-# zmienne do wyswietlania
-tim = [0.]
-timpred = [0.]
-X = [0.]
-V = [0.]
-pom = [0.]
-pred = [0.]
-vpom = [0.]
-vpred = [0.]
-var = [0.]
+    t = train()
 
-# symuluj przejazd
-for i in range(len(distances)):
+    # zmienne do wyswietlania
+    tim = [0.]
+    timpred = [0.]
+    X = [0.]
+    V = [0.]
+    pom = [0.]
+    pred = [0.]
+    vpom = [0.]
+    vpred = [0.]
+    var = [0.]
+
+    # symuluj przejazd
+    for i in range(len(distances)):
+        temptime = 0
+        while temptime < times[i]:
+            x, p = t.simulate(t.simulateTime + t.dT, updatestate=True)
+            pred.append(t.position())
+            vpred.append(t.velocity())
+            timpred.append(t.simulateTime)
+            temptime += t.dT
+        t.updatesym(distances[i], times[i], freshstate=True)
+        X.append(t.position())
+        V.append(t.velocity())
+        var.append(t.P[1, 1])
+
+        pom.append(pom[-1]+distances[i])
+        vpom.append(distances[i]/times[i])
+        tim.append(tim[-1]+times[i])
+
     temptime = 0
-    while temptime < times[i]:
+    while temptime < 3:
         x, p = t.simulate(t.simulateTime + t.dT, updatestate=True)
         pred.append(t.position())
         vpred.append(t.velocity())
         timpred.append(t.simulateTime)
         temptime += t.dT
-    t.updatesym(distances[i], times[i], freshstate=True)
-    X.append(t.position())
-    V.append(t.velocity())
-    var.append(t.P[1, 1])
 
-    pom.append(pom[-1]+distances[i])
-    vpom.append(distances[i]/times[i])
-    tim.append(tim[-1]+times[i])
+    print(vpred)
 
-temptime = 0
-while temptime < 3:
-    x, p = t.simulate(t.simulateTime + t.dT, updatestate=True)
-    pred.append(t.position())
-    vpred.append(t.velocity())
-    timpred.append(t.simulateTime)
-    temptime += t.dT
+    # wyswietl wyniki
+    plt.figure(1)
+    plt.plot(tim, X, 'x', label='filtr')
+    plt.plot(tim, pom, 'o', label='pomiar')
+    plt.plot(timpred, pred, label='predykcja')
+    plt.legend(loc='best')
+    plt.title('droga')
 
-# wyswietl wyniki
-plt.figure(1)
-plt.plot(tim, X, 'x', label='filtr')
-plt.plot(tim, pom, 'o', label='pomiar')
-plt.plot(timpred, pred, label='predykcja')
-plt.legend(loc='best')
-plt.title('droga')
+    plt.figure(2)
+    plt.plot(tim, V, 'x', label='filtr')
+    plt.plot(tim, vpom, 'o', label='pomiar')
+    plt.plot(timpred, vpred, label='predykcja')
+    plt.legend(loc='best')
+    plt.title('predkosc')
 
-plt.figure(2)
-plt.plot(tim, V, 'x', label='filtr')
-plt.plot(tim, vpom, 'o', label='pomiar')
-plt.plot(timpred, vpred, label='predykcja')
-plt.legend(loc='best')
-plt.title('predkosc')
+    #plt.figure(3)
+    #plt.plot(tim, var)
+    #plt.title('wariancja predkosci')
 
-#plt.figure(3)
-#plt.plot(tim, var)
-#plt.title('wariancja predkosci')
-
-plt.show()
+    plt.show()
