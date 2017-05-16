@@ -18,7 +18,7 @@ class train:
         self.A = np.mat([[-1.141, -0.4455, 0],
                         [0.5, 0, 0], # predkosc
                         [0, 1, 0]], dtype=float) # droga
-        self.B = np.mat([[4],#[0.44603076],
+        self.B = np.mat([[0.0615384615384615],#[0.44603076],
                         [0],
                         [0.]], dtype=float)
         self.C = np.mat([[0., 0., 4.067],
@@ -29,18 +29,12 @@ class train:
                         [0., 0., 3500.]], dtype=float)
         self.R = np.mat([[3.1, 0.], # sensor variance
                         [0., 30.1]], dtype=float)
-        self.motorPower = 1.0
-        self.updateTime = 0.
+        self.motorPower = 65.0
+        self.updateTime = time.time()
         self.updatePosition = 0.
-        self.simulateTime = 0.
+        self.simulateTime = time.time()
 
-    def position(self):
-        return (self.C*self.X)[0, 0]
-
-    def velocity(self):
-        return (self.C*self.X)[1, 0]
-
-    def simulate(self, time, updatestate=True):
+    def simulatesym(self, time, updatestate=True):
         """ podaj czas z przyszlosci do ktorego mam symulowac pociag
         jezeli updatestate bedzie false, to zmienne pociagu zostana zachowane"""
         if time < self.simulateTime-self.dT:
@@ -56,6 +50,9 @@ class train:
             #self.P = P
             self.simulateTime = t
         return X, P
+
+    def simulate(self, updatestate=True):
+        self.simulatesym(time.time(), updatestate)
 
     def predict(self, time):
         ''' parametrem jest aktualny czas, zwracana jest macierz,
@@ -89,7 +86,20 @@ class train:
         self.X = Xprio + K*e
         self.P = (I - K*self.C) * Pprio
         self.updateTime += dt
-        self.updatePosition = self.position()
+        self.updatePosition = self.position(False)
+
+    def position(self, simulate=True):
+        if simulate:
+            self.simulate()
+        return (self.C*self.X)[0, 0]
+
+    def velocity(self, simulate=True):
+        if simulate:
+            self.simulate()
+        return (self.C*self.X)[1, 0]
+
+    def setpower(self, motor):
+        self.motorPower = motor
 
 
 if __name__ == "__main__":
@@ -98,6 +108,10 @@ if __name__ == "__main__":
     times = [7.08, 6.68, 17.55, 7.9]
 
     t = train()
+
+    # dla symulacji ustaw czas na 0
+    t.updateTime = 0
+    t.simulateTime = 0
 
     # zmienne do wyswietlania
     tim = [0.]
@@ -114,29 +128,29 @@ if __name__ == "__main__":
     for i in range(len(distances)):
         temptime = 0
         while temptime < times[i]:
-            x, p = t.simulate(t.simulateTime + t.dT, updatestate=True)
-            pred.append(t.position())
-            vpred.append(t.velocity())
+            x, p = t.simulatesym(t.simulateTime + t.dT, updatestate=True)
+            pred.append(t.position(False))
+            vpred.append(t.velocity(False))
             timpred.append(t.simulateTime)
             temptime += t.dT
         t.updatesym(distances[i], times[i], freshstate=True)
-        X.append(t.position())
-        V.append(t.velocity())
+        X.append(t.position(False))
+        V.append(t.velocity(False))
         var.append(t.P[1, 1])
 
         pom.append(pom[-1]+distances[i])
         vpom.append(distances[i]/times[i])
         tim.append(tim[-1]+times[i])
 
+    #symuluj dodatkowe kilka probek
     temptime = 0
     while temptime < 3:
-        x, p = t.simulate(t.simulateTime + t.dT, updatestate=True)
-        pred.append(t.position())
-        vpred.append(t.velocity())
+        x, p = t.simulatesym(t.simulateTime + t.dT, updatestate=True)
+        pred.append(t.position(False))
+        vpred.append(t.velocity(False))
         timpred.append(t.simulateTime)
         temptime += t.dT
 
-    print(vpred)
 
     # wyswietl wyniki
     plt.figure(1)
