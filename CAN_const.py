@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # autor: Karol Trzciński
 
 # typy urzadzen
