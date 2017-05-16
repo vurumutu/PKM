@@ -1,0 +1,11 @@
+<application>
+  <component name="PyCondaPackageService">
+    <option name="CONDA_CHANNELS">
+      <set>
+        <option value="http://somehost/alice/dev" />
+        <option value="https://people.csail.mit.edu/hubert/git/pyaudio.git" />
+      </set>
+    </option>
+    <option name="LAST_TIME_CHECKED" value="1494930576990" />
+  </component>
+</application>
