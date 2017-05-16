@@ -143,6 +143,7 @@ class Window(QtGui.QMainWindow):
         # stworznie toolbara wraz z jego podrupami
         toolbar = QtGui.QHBoxLayout()
 
+        toolbar.addWidget(self.toolbar_trainmovement())
         toolbar.addWidget(self.toolbar_speedcontrol())
         toolbar.addWidget(self.toolbar_switches())
         toolbar.addWidget(self.tooolbar_traincontrol())
@@ -160,6 +161,34 @@ class Window(QtGui.QMainWindow):
     # ****************************
     # --- PODGRUPY PRZYBORNIKA ---
     # ****************************
+
+    # podgrupa kontrolek wyboru ruchu pociagu
+    def toolbar_trainmovement(self):
+        Group_trainmovement = QtGui.QGroupBox(self)
+        Group_trainmovement.setTitle("Train movement")
+        Group_trainmovement.setMinimumSize(200, 100)
+
+        self.forward_radio = QtGui.QRadioButton("Forward", Group_trainmovement)
+        self.forward_radio.resize(self.forward_radio.sizeHint())
+        self.forward_radio.move(20, 40)
+        self.forward_radio.setChecked(True)
+
+        self.backward_radio = QtGui.QRadioButton("Backward", Group_trainmovement)
+        self.backward_radio.resize(self.backward_radio.sizeHint())
+        self.backward_radio.move(20, 70)
+
+        self.stop_button = QtGui.QPushButton("Stop train", Group_trainmovement)
+        self.stop_button.clicked.connect(self.stopTrain)
+        self.stop_button.resize(80, 30)
+        self.stop_button.move(20, 100)
+
+        self.stopall_button = QtGui.QPushButton("Stop all", Group_trainmovement)
+        self.stopall_button.clicked.connect(self.stopAllTrains)
+        self.stopall_button.setStyleSheet("background-color: red; color: white; font-weight: bold;")
+        self.stopall_button.resize(70, 70)
+        self.stopall_button.move(115, 50)
+
+        return Group_trainmovement
 
     # podgrupa kontrolek do sterowania prędkością pociagu
     def toolbar_speedcontrol(self):
@@ -356,13 +385,18 @@ class Window(QtGui.QMainWindow):
 
     #aktualizacjia wyboru pociagu
     def tUpdate(self):
+        if self.forward_radio.isChecked():
+            direct = direction["Forward"]
+        else:
+            direct = direction["Backward"]
+
         if self.btn1.isChecked():
             self.index_t = 0
             self.train.setValue(self.slider_speed.value(), self.index_t)
             self.lab1.setText(str(self.train.getValue()[self.index_t]))
             #ustawienie predkosci pociagu wlasciwy:
             if self.client.connected:
-                self.msg = self.trains[0].move(self.slider_speed.value(), direction["Forward"])
+                self.msg = self.trains[0].move(self.slider_speed.value(), direct)
 
         elif self.btn2.isChecked():
             self.index_t = 1
@@ -370,7 +404,7 @@ class Window(QtGui.QMainWindow):
             self.lab2.setText(str(self.train.getValue()[self.index_t]))
             # ustawienie predkosci pociagu wlasciwy:
             if self.client.connected:
-                self.msg = self.trains[1].move(self.slider_speed.value(), direction["Forward"])
+                self.msg = self.trains[1].move(self.slider_speed.value(), direct)
 
         elif self.btn3.isChecked():
             self.index_t = 2
@@ -378,7 +412,7 @@ class Window(QtGui.QMainWindow):
             self.lab3.setText(str(self.train.getValue()[self.index_t]))
             # ustawienie predkosci pociagu wlasciwy:
             if self.client.connected:
-                self.msg = self.trains[2].move(self.slider_speed.value(), direction["Forward"])
+                self.msg = self.trains[2].move(self.slider_speed.value(), direct)
 
         elif self.btn4.isChecked():
             self.index_t = 3
@@ -386,7 +420,7 @@ class Window(QtGui.QMainWindow):
             self.lab4.setText(str(self.train.getValue()[self.index_t]))
             # ustawienie predkosci pociagu wlasciwy:
             if self.client.connected:
-                self.msg = self.trains[3].move(self.slider_speed.value(), direction["Forward"])
+                self.msg = self.trains[3].move(self.slider_speed.value(), direct)
 
         elif self.btn5.isChecked():
             self.index_t = 4
@@ -394,7 +428,7 @@ class Window(QtGui.QMainWindow):
             self.lab5.setText(str(self.train.getValue()[self.index_t]))
             # ustawienie predkosci pociagu wlasciwy:
             if self.client.connected:
-                self.msg = self.trains[4].move(self.slider_speed.value(), direction["Forward"])
+                self.msg = self.trains[4].move(self.slider_speed.value(), direct)
 
         elif self.btn6.isChecked():
             self.index_t = 5
@@ -402,7 +436,7 @@ class Window(QtGui.QMainWindow):
             self.lab6.setText(str(self.train.getValue()[self.index_t]))
             # ustawienie predkosci pociagu wlasciwy:
             if self.client.connected:
-                self.msg = self.trains[5].move(self.slider_speed.value(), direction["Forward"])
+                self.msg = self.trains[5].move(self.slider_speed.value(), direct)
 
         self.map.repaint()
         if self.msg is not None and self.client.connected:
@@ -471,6 +505,14 @@ class Window(QtGui.QMainWindow):
         self.enableButtons(True)
         self.autoControl = False
 
+    def stopTrain(self):
+        if self.client.connected:
+            self.trains[self.index_t].stop_locomotive()
+
+    def stopAllTrains(self):
+        if self.client.connected:
+            self.client.stop_all_locomotives()
+
     def enableButtons(self, state):
         # radiobuttony
         self.btn1.setEnabled(state)
@@ -484,6 +526,10 @@ class Window(QtGui.QMainWindow):
         self.t1z2.setEnabled(state)
         self.t2z1.setEnabled(state)
         self.t2z2.setEnabled(state)
+        # przyciski sterowania ruchem pociagu
+        self.stop_button.setEnabled(state)
+        self.forward_radio.setEnabled(state)
+        self.backward_radio.setEnabled(state)
         # suwak prędkości
         self.slider_speed.setEnabled(state)
 
