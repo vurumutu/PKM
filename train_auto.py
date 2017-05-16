@@ -36,7 +36,7 @@ class TimeTable:
         else:
             self.licznik[i] = 0
         new_timer = QtCore.QBasicTimer()
-        print self.licznik
+        #print self.licznik
         new_timer.start(self.timeTable[i][self.licznik[i]], self.q_window)
         self.timers[i] = new_timer
 
