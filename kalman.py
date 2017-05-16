@@ -5,6 +5,7 @@ import time
 
 
 class Model:
+    """Klasa zawierająca modele poszczególnych pociągów"""
     def __init__(self, train_nr):
         """Domyślne ustawienia klasy
 
@@ -22,11 +23,11 @@ class Model:
                          [0., 1., 0.],
                          [0., 0., 1.]], dtype=float)
 
-        # object model
+        # Modele pociągów
         if train_nr == 1:
             self.A = np.mat([[-1.141, -0.4455, 0],
-                             [0.5, 0, 0],  # predkosc
-                             [0, 1, 0]], dtype=float)  # droga
+                             [0.5, 0, 0],  # Prędkość
+                             [0, 1, 0]], dtype=float)  # Droga
             self.B = np.mat([[0.0615384615384615],  # [0.44603076],
                              [0],
                              [0.]], dtype=float)
@@ -39,7 +40,9 @@ class Model:
                          [0., 0., 3500.]], dtype=float)
         self.R = np.mat([[3.1, 0.],  # sensor variance
                          [0., 30.1]], dtype=float)
+
         self.motorPower = 65.0
+        self.stopPower = 0.
         self.updateTime = time.time()
         self.updatePosition = 0.
         self.simulateTime = time.time()
@@ -70,6 +73,19 @@ class Model:
         X, P = self.simulatesym(time, updatestate=False)
         return self.C * X
 
+    def stop_distance(self, time):
+        """ podaj czas z przyszlosci do ktorego mam symulowac pociag
+        jezeli updatestate bedzie false, to zmienne pociagu zostana zachowane"""
+        if time < self.simulateTime - self.dT:
+            print(time, " < ", self.simulateTime)
+            raise Exception('Nie cofaj czasu!')
+        X, P, t = np.copy(self.X), np.copy(self.P), self.simulateTime
+        while t < time:
+            t += self.dT
+            X += (self.A * X + self.B * self.stopPower) * self.dT
+        P = self.A * P * self.A.transpose() + self.Q * (t - self.updateTime)
+        return self.C * X
+
     def update(self, distance):
         """ aktualizuje system wzgledem aktualnego czasu
         i przejechanej odleglosci jako parametr"""
@@ -96,20 +112,44 @@ class Model:
         self.X = Xprio + K * e
         self.P = (I - K * self.C) * Pprio
         self.updateTime += dt
-        self.updatePosition = self.position(False)
+        self.updatePosition = self.get_position(False)
 
-    def position(self, simulate=True):
+    def get_position(self, simulate=True):
+        """Zwraca pozycje pociągu
+
+             Args:
+                simulate (bool): Jeżeli True to symuluje model dla aktualnego czasu i aktualizuje go
+
+             Returns:
+                (float): Zwraca pozycje pociągu (dystans od startu)
+
+        """
         if simulate:
             self.simulate()
         return (self.C * self.X)[0, 0]
 
-    def velocity(self, simulate=True):
+    def get_velocity(self, simulate=True):
+        """Zwraca prędkość pociągu
+
+             Args:
+                simulate (bool): Jeżeli True to symuluje model dla aktualnego czasu i aktualizuje go
+
+             Returns:
+                (float): Zwraca prędkość pociągu
+
+        """
         if simulate:
             self.simulate()
         return (self.C * self.X)[1, 0]
 
-    def setpower(self, motor):
-        self.motorPower = motor
+    def set_power(self, power):
+        """Ustawia z jaką mocą jedzie pociąg
+
+             Args:
+                 power (float): moc od 0.0 - 127.0
+
+         """
+        self.motorPower = power
 
 
 if __name__ == "__main__":
@@ -139,13 +179,13 @@ if __name__ == "__main__":
         temptime = 0
         while temptime < times[i]:
             x, p = t.simulatesym(t.simulateTime + t.dT, updatestate=True)
-            pred.append(t.position(False))
-            vpred.append(t.velocity(False))
+            pred.append(t.get_position(False))
+            vpred.append(t.get_velocity(False))
             timpred.append(t.simulateTime)
             temptime += t.dT
         t.updatesym(distances[i], times[i], freshstate=True)
-        X.append(t.position(False))
-        V.append(t.velocity(False))
+        X.append(t.get_position(False))
+        V.append(t.get_velocity(False))
         var.append(t.P[1, 1])
 
         pom.append(pom[-1] + distances[i])
@@ -156,8 +196,8 @@ if __name__ == "__main__":
     temptime = 0
     while temptime < 3:
         x, p = t.simulatesym(t.simulateTime + t.dT, updatestate=True)
-        pred.append(t.position(False))
-        vpred.append(t.velocity(False))
+        pred.append(t.get_position(False))
+        vpred.append(t.get_velocity(False))
         timpred.append(t.simulateTime)
         temptime += t.dT
 
