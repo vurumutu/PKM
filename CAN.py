@@ -3,6 +3,10 @@ import time
 import timeit
 import threading
 import io
+import __builtin__
+
+__builtin__.adres = 0
+__builtin__.c = threading.Condition()
 
 # typy urzadzen
 TYP_NONE = 0x00
@@ -163,6 +167,9 @@ def handle_scan(data):
             bal.state = attr1
             bal.histereza = attr2
             if attr3 < '70':  # wieksze tyl mniejsze przod dla pociagow 1 i 2
+                __builtin__.c.acquire()
+                __builtin__.adres = address
+                __builtin__.c.release()
                 last_time1 = time1
                 time1 = time.clock()  # aktualny czas
                 print u'balisa ' + l_adres + u'\t' + str(time1 - last_time1)
@@ -221,8 +228,7 @@ watek_odb.start()
 ser.write(u'master\r')
 Agent.skanuj()
 
-time.sleep(1)
+time.sleep(5)
 for balisas in balisa:  # ustawiamy automatyczne zglaszanie i histereze
     balisas.wlacz(0x70)
     time.sleep(0.5)  # bez sleepa zapycha sie
-
