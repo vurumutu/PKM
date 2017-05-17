@@ -1,13 +1,12 @@
 import serial
 import time
-<<<<<<< HEAD
-import CAN_const
-=======
 import timeit
 import threading
 import io
 import __builtin__
 
+__builtin__.adres = 0
+__builtin__.c = threading.Condition()
 
 # typy urzadzen
 TYP_NONE = 0x00
@@ -31,7 +30,6 @@ LED_YELLOW2 = 0x34
 LED_WHITE = 0x35
 LED_OFF = 0x30
 LED_GET = 0x39
->>>>>>> CAN_devel
 
 # ramka:
 # 1: '>'
@@ -41,108 +39,30 @@ LED_GET = 0x39
 # n: parameters
 # 1: '\r'
 
-<<<<<<< HEAD
-=======
-__builtin__.adres = 0
-__builtin__.test1 = 0
-__builtin__.trasa_idx = [0, 0, 0, 0]
-__builtin__.c = threading.Condition()
-
 semafor = []
 zwrotnica = []
 balisa = []
-# adresy balis po ktorych jedzie pociag na danej trasie
 
-trasa1 = ['0305006A', '0305006E', '03010068', '03020067', '03020065'] # wrzeszcz -> kielpinek
-trasa2 = ['03020065', '03020068', '03010000', '03010068', '0305006D', '0305006A']# kielpinek -> wrzeszcz
-trasa3 = ['0304012E', '0304012D'] # wrzeszcz -> banino
-trasa4 = ['0304012D', '0304012F'] # banino -> wrzeszcz
-
-
->>>>>>> CAN_devel
 
 class Agent:
-    address = 0
+    def __init__(self, addr='1F000000', strefa='', l_addr=None):
+        self.address = addr
+        self.strefa = strefa
+        self.l_address = l_addr
 
     def send(self, data):
-<<<<<<< HEAD
-        ser.write('>'+format(self.address, "x")+' '+data+"\r")
-
-    def read(self, cmd):
-        ser.flushInput()
-        self.send(cmd)
-        time.sleep(1)
-        return ser.read_all()
-=======
-        msg = '>' + str(self.address) + ' ' + data + '\r'
+        msg = '>' + self.address + ' ' + data + '\r'
         ser.write(msg.decode('unicode-escape'))
->>>>>>> CAN_devel
 
-    def skanuj(self):
-        ser.flushInput()
-        self.send("1F000000 39")
-        time.sleep(1)
-        return ser.read_all()
+    @staticmethod
+    def skanuj():
+        ser.write(u'>1F000000 39\r')
 
     def zmien_adres(self, strefa, adres):
         ser.write('61 ' + strefa + adres)
         self.address = strefa << 16 + adres
 
-    class Semafora:
-        def wlacz(self, led):
-            self.send(format(led, "x") + " 00")
 
-<<<<<<< HEAD
-        def mrugaj(self, led):
-            self.send("00 " + format(led, "x"))
-
-        def wylacz(self):
-            self.send(format(0x30, "x") + ' ' + format(0x30, "x"))
-
-
-    class Zwrotnica:
-        def lewo(self):
-            self.send(format("31", "x"))
-
-        def prawo(self):
-            self.send(format("32", "x"))
-
-        def wylacz(self):
-            self.send(format("30", "x"))
-
-    class Balisa:
-        def wlacz(self, histereza):
-            self.send("33 "+format(histereza, "x"))
-
-
-# configure the serial connections (the parameters differs on the device you are connecting to)
-ser = serial.Serial(
-    #port='/dev/ttyUSB1',
-    #port='COM3',
-    0,
-    baudrate=500,
-    parity=serial.PARITY_ODD,
-    stopbits=serial.STOPBITS_TWO,
-    bytesize=serial.SEVENBITS
-)
-
-if ser.isOpen():
-    print("Serial is open: ")
-else:
-    print("Serial is closed!!")
-print(ser.portstr)
-ser.write(format("master\r"))
-
-if __name__ == '__main__':
-    a1 = Agent
-    print(a1.skanuj(a1))
-    while 1:
-        a1.Zwrotnica.lewo()
-        time.sleep(5)
-        a1.Zwrotnica.prawo()
-        time.sleep(5)
-    ser.close()
-=======
 class Semafor:
     def __init__(self, addr, strefa, l_addr):
         self.agent = Agent(addr, strefa, l_addr)
@@ -181,7 +101,7 @@ class Balisa:
 
     def wlacz(self, hist):
         self.histereza = hist
-        self.agent.send('33 ' + str(self.histereza))
+        self.agent.send('33 ' + self.histereza)
 
     def wylacz(self):
         self.agent.send('30')
@@ -219,7 +139,7 @@ def handle_scan(data):
     global time1
     global last_time1
 
-    address = data[1:9] # dziwne ale tak dziala
+    address = data[1:9]
     typ = data[1:3]
     strefa = data[3:5]
     l_adres = data[5:9]
@@ -231,8 +151,8 @@ def handle_scan(data):
     if typ == '01':
         zwr = sprawdz(zwrotnica, address)
         if zwr:
-            zwr.limiter = attr2
             zwr.stat = attr1
+            zwr.limiter = attr2
         else:
             zwrotnica.append(Zwrotnica(address, strefa, l_adres, attr1, attr3))
 
@@ -246,51 +166,20 @@ def handle_scan(data):
         if bal:
             bal.state = attr1
             bal.histereza = attr2
-            #if attr3 < '70':  # wieksze tyl mniejsze przod dla pociagow 1 i 2
-            __builtin__.c.acquire()
-            for item in trasa1:
-                print item
-                print address
-                if item == address:
-                    __builtin__.trasa_idx[0] = 11
-                    print __builtin__.trasa_idx[0]
-                if len(trasa1) - 1 >= __builtin__.trasa_idx[0]:
-                    __builtin__.trasa_idx[0] = 0
-            for item in trasa2:
-                if item == address:
-                    __builtin__.trasa_idx[1] += 1
-                if len(trasa2) - 1 >= __builtin__.trasa_idx[1]:
-                    __builtin__.trasa_idx[1] = 0
-            for item in trasa3:
-                if item == address:
-                    __builtin__.trasa_idx[2] += 1
-                if len(trasa3) - 1 >= __builtin__.trasa_idx[2]:
-                    __builtin__.trasa_idx[2] = 0
-            for item in trasa4:
-                if item == address:
-                    __builtin__.trasa_idx[3] += 1
-                if len(trasa4)-1 >= __builtin__.trasa_idx[3]:
-                    __builtin__.trasa_idx[3] = 0
-
-            # print __builtin__.trasa_idx[0]
-            # print __builtin__.trasa_idx[1]
-            # print __builtin__.trasa_idx[2]
-            # print __builtin__.trasa_idx[3]
-            # print __builtin__.test1
-            # __builtin__.c.release()
-            # __builtin__.c.acquire()
-            # __builtin__.adres = address
-            # # __builtin__.c.release()
-            last_time1 = time1
-            time1 = time.clock()  # aktualny czas
-            print u'balisa ' + l_adres + u'\t' + str(time1 - last_time1)
+            if attr3 < '70':  # wieksze tyl mniejsze przod dla pociagow 1 i 2
+                __builtin__.c.acquire()
+                __builtin__.adres = address
+                __builtin__.c.release()
+                last_time1 = time1
+                time1 = time.clock()  # aktualny czas
+                print u'balisa ' + l_adres + u'\t' + str(time1 - last_time1)
         else:
             balisa.append(Balisa(address, strefa, l_adres, attr1, attr2))
 
             # doGUI(address)
             # for x in balisa:
             #     if x.l_addr == l_adres:
-            #         print 'balisa  ' + l_adres + '\t' #+ end - start
+            #         print 'balisa ' + l_adres + '\t' #+ end - start
             #         return None
             #         last_time = time
             #         time = timeit.timeit()
@@ -343,4 +232,3 @@ time.sleep(5)
 for balisas in balisa:  # ustawiamy automatyczne zglaszanie i histereze
     balisas.wlacz(0x70)
     time.sleep(0.5)  # bez sleepa zapycha sie
->>>>>>> CAN_devel
