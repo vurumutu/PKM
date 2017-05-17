@@ -545,7 +545,14 @@ class Window(QtGui.QMainWindow):
 
     def rozklad(self):
         self.timer_glowny = QBasicTimer()
-        self.timer_glowny.start(1000, self)
+        self.timer_glowny.start(10, self)
+
+        self.timer_postoj = QBasicTimer()
+
+        trasa1 = ['0305006A', '0305006E', '03010068', '03020067', '03020065'] # wrzeszcz -> kielpinek
+        self.trasa2 = ['03020065', '03020068', '03010000', '03010068', '0305006D', '0305006A']# kielpinek -> wrzeszcz
+        trasa3 = ['0304012E', '0304012D'] # wrzeszcz -> banino
+        trasa4 = ['0304012D', '0304012F'] # banino -> wrzeszcz
 
         self.kalman_train = []
         model_train = kalman.Model(1)
@@ -553,13 +560,17 @@ class Window(QtGui.QMainWindow):
 
         self.kalman_train[0].setpower = 65
         trainb = Train(1)
-        msg = trainb.move(0, direction["Backward"])
         self.client = Client()
         self.client.connect(TCP_IP, TCP_PORT)
+        msg = trainb.move(35, direction["Backward"])
         self.client.send(msg)
+        
+        self.licznik_balis = 0
+        self.etap_trasy = 0
 
-        self.etap = 1
-
+    def postoj(self):
+        self.timer_postoj.start(3000, self)
+        
     def timerEvent(self, event):
         '''for i in range(4):
             if event.timerId() == self.timerTable.timers[i].timerId() and self.autoControl:
@@ -568,18 +579,31 @@ class Window(QtGui.QMainWindow):
                 self.train.setValue(self.slider_speed.value(), self.index_t)
                 self.map.repaint()
         '''
-
         if event.timerId() == self.timer_glowny.timerId():
             c.acquire()
-            print(str(adres))
-            # print(trasa_idx)
+            can_adres = adres
             c.release()
-            '''if (adres == '03020065'):
-                self.etap += 1
-                trainb = Train(1)
-                msg = trainb.move(0)
+            trainb = Train(1)
+            if (can_adres == self.trasa2[self.licznik_balis]):
+                if (self.licznik_balis == 0):
+                    #self.kalman_train[0].update()
+                    msg = trainb.move(65)
+                elif (self.licznik_balis == 1):
+                    msg = trainb.move(40)
+                elif (self.licznik_balis == 2):
+                    msg = trainb.move(0)
+                    self.postoj()
+                elif (self.licznik_balis == 3):
+                    msg = trainb.move(0)
+                self.licznik_balis += 1
                 self.client.send(msg)
-                print('1 dziala')'''
+
+        if event.timerId() == self.timer_postoj.timerId():
+
+            trainb = Train(1)
+            msg = trainb.move(35)
+            self.client.send(msg)
+            self.timer_postoj.stop()
 
 def close_application():
     sys.exit()
