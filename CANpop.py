@@ -5,6 +5,8 @@ import threading
 import io
 import __builtin__
 
+__builtin__.adres = 0
+__builtin__.c = threading.Condition()
 
 # typy urzadzen
 TYP_NONE = 0x00
@@ -37,21 +39,9 @@ LED_GET = 0x39
 # n: parameters
 # 1: '\r'
 
-__builtin__.adres = 0
-__builtin__.test1 = 0
-__builtin__.trasa_idx = [0, 0, 0, 0]
-__builtin__.c = threading.Condition()
-
 semafor = []
 zwrotnica = []
 balisa = []
-# adresy balis po ktorych jedzie pociag na danej trasie
-
-trasa1 = ['0305006A', '0305006E', '03010068', '03020067', '03020065'] # wrzeszcz -> kielpinek
-trasa2 = ['03020065', '03020068', '03010000', '03010068', '0305006D', '0305006A']# kielpinek -> wrzeszcz
-trasa3 = ['0304012E', '0304012D'] # wrzeszcz -> banino
-trasa4 = ['0304012D', '0304012F'] # banino -> wrzeszcz
-
 
 
 class Agent:
@@ -61,7 +51,7 @@ class Agent:
         self.l_address = l_addr
 
     def send(self, data):
-        msg = '>' + str(self.address) + ' ' + data + '\r'
+        msg = '>' + self.address + ' ' + data + '\r'
         ser.write(msg.decode('unicode-escape'))
 
     @staticmethod
@@ -111,7 +101,7 @@ class Balisa:
 
     def wlacz(self, hist):
         self.histereza = hist
-        self.agent.send('33 ' + str(self.histereza))
+        self.agent.send('33 ' + self.histereza)
 
     def wylacz(self):
         self.agent.send('30')
@@ -149,7 +139,7 @@ def handle_scan(data):
     global time1
     global last_time1
 
-    address = data[1:9] # dziwne ale tak dziala
+    address = data[1:9]
     typ = data[1:3]
     strefa = data[3:5]
     l_adres = data[5:9]
@@ -161,8 +151,8 @@ def handle_scan(data):
     if typ == '01':
         zwr = sprawdz(zwrotnica, address)
         if zwr:
-            zwr.limiter = attr2
             zwr.stat = attr1
+            zwr.limiter = attr2
         else:
             zwrotnica.append(Zwrotnica(address, strefa, l_adres, attr1, attr3))
 
@@ -176,51 +166,20 @@ def handle_scan(data):
         if bal:
             bal.state = attr1
             bal.histereza = attr2
-            #if attr3 < '70':  # wieksze tyl mniejsze przod dla pociagow 1 i 2
-            __builtin__.c.acquire()
-            for item in trasa1:
-                print item
-                print address
-                if item == address:
-                    __builtin__.trasa_idx[0] = 11
-                    print __builtin__.trasa_idx[0]
-                if len(trasa1) - 1 >= __builtin__.trasa_idx[0]:
-                    __builtin__.trasa_idx[0] = 0
-            for item in trasa2:
-                if item == address:
-                    __builtin__.trasa_idx[1] += 1
-                if len(trasa2) - 1 >= __builtin__.trasa_idx[1]:
-                    __builtin__.trasa_idx[1] = 0
-            for item in trasa3:
-                if item == address:
-                    __builtin__.trasa_idx[2] += 1
-                if len(trasa3) - 1 >= __builtin__.trasa_idx[2]:
-                    __builtin__.trasa_idx[2] = 0
-            for item in trasa4:
-                if item == address:
-                    __builtin__.trasa_idx[3] += 1
-                if len(trasa4)-1 >= __builtin__.trasa_idx[3]:
-                    __builtin__.trasa_idx[3] = 0
-
-            # print __builtin__.trasa_idx[0]
-            # print __builtin__.trasa_idx[1]
-            # print __builtin__.trasa_idx[2]
-            # print __builtin__.trasa_idx[3]
-            # print __builtin__.test1
-            # __builtin__.c.release()
-            # __builtin__.c.acquire()
-            # __builtin__.adres = address
-            # # __builtin__.c.release()
-            last_time1 = time1
-            time1 = time.clock()  # aktualny czas
-            print u'balisa ' + l_adres + u'\t' + str(time1 - last_time1)
+            if attr3 < '70':  # wieksze tyl mniejsze przod dla pociagow 1 i 2
+                __builtin__.c.acquire()
+                __builtin__.adres = address
+                __builtin__.c.release()
+                last_time1 = time1
+                time1 = time.clock()  # aktualny czas
+                print u'balisa ' + l_adres + u'\t' + str(time1 - last_time1)
         else:
             balisa.append(Balisa(address, strefa, l_adres, attr1, attr2))
 
             # doGUI(address)
             # for x in balisa:
             #     if x.l_addr == l_adres:
-            #         print 'balisa  ' + l_adres + '\t' #+ end - start
+            #         print 'balisa ' + l_adres + '\t' #+ end - start
             #         return None
             #         last_time = time
             #         time = timeit.timeit()
