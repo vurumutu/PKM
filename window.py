@@ -551,12 +551,9 @@ class Window(QtGui.QMainWindow):
         model_train = kalman.Model(1)
         self.kalman_train.append(model_train)
 
-        self.direction = {"Forward": 1, "Backward": 0}
         self.kalman_train[0].setpower = 65
-        trainb = Train(1)
-        msg = trainb.move(65, self.direction["Backward"])
-        self.client = Client()
-        self.client.connect(TCP_IP, TCP_PORT)
+        trainb = Train(0)
+        msg = trainb.move(65, direction["Backward"])
         self.client.send(msg)
 
         self.etap = 1
