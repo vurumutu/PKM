@@ -545,16 +545,15 @@ class Window(QtGui.QMainWindow):
 
     def rozklad(self):
         self.timer_glowny = QBasicTimer()
-        self.timer_glowny.start(500, self)
+        self.timer_glowny.start(1000, self)
 
         self.kalman_train = []
         model_train = kalman.Model(1)
         self.kalman_train.append(model_train)
 
-        self.direction = {"Forward": 1, "Backward": 0}
         self.kalman_train[0].setpower = 65
         trainb = Train(1)
-        msg = trainb.move(65, self.direction["Backward"])
+        msg = trainb.move(0, direction["Backward"])
         self.client = Client()
         self.client.connect(TCP_IP, TCP_PORT)
         self.client.send(msg)
@@ -569,12 +568,18 @@ class Window(QtGui.QMainWindow):
                 self.train.setValue(self.slider_speed.value(), self.index_t)
                 self.map.repaint()
         '''
+
         if event.timerId() == self.timer_glowny.timerId():
-            if (self.etap == trasa_idx[1]):
+            c.acquire()
+            print(str(adres))
+            # print(trasa_idx)
+            c.release()
+            '''if (adres == '03020065'):
                 self.etap += 1
-                trainb = Train(0)
+                trainb = Train(1)
                 msg = trainb.move(0)
                 self.client.send(msg)
+                print('1 dziala')'''
 
 def close_application():
     sys.exit()
