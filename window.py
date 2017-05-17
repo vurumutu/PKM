@@ -7,7 +7,9 @@ from PyQt4.Qt import *
 import train_map
 import train
 import train_auto
-#import CAN as can
+import kalman
+from CAN import *
+import CAN as can
 import CAN_const as can_const
 from xpressnet import Client
 from xpressnet import Train
@@ -31,11 +33,11 @@ class Login(QtGui.QDialog):
         layout.addWidget(self.textName)
         layout.addWidget(self.textPass)
         layout.addWidget(self.buttonLogin)
-        
-#login i hasło
+
+    #login i hasło
     def handleLogin(self):
-        if (self.textName.text() == 'user' and
-            self.textPass.text() == 'user1'):
+        if (self.textName.text() == '' and
+                    self.textPass.text() == ''):
             self.accept()
         else:
             QtGui.QMessageBox.warning(
@@ -55,7 +57,7 @@ class About(QWidget):
                      'oraz uruchamianie wczesniej ustalonego harmonogramu')
         self.show()
 
-# tworzenie tekstu
+    # tworzenie tekstu
     def paintEvent(self, event):
 
         qp = QtGui.QPainter()
@@ -80,7 +82,7 @@ class Authors(QWidget):
 
     def initT(self):
 
-        self.text = ('Sklad grupy:\n\n' 
+        self.text = ('Sklad grupy:\n\n'
                      'Wojciech Zgliniecki - Leader\n '
                      'Dworakowski Karol\n'
                      'Filipkiewicz Marlena\n'
@@ -92,7 +94,7 @@ class Authors(QWidget):
                      'Zbikowski Bartosz\n')
         self.show()
 
-# tworzenie tekstu
+    # tworzenie tekstu
     def paintEvent(self, event):
 
         qp = QtGui.QPainter()
@@ -122,7 +124,7 @@ class Window(QtGui.QMainWindow):
         self.client = Client()
 
         #utworzenie obektu zapwierajacego informacje o pociagach
-        self.train = train.Train()
+        self.train_GUI = train.Train()
         self.msg = None
         self.index_t = 4    #numer wybranego pociagu - 1, bo numerujemy tablice od 0
         self.trains = []
@@ -130,7 +132,9 @@ class Window(QtGui.QMainWindow):
             self.trains.append(Train(i))
 
         # utworzenie obiektu tworzacego mape kolejowa
-        self.map = train_map.Railmap(0, 30, self.height(), self.width(), self.train, self)
+        self.map = train_map.Railmap(0, 30, self.height(), self.width(), self.train_GUI, self)
+
+        self.rozklad()
 
         self.initLayout()
         self.initUI()
@@ -232,12 +236,12 @@ class Window(QtGui.QMainWindow):
         button_space.addWidget(self.btn5)
         button_space.addWidget(self.btn6)
 
-        self.lab1 = QtGui.QLabel(str(self.train.getValue()[0]))
-        self.lab2 = QtGui.QLabel(str(self.train.getValue()[1]))
-        self.lab3 = QtGui.QLabel(str(self.train.getValue()[2]))
-        self.lab4 = QtGui.QLabel(str(self.train.getValue()[3]))
-        self.lab5 = QtGui.QLabel(str(self.train.getValue()[4]))
-        self.lab6 = QtGui.QLabel(str(self.train.getValue()[5]))
+        self.lab1 = QtGui.QLabel(str(self.trains[0].velocity))
+        self.lab2 = QtGui.QLabel(str(self.trains[1].velocity))
+        self.lab3 = QtGui.QLabel(str(self.trains[2].velocity))
+        self.lab4 = QtGui.QLabel(str(self.trains[3].velocity))
+        self.lab5 = QtGui.QLabel(str(self.trains[4].velocity))
+        self.lab6 = QtGui.QLabel(str(self.trains[5].velocity))
 
         label_space.addWidget(self.lab1)
         label_space.addWidget(self.lab2)
@@ -319,7 +323,7 @@ class Window(QtGui.QMainWindow):
 
         return Group_traincontrol
     # ********************************
-        
+
     # tworzeie MENU
     def initUI(self):
         # Exit
@@ -354,11 +358,11 @@ class Window(QtGui.QMainWindow):
     def doit(self):
         self.w = About()
         self.w.show()
-        
+
     def doitA(self):
         self.a = Authors()
         self.a.show()
-        
+
     def create_slider(self):
         layout = QtGui.QVBoxLayout()
         l1 = QtGui.QLabel("Speed", self)
@@ -371,7 +375,7 @@ class Window(QtGui.QMainWindow):
         self.slider_speed.setValue(20)
         self.slider_speed.setTickPosition(QtGui.QSlider.TicksBelow)
         self.slider_speed.setTickInterval(5)
-        self.slider_speed.valueChanged.connect(self.tUpdate)
+        self.slider_speed.sliderReleased.connect(self.tUpdate)
         layout.addWidget(self.slider_speed)
 
         slider = QtGui.QWidget()
@@ -392,48 +396,48 @@ class Window(QtGui.QMainWindow):
 
         if self.btn1.isChecked():
             self.index_t = 0
-            self.train.setValue(self.slider_speed.value(), self.index_t)
-            self.lab1.setText(str(self.train.getValue()[self.index_t]))
+            self.train_GUI.setValue(self.slider_speed.value(), self.index_t)
+            self.lab1.setText(str(self.train_GUI.getValue()[self.index_t]))
             #ustawienie predkosci pociagu wlasciwy:
             if self.client.connected:
                 self.msg = self.trains[0].move(self.slider_speed.value(), direct)
 
         elif self.btn2.isChecked():
             self.index_t = 1
-            self.train.setValue(self.slider_speed.value(),self.index_t)
-            self.lab2.setText(str(self.train.getValue()[self.index_t]))
+            self.train_GUI.setValue(self.slider_speed.value(),self.index_t)
+            self.lab2.setText(str(self.train_GUI.getValue()[self.index_t]))
             # ustawienie predkosci pociagu wlasciwy:
             if self.client.connected:
                 self.msg = self.trains[1].move(self.slider_speed.value(), direct)
 
         elif self.btn3.isChecked():
             self.index_t = 2
-            self.train.setValue(self.slider_speed.value(),self.index_t)
-            self.lab3.setText(str(self.train.getValue()[self.index_t]))
+            self.train_GUI.setValue(self.slider_speed.value(),self.index_t)
+            self.lab3.setText(str(self.train_GUI.getValue()[self.index_t]))
             # ustawienie predkosci pociagu wlasciwy:
             if self.client.connected:
                 self.msg = self.trains[2].move(self.slider_speed.value(), direct)
 
         elif self.btn4.isChecked():
             self.index_t = 3
-            self.train.setValue(self.slider_speed.value(),self.index_t)
-            self.lab4.setText(str(self.train.getValue()[self.index_t]))
+            self.train_GUI.setValue(self.slider_speed.value(),self.index_t)
+            self.lab4.setText(str(self.train_GUI.getValue()[self.index_t]))
             # ustawienie predkosci pociagu wlasciwy:
             if self.client.connected:
                 self.msg = self.trains[3].move(self.slider_speed.value(), direct)
 
         elif self.btn5.isChecked():
             self.index_t = 4
-            self.train.setValue(self.slider_speed.value(),self.index_t)
-            self.lab5.setText(str(self.train.getValue()[self.index_t]))
+            self.train_GUI.setValue(self.slider_speed.value(),self.index_t)
+            self.lab5.setText(str(self.train_GUI.getValue()[self.index_t]))
             # ustawienie predkosci pociagu wlasciwy:
             if self.client.connected:
                 self.msg = self.trains[4].move(self.slider_speed.value(), direct)
 
         elif self.btn6.isChecked():
             self.index_t = 5
-            self.train.setValue(self.slider_speed.value(),self.index_t)
-            self.lab6.setText(str(self.train.getValue()[self.index_t]))
+            self.train_GUI.setValue(self.slider_speed.value(),self.index_t)
+            self.lab6.setText(str(self.train_GUI.getValue()[self.index_t]))
             # ustawienie predkosci pociagu wlasciwy:
             if self.client.connected:
                 self.msg = self.trains[5].move(self.slider_speed.value(), direct)
@@ -489,8 +493,8 @@ class Window(QtGui.QMainWindow):
                 self.conn_button.setText("Disconnect")
             except Exception as message:
                 QMessageBox.warning(self, 'Polaczenie', str(message) +
-                "\nStrona nie odpowiedziala poprawnie po ustalonym czasie lub utworzone polaczenie nie powiodlo sie," +
-                " poniewaz polaczony host nie odpowiada.", QMessageBox.Ok)
+                                    "\nStrona nie odpowiedziala poprawnie po ustalonym czasie lub utworzone polaczenie nie powiodlo sie," +
+                                    " poniewaz polaczony host nie odpowiada.", QMessageBox.Ok)
 
     # ustawienie sterowania pociagiem automatycznie
     def setAutoControl(self):
@@ -511,7 +515,8 @@ class Window(QtGui.QMainWindow):
 
     def stopAllTrains(self):
         if self.client.connected:
-            self.client.stop_all_locomotives()
+            msg = self.client.stop_all_locomotives()
+            self.client.send(msg)
 
     def enableButtons(self, state):
         # radiobuttony
@@ -535,27 +540,48 @@ class Window(QtGui.QMainWindow):
 
     # ***************************************
 
-
     def resizeEvent(self, event):
         self.map.setscale()
 
+    def rozklad(self):
+        self.timer_glowny = QBasicTimer()
+        self.timer_glowny.start(500, self)
+
+        self.kalman_train = []
+        model_train = kalman.Model(1)
+        self.kalman_train.append(model_train)
+
+        self.kalman_train[0].setpower = 65
+        trainb = Train(0)
+        msg = trainb.move(65, self.direction["Backward"])
+        self.client.send(msg)
+
+        self.etap = 1
+
     def timerEvent(self, event):
-        for i in range(4):
+        '''for i in range(4):
             if event.timerId() == self.timerTable.timers[i].timerId() and self.autoControl:
                 self.timerTable.updateTimers(i)
                 self.train.setValue(self.timerTable.positionTable[i][self.timerTable.licznik[i]],i)
                 self.train.setValue(self.slider_speed.value(), self.index_t)
                 self.map.repaint()
+        '''
+        if event.timerId() == self.timer_glowny.timerId():
+            if (self.etap == trasa_idx[1]):
+                self.etap += 1
+                trainb = Train(0)
+                msg = trainb.move(0)
+                self.client.send(msg)
 
 def close_application():
     sys.exit()
 
 def run():
     app = QtGui.QApplication(sys.argv)
-    login = Login()
-    if login.exec_() == QtGui.QDialog.Accepted:
-        GUI = Window()
-        GUI.show()
-        sys.exit(app.exec_())
+    #login = Login()
+    #if login.exec_() == QtGui.QDialog.Accepted:
+    GUI = Window()
+    GUI.show()
+    sys.exit(app.exec_())
 
 run()
