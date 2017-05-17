@@ -73,18 +73,23 @@ class Model:
         X, P = self.simulatesym(time, updatestate=False)
         return self.C * X
 
-    def stop_distance(self, time):
-        """ podaj czas z przyszlosci do ktorego mam symulowac pociag
-        jezeli updatestate bedzie false, to zmienne pociagu zostana zachowane"""
-        if time < self.simulateTime - self.dT:
+    def get_stop_distance(self):
+        # TODO Jaki czas podać tutaj? Skąd go przypisać?
+        actual_time = time.time()
+        if actual_time < self.simulateTime - self.dT:
             print(time, " < ", self.simulateTime)
             raise Exception('Nie cofaj czasu!')
         X, P, t = np.copy(self.X), np.copy(self.P), self.simulateTime
-        while t < time:
+        # Robimy symulacje bez zapisywania
+        while t < actual_time:
+            t += self.dT
+            X += (self.A * X + self.B * self.motorPower) * self.dT
+        # Licz dopóki prędkość jest większa równa od zera
+        while (self.C * self.X)[1, 0] >= 0:
             t += self.dT
             X += (self.A * X + self.B * self.stopPower) * self.dT
-        P = self.A * P * self.A.transpose() + self.Q * (t - self.updateTime)
-        return self.C * X
+
+        return (self.C * X)[0, 0] - (self.C * self.X)[0, 0]
 
     def update(self, distance):
         """ aktualizuje system wzgledem aktualnego czasu
@@ -186,6 +191,7 @@ if __name__ == "__main__":
         t.updatesym(distances[i], times[i], freshstate=True)
         X.append(t.get_position(False))
         V.append(t.get_velocity(False))
+        print t.get_stop_distance()
         var.append(t.P[1, 1])
 
         pom.append(pom[-1] + distances[i])
