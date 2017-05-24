@@ -547,29 +547,69 @@ class Window(QtGui.QMainWindow):
         self.timer_glowny = QBasicTimer()
         self.timer_glowny.start(10, self)
 
-        self.timer_postoj = QBasicTimer()
-
-        trasa1 = ['0305006A', '0305006E', '03010068', '03020067', '03020065'] # wrzeszcz -> kielpinek
+        self.timer_postoj_s_w = QBasicTimer()
+        self.timer_postoj_w_s = QBasicTimer()
+                                            #zmienilem z 03010068 na 67
+        self.trasa1 = ['0305006A', '0305006E', '03010067', '03020067', '03020065'] # wrzeszcz -> kielpinek
         self.trasa2 = ['03020065', '03020068', '03010000', '03010068', '0305006D', '0305006A']# kielpinek -> wrzeszcz
-        trasa3 = ['0304012E', '0304012D'] # wrzeszcz -> banino
-        trasa4 = ['0304012D', '0304012F'] # banino -> wrzeszcz
+        self.trasa3 = ['0304012E', '0304012D'] # wrzeszcz -> banino
+        self.trasa4 = ['0304012D', '0304012F'] # banino -> wrzeszcz
 
+        self.train_list = []
         self.kalman_train = []
+
+        self.licznik_balis = [0, 0, 0, 0]
+        self.etap_trasy = [0, 0, 0, 0]
+
+        #Pociag nr 1 - trasa 1 - ustawic na Wrzeszczu
+        #Pociag nr 5 - trasa 3 - ustawic na Wrzeszczu
+        #Pozostale odpowiednio
+
         model_train = kalman.Model(1)
         self.kalman_train.append(model_train)
+        self.train_list.append(Train(1))
 
         self.kalman_train[0].setpower = 65
-        trainb = Train(1)
         self.client = Client()
         self.client.connect(TCP_IP, TCP_PORT)
-        msg = trainb.move(35, direction["Backward"])
+        msg = self.train_list[0].move(35, direction["Forward"])
         self.client.send(msg)
-        
-        self.licznik_balis = 0
-        self.etap_trasy = 0
 
-    def postoj(self):
-        self.timer_postoj.start(3000, self)
+        model_train = kalman.Model(1)   #UWAGA, ZLY MODEL
+        self.kalman_train.append(model_train)
+        self.train_list.append(Train(2))
+
+        self.kalman_train[1].setpower = 65
+        self.client = Client()
+        self.client.connect(TCP_IP, TCP_PORT)
+        msg = self.train_list[1].move(35, direction["Backward"])
+        self.client.send(msg)
+        '''
+        model_train = kalman.Model(5)
+        self.kalman_train.append(model_train)
+        self.train_list.append(Train(5))
+
+        self.kalman_train[2].setpower = 65
+        self.client = Client()
+        self.client.connect(TCP_IP, TCP_PORT)
+        msg = self.train_list[2].move(35, direction["Forward"])
+        self.client.send(msg)
+
+        model_train = kalman.Model(6)
+        self.kalman_train.append(model_train)
+        self.train_list.append(Train(6))
+
+        self.kalman_train[3].setpower = 65
+        self.client = Client()
+        self.client.connect(TCP_IP, TCP_PORT)
+        msg = self.train_list[3].move(35, direction["Backward"])
+        self.client.send(msg)'''
+
+    def postoj_s_w(self):
+        self.timer_postoj_s_w.start(3000, self)
+
+    def postoj_w_s(self):
+        self.timer_postoj_w_s.start(3000, self)
         
     def timerEvent(self, event):
         '''for i in range(4):
@@ -583,27 +623,73 @@ class Window(QtGui.QMainWindow):
             c.acquire()
             can_adres = adres
             c.release()
-            trainb = Train(1)
-            if (can_adres == self.trasa2[self.licznik_balis]):
-                if (self.licznik_balis == 0):
-                    #self.kalman_train[0].update()
-                    msg = trainb.move(65)
-                elif (self.licznik_balis == 1):
-                    msg = trainb.move(40)
-                elif (self.licznik_balis == 2):
-                    msg = trainb.move(0)
-                    self.postoj()
-                elif (self.licznik_balis == 3):
-                    msg = trainb.move(0)
-                self.licznik_balis += 1
+
+            #Kielpinek -> Wrzeszcz
+            if (can_adres == self.trasa2[self.licznik_balis[1]]):
+                if (self.licznik_balis[1] == 0):
+                    self.kalman_train[1].update(124.5)
+                    msg = self.train_list[1].move(65)
+                elif (self.licznik_balis[1] == 1):
+                    self.kalman_train[1].update(279.5)
+                    msg = self.train_list[1].move(40)
+                elif (self.licznik_balis[1] == 2):
+                    self.kalman_train[1].update(503)
+                    msg = self.train_list[1].move(0)
+                    self.postoj_s_w()
+                elif (self.licznik_balis[1] == 3):
+                    self.kalman_train[1].update(149)
+                    msg = self.train_list[1].move(65)
+                elif (self.licznik_balis[1] == 4):
+                    self.kalman_train[1].update(243)
+                    msg = self.train_list[1].move(40)
+                elif (self.licznik_balis[1] == 5):
+                    self.kalman_train[1].update(215.5)  #to juz peron jest?
+                    msg = self.train_list[1].move(0)
+
+                self.licznik_balis[1] += 1
+                self.etap_trasy[1] += 1
                 self.client.send(msg)
 
-        if event.timerId() == self.timer_postoj.timerId():
+            elif (can_adres == self.trasa1[self.licznik_balis[0]]):
+                if (self.licznik_balis[0] == 0):
+                    self.kalman_train[1].update(315.5)
+                    msg = self.train_list[0].move(65)
+                elif (self.licznik_balis[0] == 1):
+                    self.kalman_train[1].update(249)
+                    msg = self.train_list[0].move(40)
+                elif (self.licznik_balis[0] == 2):
+                    self.kalman_train[1].update(149)
+                    msg = self.train_list[0].move(0)
+                    self.postoj_w_s()
+                elif (self.licznik_balis[0] == 3):
+                    self.kalman_train[1].update(672)
+                    msg = self.train_list[0].move(40)
+                elif (self.licznik_balis[0] == 4):
+                    self.kalman_train[1].update(278.5)
+                    msg = self.train_list[0].move(0)
 
-            trainb = Train(1)
-            msg = trainb.move(35)
+                self.licznik_balis[0] += 1
+                self.etap_trasy[0] += 1
+                self.client.send(msg)
+
+            if self.kalman_train[1].get_position() > 500 and self.etap_trasy[1] == 3:
+                msg = self.train_list[1].move(40)
+                self.client.send(msg)
+                self.etap_trasy[1] += 1 #wynosi wiec 4, a licznik balis nadal 3
+
+
+
+        if event.timerId() == self.timer_postoj_s_w.timerId():
+
+            msg = self.train_list[1].move(35)
             self.client.send(msg)
-            self.timer_postoj.stop()
+            self.timer_postoj_s_w.stop()
+
+        if event.timerId() == self.timer_postoj_w_s.timerId():
+
+            msg = self.train_list[0].move(65)
+            self.client.send(msg)
+            self.timer_postoj_w_s.stop()
 
 def close_application():
     sys.exit()
