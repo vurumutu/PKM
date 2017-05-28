@@ -565,13 +565,14 @@ class Window(QtGui.QMainWindow):
         #Pociag nr 5 - trasa 3 - ustawic na Wrzeszczu
         #Pozostale odpowiednio
 
+        self.client = Client()
+        self.client.connect(TCP_IP, TCP_PORT)
+
         model_train = kalman.Model(1)
         self.kalman_train.append(model_train)
         self.train_list.append(Train(1))
 
         self.kalman_train[0].setpower = 65
-        self.client = Client()
-        self.client.connect(TCP_IP, TCP_PORT)
         msg = self.train_list[0].move(35, direction["Forward"])
         self.client.send(msg)
 
@@ -580,8 +581,6 @@ class Window(QtGui.QMainWindow):
         self.train_list.append(Train(2))
 
         self.kalman_train[1].setpower = 65
-        self.client = Client()
-        self.client.connect(TCP_IP, TCP_PORT)
         msg = self.train_list[1].move(35, direction["Backward"])
         self.client.send(msg)
         '''
@@ -590,8 +589,6 @@ class Window(QtGui.QMainWindow):
         self.train_list.append(Train(5))
 
         self.kalman_train[2].setpower = 65
-        self.client = Client()
-        self.client.connect(TCP_IP, TCP_PORT)
         msg = self.train_list[2].move(35, direction["Forward"])
         self.client.send(msg)
 
@@ -600,8 +597,6 @@ class Window(QtGui.QMainWindow):
         self.train_list.append(Train(6))
 
         self.kalman_train[3].setpower = 65
-        self.client = Client()
-        self.client.connect(TCP_IP, TCP_PORT)
         msg = self.train_list[3].move(35, direction["Backward"])
         self.client.send(msg)'''
 
@@ -626,58 +621,61 @@ class Window(QtGui.QMainWindow):
 
             #Kielpinek -> Wrzeszcz
             if (can_adres == self.trasa2[self.licznik_balis[1]]):
-                if (self.licznik_balis[1] == 0):
+                if (self.licznik_balis[1] == 0):        #balisa tuz za peronem
                     self.kalman_train[1].update(124.5)
-                    msg = self.train_list[1].move(65)
-                elif (self.licznik_balis[1] == 1):
+                    msg = self.train_list[1].move(65)   #jedziemy szybciej
+                elif (self.licznik_balis[1] == 1):      #balisa kolo wiaduktu
                     self.kalman_train[1].update(279.5)
-                    msg = self.train_list[1].move(40)
-                elif (self.licznik_balis[1] == 2):
+                    msg = self.train_list[1].move(40)   #zwalniamy
+                elif (self.licznik_balis[1] == 2):      #przed strzyza
                     self.kalman_train[1].update(503)
-                    msg = self.train_list[1].move(0)
+                    msg = self.train_list[1].move(0)    #zatrzymujemy
                     self.postoj_s_w()
-                elif (self.licznik_balis[1] == 3):
+                elif (self.licznik_balis[1] == 3):      #za strzyza
                     self.kalman_train[1].update(149)
-                    msg = self.train_list[1].move(65)
-                elif (self.licznik_balis[1] == 4):
+                    msg = self.train_list[1].move(65)   #pedzimy
+                elif (self.licznik_balis[1] == 4):      #koniec zjazdu
                     self.kalman_train[1].update(243)
-                    msg = self.train_list[1].move(40)
+                    msg = self.train_list[1].move(40)   #zwalniami bo slalom zaraz bedzie
                 elif (self.licznik_balis[1] == 5):
                     self.kalman_train[1].update(215.5)  #to juz peron jest?
-                    msg = self.train_list[1].move(0)
+                    msg = self.train_list[1].move(0)    #jak tak to stajemy
 
                 self.licznik_balis[1] += 1
                 self.etap_trasy[1] += 1
                 self.client.send(msg)
 
             elif (can_adres == self.trasa1[self.licznik_balis[0]]):
-                if (self.licznik_balis[0] == 0):
-                    self.kalman_train[1].update(315.5)
-                    msg = self.train_list[0].move(65)
-                elif (self.licznik_balis[0] == 1):
-                    self.kalman_train[1].update(249)
-                    msg = self.train_list[0].move(40)
-                elif (self.licznik_balis[0] == 2):
-                    self.kalman_train[1].update(149)
-                    msg = self.train_list[0].move(0)
+                if (self.licznik_balis[0] == 0):        #gdzies przy wrzeszczu
+                    self.kalman_train[0].update(315.5)
+                    msg = self.train_list[0].move(65)   #przyspieszamy
+                elif (self.licznik_balis[0] == 1):      #podjazd
+                    self.kalman_train[0].update(249)
+                    msg = self.train_list[0].move(40)   #zwalniamy bo zaraz strzyza
+                elif (self.licznik_balis[0] == 2):      #przed strzyza
+                    self.kalman_train[0].update(149)
+                    msg = self.train_list[0].move(0)    #zatrzymujemy
                     self.postoj_w_s()
-                elif (self.licznik_balis[0] == 3):
-                    self.kalman_train[1].update(672)
-                    msg = self.train_list[0].move(40)
-                elif (self.licznik_balis[0] == 4):
-                    self.kalman_train[1].update(278.5)
-                    msg = self.train_list[0].move(0)
+                elif (self.licznik_balis[0] == 3):      #okolice wiaduktu
+                    self.kalman_train[0].update(672)
+                    msg = self.train_list[0].move(40)   #zwalniamy
+                elif (self.licznik_balis[0] == 4):      #kielpinek
+                    self.kalman_train[0].update(278.5)
+                    msg = self.train_list[0].move(0)    #zatrzmujemy
 
                 self.licznik_balis[0] += 1
                 self.etap_trasy[0] += 1
                 self.client.send(msg)
 
-            if self.kalman_train[1].get_position() > 500 and self.etap_trasy[1] == 3:
+            '''if self.kalman_train[1].get_position() > 500 and self.etap_trasy[1] == 3:
                 msg = self.train_list[1].move(40)
                 self.client.send(msg)
-                self.etap_trasy[1] += 1 #wynosi wiec 4, a licznik balis nadal 3
+                self.etap_trasy[1] += 1     #wynosi wiec 4, a licznik balis nadal 3'''
 
-
+            if self.kalman_train[0].get_position() > 600 and self.etap_trasy[0] == 3:
+                msg = self.train_list[0].move(65)
+                self.client.send(msg)
+                self.etap_trasy[0] += 1     #wynosi wiec 4, a licznik balis nadal 3
 
         if event.timerId() == self.timer_postoj_s_w.timerId():
 
