@@ -123,6 +123,9 @@ class Window(QtGui.QMainWindow):
         # tworzenie klienta do polaczenia
         self.client = Client()
 
+        #inicjalizacja zwotnic
+        self.init_zwrotnice()
+
         #utworzenie obektu zapwierajacego informacje o pociagach
         self.train_GUI = train.Train()
         self.msg = None
@@ -355,6 +358,20 @@ class Window(QtGui.QMainWindow):
         self.setWindowTitle('PKM')
         self.show()
 
+    def init_zwrotnice(self):
+        addr_zwrotnic = ['01050128', '0102000C', '010003DF', '01020001']
+        addr_zwrotnic_stale = ['0102000B', '0102000C', '010003DF', '01020001']
+        self.zwrotnice_ = []
+        for zwrot in can.zwrotnica:
+            for address in addr_zwrotnic:
+                if zwrot.agent.address == address:
+                    self.zwrotnice_.append(zwrot)
+
+
+
+
+
+
     def doit(self):
         self.w = About()
         self.w.show()
@@ -452,33 +469,37 @@ class Window(QtGui.QMainWindow):
         self.map.switch1.neg_status()
         self.map.repaint()
         if self.map.switch1.status:
-            can.zwrotnica[0].lewo()
+            self.zwrotnice_[0].lewo()
+            print("test")
         else:
-            can.zwrotnica[0].prawo()
+            self.zwrotnice_[0].prawo()
 
     def change_state_switch2(self):
         self.map.switch2.neg_status()
         self.map.repaint()
-        if self.map.switch1.status:
-            can.zwrotnica[1].lewo()
+        if self.map.switch2.status:
+            self.zwrotnice_[1].lewo()
+            print("test")
         else:
-            can.zwrotnica[1].prawo()
+            self.zwrotnice_[1].prawo()
 
     def change_state_switch3(self):
         self.map.switch3.neg_status()
         self.map.repaint()
-        if self.map.switch1.status:
-            can.zwrotnica[2].lewo()
+        if self.map.switch3.status:
+            self.zwrotnice_[2].lewo()
+            print("test")
         else:
             can.zwrotnica[2].prawo()
 
     def change_state_switch4(self):
         self.map.switch4.neg_status()
         self.map.repaint()
-        if self.map.switch1.status:
-            can.zwrotnica[3].lewo()
+        if self.map.switch4.status:
+            self.zwrotnice_[3].lewo()
+            print("test")
         else:
-            can.zwrotnica[3].prawo()
+            self.zwrotnice_[3].prawo()
 
     # łączenie i rozłączenie z pociągami
     def connect_disconnect(self):
@@ -545,13 +566,13 @@ class Window(QtGui.QMainWindow):
 
     def rozklad(self):
         self.timer_glowny = QBasicTimer()
-        self.timer_glowny.start(10, self)
+        #self.timer_glowny.start(10, self)
 
         self.timer_postoj_s_w = QBasicTimer()
         self.timer_postoj_w_s = QBasicTimer()
                                             #zmienilem z 03010068 na 67
-        self.trasa1 = ['0305006A', '0305006E', '03010067', '03020067', '03020065'] # wrzeszcz -> kielpinek
-        self.trasa2 = ['03020065', '03020068', '03010000', '03010068', '0305006D', '0305006A']# kielpinek -> wrzeszcz
+        self.trasa1 = ['03050066', '0305006E', '03010067', '03020067', '03020065'] # wrzeszcz -> kielpinek
+        self.trasa2 = ['03020065', '03020068', '03010000', '03010068', '0305006D', '03050066']# kielpinek -> wrzeszcz
         self.trasa3 = ['0304012E', '0304012D'] # wrzeszcz -> banino
         self.trasa4 = ['0304012D', '0304012F'] # banino -> wrzeszcz
 
@@ -561,30 +582,33 @@ class Window(QtGui.QMainWindow):
         self.licznik_balis = [0, 0, 0, 0]
         self.etap_trasy = [0, 0, 0, 0]
 
+        self.roznica = 0
+
         #Pociag nr 1 - trasa 1 - ustawic na Wrzeszczu
         #Pociag nr 5 - trasa 3 - ustawic na Wrzeszczu
         #Pozostale odpowiednio
 
-        self.client = Client()
-        self.client.connect(TCP_IP, TCP_PORT)
+        #self.client = Client()
+        #self.client.connect(TCP_IP, TCP_PORT)
 
-        model_train = kalman.Model(1)
+        '''model_train = kalman.Model(1)
         self.kalman_train.append(model_train)
         self.train_list.append(Train(1))
 
+        #1 na Wrzeszczu
         self.kalman_train[0].setpower = 65
-        msg = self.train_list[0].move(35, direction["Forward"])
-        self.client.send(msg)
+        #msg = self.train_list[0].move(65, direction["Forward"])
+        #self.client.send(msg)
 
         model_train = kalman.Model(1)   #UWAGA, ZLY MODEL
         self.kalman_train.append(model_train)
         self.train_list.append(Train(2))
 
+        #2 na Kielpinku
         self.kalman_train[1].setpower = 65
-        msg = self.train_list[1].move(35, direction["Backward"])
-        self.client.send(msg)
-        '''
-        model_train = kalman.Model(5)
+        #msg = self.train_list[1].move(35, direction["Backward"])
+        #self.client.send(msg)'''
+        '''model_train = kalman.Model(5)
         self.kalman_train.append(model_train)
         self.train_list.append(Train(5))
 
@@ -601,45 +625,55 @@ class Window(QtGui.QMainWindow):
         self.client.send(msg)'''
 
     def postoj_s_w(self):
-        self.timer_postoj_s_w.start(3000, self)
+
+        self.timer_postoj_s_w.start(10000, self)
 
     def postoj_w_s(self):
-        self.timer_postoj_w_s.start(3000, self)
+
+        self.timer_postoj_w_s.start(10000, self)
+
+    def zamiena_tras(self):
+        if self.train_list[0] == Train(1):
+            self.train_list[0] = Train(2)
+            self.train_list[1] = Train(1)
+        else:
+            self.train_list[0] = Train(1)
+            self.train_list[1] = Train(2)
+
+        self.licznik_balis[0] = 0
+        self.licznik_balis[1] = 0
+        self.etap_trasy[0] = 0
+        self.etap_trasy[1] = 0
+
+
         
     def timerEvent(self, event):
-        '''for i in range(4):
-            if event.timerId() == self.timerTable.timers[i].timerId() and self.autoControl:
-                self.timerTable.updateTimers(i)
-                self.train.setValue(self.timerTable.positionTable[i][self.timerTable.licznik[i]],i)
-                self.train.setValue(self.slider_speed.value(), self.index_t)
-                self.map.repaint()
-        '''
         if event.timerId() == self.timer_glowny.timerId():
             c.acquire()
             can_adres = adres
             c.release()
-
+            #print((self.kalman_train[0].get_position()))
             #Kielpinek -> Wrzeszcz
             if (can_adres == self.trasa2[self.licznik_balis[1]]):
                 if (self.licznik_balis[1] == 0):        #balisa tuz za peronem
                     self.kalman_train[1].update(124.5)
-                    msg = self.train_list[1].move(65)   #jedziemy szybciej
+                    msg = self.train_list[1].move(65, direction["Backward"])   #jedziemy szybciej
                 elif (self.licznik_balis[1] == 1):      #balisa kolo wiaduktu
                     self.kalman_train[1].update(279.5)
-                    msg = self.train_list[1].move(40)   #zwalniamy
                 elif (self.licznik_balis[1] == 2):      #przed strzyza
                     self.kalman_train[1].update(503)
-                    msg = self.train_list[1].move(0)    #zatrzymujemy
+                    msg = self.train_list[1].move(0, direction["Backward"])    #zatrzymujemy
                     self.postoj_s_w()
                 elif (self.licznik_balis[1] == 3):      #za strzyza
                     self.kalman_train[1].update(149)
-                    msg = self.train_list[1].move(65)   #pedzimy
+                    msg = self.train_list[1].move(65, direction["Backward"])   #pedzimy
                 elif (self.licznik_balis[1] == 4):      #koniec zjazdu
                     self.kalman_train[1].update(243)
-                    msg = self.train_list[1].move(40)   #zwalniami bo slalom zaraz bedzie
+                    msg = self.train_list[1].move(40, direction["Backward"])   #zwalniami bo slalom zaraz bedzie
                 elif (self.licznik_balis[1] == 5):
                     self.kalman_train[1].update(215.5)  #to juz peron jest?
-                    msg = self.train_list[1].move(0)    #jak tak to stajemy
+                    msg = self.train_list[1].move(0, direction["Backward"])    #jak tak to stajemy
+                    self.licznik_balis[1] = 0   #trzeba bedzie zmienic zeby drugi pociag nie odpalil
 
                 self.licznik_balis[1] += 1
                 self.etap_trasy[1] += 1
@@ -647,35 +681,55 @@ class Window(QtGui.QMainWindow):
 
             elif (can_adres == self.trasa1[self.licznik_balis[0]]):
                 if (self.licznik_balis[0] == 0):        #gdzies przy wrzeszczu
-                    self.kalman_train[0].update(315.5)
-                    msg = self.train_list[0].move(65)   #przyspieszamy
+                    self.roznica = self.kalman_train[0].get_position()
+                    self.kalman_train[0].setpower = 65
+                    self.kalman_train[0].update(self.roznica)
+                    msg = self.train_list[0].move(65, direction["Forward"])   #przyspieszamy
+                    print('uwaga')
+                    self.client.send(msg)
                 elif (self.licznik_balis[0] == 1):      #podjazd
-                    self.kalman_train[0].update(249)
-                    msg = self.train_list[0].move(40)   #zwalniamy bo zaraz strzyza
+                    self.kalman_train[0].update(249)#self.kalman_train[0].update(249)
+                    print((self.kalman_train[0].get_position()))
+                    #msg = self.train_list[0].move(65, direction["Forward"])   #zwalniamy bo zaraz strzyza
+                    #self.client.send(msg)
                 elif (self.licznik_balis[0] == 2):      #przed strzyza
                     self.kalman_train[0].update(149)
-                    msg = self.train_list[0].move(0)    #zatrzymujemy
+                    print((self.kalman_train[0].get_position()))
+                    #msg = self.train_list[0].move(0, direction["Forward"])    #zatrzymujemy
                     self.postoj_w_s()
+                    #self.client.send(msg)
                 elif (self.licznik_balis[0] == 3):      #okolice wiaduktu
                     self.kalman_train[0].update(672)
-                    msg = self.train_list[0].move(40)   #zwalniamy
+                    print((self.kalman_train[0].get_position()))
+                    msg = self.train_list[0].move(40, direction["Forward"])   #zwalniamy
+                    self.client.send(msg)
                 elif (self.licznik_balis[0] == 4):      #kielpinek
                     self.kalman_train[0].update(278.5)
-                    msg = self.train_list[0].move(0)    #zatrzmujemy
+                    print((self.kalman_train[0].get_position()))
+                    msg = self.train_list[0].move(0, direction["Forward"])    #zatrzmujemy
+                    self.client.send(msg)
 
                 self.licznik_balis[0] += 1
-                self.etap_trasy[0] += 1
-                self.client.send(msg)
+                #self.etap_trasy[0] += 1
 
-            '''if self.kalman_train[1].get_position() > 500 and self.etap_trasy[1] == 3:
+            if self.kalman_train[1].get_position() > 500 and self.etap_trasy[1] == 3:
                 msg = self.train_list[1].move(40)
                 self.client.send(msg)
-                self.etap_trasy[1] += 1     #wynosi wiec 4, a licznik balis nadal 3'''
+                self.etap_trasy[1] += 1     #wynosi wiec 4, a licznik balis nadal 3
 
-            if self.kalman_train[0].get_position() > 600 and self.etap_trasy[0] == 3:
-                msg = self.train_list[0].move(65)
+            if self.kalman_train[0].get_position() > 440+self.roznica and self.etap_trasy[0] == 0:
+                print((self.kalman_train[0].get_position()))
+                print('dziala')
+                msg = self.train_list[0].move(0, direction["Forward"])
                 self.client.send(msg)
-                self.etap_trasy[0] += 1     #wynosi wiec 4, a licznik balis nadal 3
+                self.etap_trasy[0] += 1
+
+            if self.kalman_train[0].get_position() > 100 and self.etap_trasy[0] == 1:
+                print((self.kalman_train[0].get_position()))
+                print('dziala')
+                msg = self.train_list[0].move(0, direction["Forward"])
+                self.client.send(msg)
+                self.etap_trasy[0] += 1
 
         if event.timerId() == self.timer_postoj_s_w.timerId():
 
@@ -685,9 +739,14 @@ class Window(QtGui.QMainWindow):
 
         if event.timerId() == self.timer_postoj_w_s.timerId():
 
-            msg = self.train_list[0].move(65)
+            msg = self.train_list[0].move(40, direction["Forward"])
+            self.etap_trasy[0] += 1
             self.client.send(msg)
+            model_train = kalman.Model(1)
+            self.kalman_train[0] = model_train
+            self.kalman_train[0].setpower = 65
             self.timer_postoj_w_s.stop()
+
 
 def close_application():
     sys.exit()
