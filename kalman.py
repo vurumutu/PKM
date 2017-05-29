@@ -73,23 +73,38 @@ class Model:
         X, P = self.simulatesym(time, updatestate=False)
         return self.C * X
 
-    def get_stop_distance(self):
-        # TODO Jaki czas podać tutaj? Skąd go przypisać?
-        actual_time = time.time()
-        if actual_time < self.simulateTime - self.dT:
-            print(time, " < ", self.simulateTime)
-            raise Exception('Nie cofaj czasu!')
-        X, P, t = np.copy(self.X), np.copy(self.P), self.simulateTime
-        # Robimy symulacje bez zapisywania
-        while t < actual_time:
-            t += self.dT
-            X += (self.A * X + self.B * self.motorPower) * self.dT
-        # Licz dopóki prędkość jest większa równa od zera
-        while (self.C * self.X)[1, 0] >= 0:
-            t += self.dT
-            X += (self.A * X + self.B * self.stopPower) * self.dT
+    def get_stop_distance(self, update_time):
+        """
+                # TODO Jaki czas podać tutaj? Skąd go przypisać?
+                actual_time = time.time()
+                if actual_time < self.simulateTime - self.dT:
+                    print(time, " < ", self.simulateTime)
+                    raise Exception('Nie cofaj czasu!')
+                X, P, t = np.copy(self.X), np.copy(self.P), self.simulateTime
+                # Robimy symulacje bez zapisywania
+                while t < actual_time:
+                    t += self.dT
+                    X += (self.A * X + self.B * self.motorPower) * self.dT
+                # Licz dopóki prędkość jest większa równa od zera
+                while (self.C * self.X)[1, 0] >= 0:
+                    t += self.dT
+                    X += (self.A * X + self.B * self.stopPower) * self.dT
 
-        return (self.C * X)[0, 0] - (self.C * self.X)[0, 0]
+                return (self.C * X)[0, 0] - (self.C * self.X)[0, 0]
+                """
+        """ zwraca dystanc potrzebny do wychamowania. W centymetrach.
+        """
+        self.simulatesym(update_time, updatestate=True)  # zasymuluj do aktualnej chwili czasu
+        power, time, state, P = self.motorPower, self.simulateTime, np.copy(self.X), np.copy(self.P)
+        v = self.get_velocity(False)
+        self.motorPower = 0  # moc na silniku podczas hamowania
+        while v * self.get_velocity(False) > 0.0001:  # > 0, czyli gdy paciag przed i po symulacji jedzie w tym samym kierunku,
+            # pamietajmy o cofaniu,
+            time += self.dT
+            self.simulatesym(time, updatestate=True)  # aktualizujemy stan w celach optymalizacyjnych
+        pozycja = self.get_position(False)  # zapisz pozycje gdzie sie pociag zatrzymal
+        self.motorPower, self.simulateTime, self.X, self.P = power, time, state, P  # przywroc oryginalny stan
+        return pozycja - self.get_position(False)
 
     def update(self, distance):
         """ aktualizuje system wzgledem aktualnego czasu
@@ -161,12 +176,15 @@ if __name__ == "__main__":
     distances = [203, 230, 624, 272]
     times = [18.1354904881, 27.5069689903, 53.9750874511, 7.80411009911]
     times = [7.08, 6.68, 17.55, 7.9]
-
+    t1 = Model(1)
     t = Model(1)
 
     # dla symulacji ustaw czas na 0
     t.updateTime = 0
     t.simulateTime = 0
+    t1.updateTime = 0
+    t1.simulateTime = 0
+    print(t1.get_stop_distance(t1.simulateTime + 10.))
 
     # zmienne do wyswietlania
     tim = [0.]
@@ -191,7 +209,6 @@ if __name__ == "__main__":
         t.updatesym(distances[i], times[i], freshstate=True)
         X.append(t.get_position(False))
         V.append(t.get_velocity(False))
-        print t.get_stop_distance()
         var.append(t.P[1, 1])
 
         pom.append(pom[-1] + distances[i])
