@@ -24,7 +24,8 @@ class Model:
                          [0., 0., 1.]], dtype=float)
 
         # Modele pociągów
-        if train_nr == 1:
+        if train_nr == 11:
+            """
             self.A = np.mat([[-1.141, -0.4455, 0],
                              [0.5, 0, 0],  # Prędkość
                              [0, 1, 0]], dtype=float)  # Droga
@@ -33,6 +34,65 @@ class Model:
                              [0.]], dtype=float)
             self.C = np.mat([[0., 0., 4.067],
                              [0., 4.067, 0.]], dtype=float)
+            """
+            self.A = np.mat([[-1.782, -0.7939, 0],
+                             [1, 0, 0],  # Prędkość
+                             [0, 1, 0]], dtype=float)  # Droga
+            self.B = np.mat([[0.0084904058413992],  # [0.44603076],
+                             [0],
+                             [0.]], dtype=float)
+            self.C = np.mat([[0., 0., 1.],
+                             [0., 1., 0.]], dtype=float)
+
+        if train_nr == 12:
+            self.A = np.mat([[-1.684, -0.7092, 0],
+                             [1, 0, 0],  # Prędkość
+                             [0, 1, 0]], dtype=float)  # Droga
+            self.B = np.mat([[0.0096319395114199],  # [0.44603076],
+                             [0],
+                             [0.]], dtype=float)
+            self.C = np.mat([[0., 0., 1.],
+                             [0., 1., 0.]], dtype=float)
+        if train_nr == 21:
+            self.A = np.mat([[-7.422, -3.443, 0],
+                             [1, 0, 0],  # Prędkość
+                             [0, 1, 0]], dtype=float)  # Droga
+            self.B = np.mat([[0.010564542753384],  # [0.44603076],
+                             [0],
+                             [0.]], dtype=float)
+            self.C = np.mat([[0., 0., 1.],
+                             [0., 1., 0.]], dtype=float)
+
+        if train_nr == 22:
+            self.A = np.mat([[-8.483, -4.486, 0],
+                             [1, 0, 0],  # Prędkość
+                             [0, 1, 0]], dtype=float)  # Droga
+            self.B = np.mat([[0.0081996617639522],  # [0.44603076],
+                             [0],
+                             [0.]], dtype=float)
+            self.C = np.mat([[0., 0., 1.],
+                             [0., 1., 0.]], dtype=float)
+
+        if train_nr == 5:
+            self.A = np.mat([[-2.67, -1.783, 0],
+                             [1, 0, 0],  # Prędkość
+                             [0, 1, 0]], dtype=float)  # Droga
+            self.B = np.mat([[0.0175874425660079],  # [0.44603076],
+                             [0],
+                             [0.]], dtype=float)
+            self.C = np.mat([[0., 0., 1.],
+                             [0., 1., 0.]], dtype=float)
+
+        if train_nr == 6:
+            self.A = np.mat([[-2.152, -1.158, 0],
+                             [1, 0, 0],  # Prędkość
+                             [0, 1, 0]], dtype=float)  # Droga
+            self.B = np.mat([[0.0128930361488501],  # [0.44603076],
+                             [0],
+                             [0.]], dtype=float)
+            self.C = np.mat([[0., 0., 1.],
+                             [0., 1., 0.]], dtype=float)
+
 
         # variances
         self.Q = np.mat([[50., 0., 0.],  # process variance
