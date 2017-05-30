@@ -4,6 +4,7 @@
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from enum import Enum
+import train
 
 class Turn(Enum):
     left = 0
@@ -19,7 +20,7 @@ class Railmap(QWidget):
         self.setMinimumSize(1000, 450)
 
         #dodanie klasy train do mapy
-        self.trains = kalman_trains
+        self.kalman_trains = kalman_trains
 
         self.d_QWindow = q_window
         self.scale = 1
@@ -72,25 +73,30 @@ class Railmap(QWidget):
 
         # dlugosci pociagow
         self.trains_length = [73, 73, 16, 16]
-        # pozycje poczatkowe pociagow
-        self.posX_trains = []
-        # wskazniki okreslające czy pociąg jest na wspólnym odcinku torow
-        # -1 -> wspolny odcinek po lewej
-        # -2 -> wspolny odcinek po prawej
-        # 1 -> gorna lina
-        # 2 -> dolna linia
-        self.trains_dual = [-1, 1, -1, -2]
-        # zapamiętuję czy pociąg ostatnio jechał górna czy dolną linia
-        # True - jechał górną linią, False - jechał dolna linią
-        self.up_table = [False, True, False, False]
         self.sym_kalman = 0
 
-    # inicjalizacja pozycji poczatkowycj pociagów
-    def initPositions(self):
-        pos_t1 = self.line1.get_length_fromobj(0) - self.trains_length[0]/2
-        pos_t2 = self.line1.get_x_fromobj(22) + self.trains_length[1]/2
-        pos_t5 = self.line3.get_length_fromobj(0) - self.trains_length[0]/2
-        pos_t6 = self.line3.get_x_fromobj(22) + self.trains_length[1]/2
+        # inicjalizacja pociągów
+        x1 = self.line3.get_length_fromobj(0) - self.trains_length[0]/2
+        self.train1 = train.Train(0, x1, 1, self.kalman_trains[0], self.trainsLine[0], self.trains_length[0])
+        self.train1.setColor(Qt.darkGreen)
+        self.train1.setReverse(False)
+
+        x2 = self.line3.get_x_fromobj(len(self.line3.map_object) - 2) + self.trains_length[1]/2
+        self.train2 = train.Train(0, x2, 2, self.kalman_trains[1], self.trainsLine[1], self.trains_length[1], -2)
+        self.train2.setColor(Qt.darkBlue)
+        self.train2.setUp(True)
+        self.train2.setReverse(True)
+
+        x3 = self.line1.get_length_fromobj(0) - self.trains_length[2]/2
+        self.train3 = train.Train(0, x3, 5, self.kalman_trains[2], self.trainsLine[2], self.trains_length[2])
+        self.train3.setColor(Qt.darkRed)
+        self.train3.setReverse(False)
+
+        x4 = self.line1.get_x_fromobj(len(self.line1.map_object) - 6) + self.trains_length[3]/2
+        self.train4 = train.Train(0, x4, 6, self.kalman_trains[3], self.trainsLine[3], self.trains_length[3], 1)
+        self.train4.setColor(Qt.darkMagenta)
+        self.train4.setUp(True)
+        self.train4.setReverse(True)
 
     # liczenie skali proporcjonalnej do rzeczywistych wymiarow
     def setscale(self):
@@ -144,91 +150,28 @@ class Railmap(QWidget):
 
         paint.end()
 
-        #x_t = self.train.getValue()
-        #train_length = self.train.getLength()
-
         # rysowanie lini kolejowych
         self.line1.draw_line(self, self.images)
         self.line2.draw_line(self, self.images)
         self.line3.draw_line(self, self.images)
         self.line4.draw_line(self, self.images)
 
-        # rysowanie pociagów
-        self.set_position_train1(self)
+        #self.train1.kalman_train = self.sym_kalman
+        #self.train2.kalman_train = self.sym_kalman
+        #self.train3.kalman_train = self.sym_kalman
+        #self.train4.kalman_train = self.sym_kalman
 
-    def set_position_train1(self, q_window):
-        lines = self.trainsLine[0]
-        train_dual = self.trains_dual[0]
-        train_length = self.trains_length[0]
-        kalman_position = self.trains[0].get_position() #self.sym_kalman
-        up = self.up_table[0]
+        # aktualizacja pozycji pociągów na podstawie modelu z kalmana
+        self.train1.update_position()
+        self.train2.update_position()
+        self.train3.update_position()
+        self.train4.update_position()
 
-
-        if train_dual == -1:
-            x = lines[0].get_length_fromobj(0) - train_length/2 + kalman_position
-            if x >= lines[0].get_x_fromobj(7):
-                if lines[0].railswitch[0].status:
-                    train_dual = 1
-                else:
-                    train_dual = 2
-            self.draw_train(q_window, train_length, lines[0].x + x, lines[0].y)
-            self.draw_train(q_window, train_length, lines[1].x + x, lines[1].y)
-
-        elif train_dual == -2:
-            x = lines[0].get_length_fromobj(0) - train_length / 2 + kalman_position
-            if up:
-                test = lines[0].get_x_fromobj(len(lines[0].map_object)-6)
-            else:
-                test = lines[1].get_x_fromobj(len(lines[1].map_object)-6)
-            if x <= test + lines[0].railswitch[1].length:
-                if lines[0].railswitch[1].status:
-                    train_dual = 1
-                else:
-                    train_dual = 2
-            diff = lines[0].get_x_fromobj(len(lines[0].map_object)-6) - lines[1].get_x_fromobj(len(lines[1].map_object)-6)
-            if up:
-                self.draw_train(q_window, train_length, lines[0].x + x, lines[0].y)
-                self.draw_train(q_window, train_length, lines[1].x + x - diff, lines[1].y)
-            else:
-                self.draw_train(q_window, train_length, lines[0].x + x + diff, lines[0].y)
-                self.draw_train(q_window, train_length, lines[1].x + x, lines[1].y)
-
-        elif train_dual == 1:
-            up = True
-            x = lines[0].get_length_fromobj(0) - train_length / 2 + kalman_position
-            test = lines[0].get_x_fromobj(len(lines[0].map_object) - 6)
-            if x >= (test + lines[0].railswitch[1].length):
-                train_dual = -2
-            elif x <= lines[0].get_x_fromobj(7):
-                train_dual = -1
-            self.draw_train(q_window, train_length, lines[0].x + x, lines[0].y)
-        elif train_dual == 2:
-            up = False
-            x = lines[0].get_length_fromobj(0) - train_length / 2 + kalman_position
-            test = lines[1].get_x_fromobj(len(lines[1].map_object) - 6)
-            if x >= test + lines[1].railswitch[1].length:
-                train_dual = -2
-            elif x <= lines[1].get_x_fromobj(7):
-                train_dual = -1
-            self.draw_train(q_window, train_length, lines[1].x + x, lines[1].y)
-
-        self.up_table[0] = up
-        self.trains_dual[0] = train_dual
-
-    def draw_train(self, q_window, train_length, x0 ,y0):
-        paint = QPainter()
-        paint.begin(q_window)
-        paint.setRenderHint(QPainter.Antialiasing)
-
-        width_sc = round(train_length * self.scale)
-        height_sc = round(10 * self.scale)
-
-        st_dim = QRect((x0 - width_sc/2)*self.scale, y0 - height_sc/2, width_sc, height_sc)
-
-        paint.setPen(Qt.black)
-        paint.setBrush(Qt.darkGreen)
-        paint.drawRect(st_dim)
-        paint.end()
+        # rysoanie pociągów
+        self.train1.draw(self)
+        self.train2.draw(self)
+        self.train3.draw(self)
+        self.train4.draw(self)
 
 
     def draw_legend(self, x, y, paint=QPainter()):
@@ -255,8 +198,6 @@ class Railmap(QWidget):
         paint.drawText(x + 100, y + 73, "czujnik")
         paint.drawText(x + 100, y + 90, "odcinek torow")
         paint.drawText(x + 100, y + 110, "wspolny odcinek torow")
-
-
 
 
 
@@ -343,6 +284,17 @@ class Railline:
             elif obj == 3:
                 switches += 1
         return 0
+
+    # funkcja zwracająca numer w mapie obiektów danej zwrotnicy
+    def get_numobj_switch(self, switch):
+        count_switch = 0
+        for i in range(len(self.map_object)):
+            if self.map_object[i] == 3:
+                if count_switch == switch:
+                    return i
+                else:
+                    count_switch += 1
+        return -1
 
 
     # --------------------------
@@ -469,14 +421,6 @@ class Railline:
         len_sc = round(self.scale * leng)
         x1 = x0 + len_sc
         y1 = y0
-
-        '''pencil = QPen()
-        pencil.setColor(Qt.black)
-        pencil.setWidth(size)
-
-        paint.setPen(pencil)
-        #paint.drawLine(x0, y0, x1, y1)
-        paint.setPen(Qt.NoPen)'''
 
         img = img.scaled(round(float(self.scale * 50)), round(float(self.scale * 35)))
         pixmap = QPixmap().fromImage(img)
