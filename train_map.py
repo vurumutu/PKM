@@ -12,20 +12,14 @@ class Turn(Enum):
 
 class Railmap(QWidget):
 
-    def __init__(self, x, y, height, width, train, q_window):
+    def __init__(self, x, y, height, width, kalman_trains, q_window):
         super(Railmap, self).__init__(q_window)
         #inicjalizacja wielkości mapy
         self.setGeometry(x, y, width, height)
         self.setMinimumSize(1000, 450)
 
         #dodanie klasy train do mapy
-        self.train = train
-
-        #WYBOR KTORY POCIAG NA KTORYM TORZE
-        self.train1 = 0
-        self.train2 = 1
-        self.train3 = 2
-        self.train4 = 3
+        self.trains = kalman_trains
 
         self.d_QWindow = q_window
         self.scale = 1
@@ -72,6 +66,31 @@ class Railmap(QWidget):
         self.line4.set_negation(True)
         self.setscale()
 
+        # słownik z przypisanymi pociągami do danych linii
+        self.trainsLine = {0 : [self.line3, self.line4], 1 : [self.line3, self.line4],
+                           2 : [self.line1, self.line2], 3 : [self.line1, self.line2]}
+
+        # dlugosci pociagow
+        self.trains_length = [73, 73, 16, 16]
+        # pozycje poczatkowe pociagow
+        self.posX_trains = []
+        # wskazniki okreslające czy pociąg jest na wspólnym odcinku torow
+        # -1 -> wspolny odcinek po lewej
+        # -2 -> wspolny odcinek po prawej
+        # 1 -> gorna lina
+        # 2 -> dolna linia
+        self.trains_dual = [-1, 1, -1, -2]
+        # zapamiętuję czy pociąg ostatnio jechał górna czy dolną linia
+        # True - jechał górną linią, False - jechał dolna linią
+        self.up_table = [False, True, False, False]
+        self.sym_kalman = 0
+
+    # inicjalizacja pozycji poczatkowycj pociagów
+    def initPositions(self):
+        pos_t1 = self.line1.get_length_fromobj(0) - self.trains_length[0]/2
+        pos_t2 = self.line1.get_x_fromobj(22) + self.trains_length[1]/2
+        pos_t5 = self.line3.get_length_fromobj(0) - self.trains_length[0]/2
+        pos_t6 = self.line3.get_x_fromobj(22) + self.trains_length[1]/2
 
     # liczenie skali proporcjonalnej do rzeczywistych wymiarow
     def setscale(self):
@@ -125,14 +144,92 @@ class Railmap(QWidget):
 
         paint.end()
 
-        x_t = self.train.getValue()
-        train_length = self.train.getLength()
+        #x_t = self.train.getValue()
+        #train_length = self.train.getLength()
 
         # rysowanie lini kolejowych
-        self.line1.draw_line(self, x_t[self.train1], train_length[self.train1], self.images)
-        self.line2.draw_line(self, x_t[self.train2], train_length[self.train2], self.images)
-        self.line3.draw_line(self, x_t[self.train3], train_length[self.train3], self.images)
-        self.line4.draw_line(self, x_t[self.train4], train_length[self.train4], self.images)
+        self.line1.draw_line(self, self.images)
+        self.line2.draw_line(self, self.images)
+        self.line3.draw_line(self, self.images)
+        self.line4.draw_line(self, self.images)
+
+        # rysowanie pociagów
+        self.set_position_train1(self)
+
+    def set_position_train1(self, q_window):
+        lines = self.trainsLine[0]
+        train_dual = self.trains_dual[0]
+        train_length = self.trains_length[0]
+        kalman_position = self.trains[0].get_position() #self.sym_kalman
+        up = self.up_table[0]
+
+
+        if train_dual == -1:
+            x = lines[0].get_length_fromobj(0) - train_length/2 + kalman_position
+            if x >= lines[0].get_x_fromobj(7):
+                if lines[0].railswitch[0].status:
+                    train_dual = 1
+                else:
+                    train_dual = 2
+            self.draw_train(q_window, train_length, lines[0].x + x, lines[0].y)
+            self.draw_train(q_window, train_length, lines[1].x + x, lines[1].y)
+
+        elif train_dual == -2:
+            x = lines[0].get_length_fromobj(0) - train_length / 2 + kalman_position
+            if up:
+                test = lines[0].get_x_fromobj(len(lines[0].map_object)-6)
+            else:
+                test = lines[1].get_x_fromobj(len(lines[1].map_object)-6)
+            if x <= test + lines[0].railswitch[1].length:
+                if lines[0].railswitch[1].status:
+                    train_dual = 1
+                else:
+                    train_dual = 2
+            diff = lines[0].get_x_fromobj(len(lines[0].map_object)-6) - lines[1].get_x_fromobj(len(lines[1].map_object)-6)
+            if up:
+                self.draw_train(q_window, train_length, lines[0].x + x, lines[0].y)
+                self.draw_train(q_window, train_length, lines[1].x + x - diff, lines[1].y)
+            else:
+                self.draw_train(q_window, train_length, lines[0].x + x + diff, lines[0].y)
+                self.draw_train(q_window, train_length, lines[1].x + x, lines[1].y)
+
+        elif train_dual == 1:
+            up = True
+            x = lines[0].get_length_fromobj(0) - train_length / 2 + kalman_position
+            test = lines[0].get_x_fromobj(len(lines[0].map_object) - 6)
+            if x >= (test + lines[0].railswitch[1].length):
+                train_dual = -2
+            elif x <= lines[0].get_x_fromobj(7):
+                train_dual = -1
+            self.draw_train(q_window, train_length, lines[0].x + x, lines[0].y)
+        elif train_dual == 2:
+            up = False
+            x = lines[0].get_length_fromobj(0) - train_length / 2 + kalman_position
+            test = lines[1].get_x_fromobj(len(lines[1].map_object) - 6)
+            if x >= test + lines[1].railswitch[1].length:
+                train_dual = -2
+            elif x <= lines[1].get_x_fromobj(7):
+                train_dual = -1
+            self.draw_train(q_window, train_length, lines[1].x + x, lines[1].y)
+
+        self.up_table[0] = up
+        self.trains_dual[0] = train_dual
+
+    def draw_train(self, q_window, train_length, x0 ,y0):
+        paint = QPainter()
+        paint.begin(q_window)
+        paint.setRenderHint(QPainter.Antialiasing)
+
+        width_sc = round(train_length * self.scale)
+        height_sc = round(10 * self.scale)
+
+        st_dim = QRect((x0 - width_sc/2)*self.scale, y0 - height_sc/2, width_sc, height_sc)
+
+        paint.setPen(Qt.black)
+        paint.setBrush(Qt.darkGreen)
+        paint.drawRect(st_dim)
+        paint.end()
+
 
     def draw_legend(self, x, y, paint=QPainter()):
         paint.setBrush(Qt.white)
@@ -158,6 +255,9 @@ class Railmap(QWidget):
         paint.drawText(x + 100, y + 73, "czujnik")
         paint.drawText(x + 100, y + 90, "odcinek torow")
         paint.drawText(x + 100, y + 110, "wspolny odcinek torow")
+
+
+
 
 
 class Railline:
@@ -193,6 +293,57 @@ class Railline:
         leng_line = sum(self.leng_rails) + sum(self.stations[::2]) + sum(leng_switch)
 
         return leng_line
+
+    # -----------------------------
+    # funkcje do pobierania danych
+
+    # funkcja pobierająca długość DO danego obiektu
+    def get_x_fromobj(self, num_obj):
+        sum_leng = 0
+
+        stations = 0
+        rails = 0
+        switches = 0
+        for i in range(len(self.map_object)):
+            obj = self.map_object[i]
+            if i == num_obj:
+                return sum_leng
+            elif obj == 4 or obj == 0:
+                sum_leng += self.leng_rails[rails]
+                rails += 1
+            elif obj == 1:
+                sum_leng += self.stations[stations]
+                stations += 2
+            elif obj == 3:
+                sum_leng += self.railswitch[switches].length
+                switches += 1
+        return sum_leng
+
+
+    # funkcja pobierająca długość danego obiektu
+    def get_length_fromobj(self, num_obj):
+        stations = 0
+        rails = 0
+        switches = 0
+        for i in range(len(self.map_object)):
+            obj = self.map_object[i]
+            if i == num_obj:
+                if obj == 4 or obj == 0:
+                    return self.leng_rails[rails]
+                elif obj == 1:
+                    return self.stations[stations]
+                elif obj == 3:
+                    return self.railswitch[switches].length
+                else:
+                    return 0
+            if obj == 4 or obj == 0:
+                rails += 1
+            elif obj == 1:
+                stations += 1
+            elif obj == 3:
+                switches += 1
+        return 0
+
 
     # --------------------------
     # funkcje wypelniajace listy
@@ -234,7 +385,7 @@ class Railline:
     # ---end---
 
     # rysowanie calej lini kolejowej
-    def draw_line(self, q_window, x_t, train_length, images = None):
+    def draw_line(self, q_window, images = None):
         # tworzenie kopi wektorow
         cstations = self.stations[:]
         crail_leng = self.leng_rails[:]
@@ -289,7 +440,7 @@ class Railline:
         self.draw_endrail(x, y, paint)
 
         paint.setBrush(Qt.NoBrush)
-        self.draw_train(x_t, y, paint, train_length)
+        #self.draw_train(x_t, y, paint, train_length)
 
         paint.end()
 
@@ -380,17 +531,6 @@ class Railline:
 
     def set_scale(self, scale):
         self.scale = scale
-
-    #rysowanie pociagu
-    def draw_train (self, x0, y0, paint, train_length):
-
-        width_sc = round(train_length*self.scale)
-        height_sc = round(20*self.scale)
-
-        st_dim = QRect(x0*self.scale, y0 - height_sc / 2, width_sc, height_sc)
-
-        paint.setPen(Qt.darkGreen)
-        paint.drawRect(st_dim)
 
 
 class Railswitch(QWidget):

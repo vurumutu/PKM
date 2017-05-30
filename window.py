@@ -123,9 +123,6 @@ class Window(QtGui.QMainWindow):
         # tworzenie klienta do polaczenia
         self.client = Client()
 
-        #inicjalizacja zwotnic
-        self.init_zwrotnice()
-
         #utworzenie obektu zapwierajacego informacje o pociagach
         self.train_GUI = train.Train()
         self.msg = None
@@ -134,14 +131,57 @@ class Window(QtGui.QMainWindow):
         for i in range(1,7):
             self.trains.append(Train(i))
 
-        # utworzenie obiektu tworzacego mape kolejowa
-        self.map = train_map.Railmap(0, 30, self.height(), self.width(), self.train_GUI, self)
-
         self.rozklad()
 
+        # utworzenie obiektu tworzacego mape kolejowa
+        self.map = train_map.Railmap(0, 30, self.height(), self.width(), self.kalman_train, self)
+
+        # inicjalizacja zwotnic
+        #self.initSwitches()
         self.initLayout()
         self.initUI()
         self.show()
+
+
+    # INICJALIZACJA ZWROTNIC
+    def initSwitches(self):
+        # adresy używanych zwrotnic
+        addr_zwrotnic_main = ['010501F5', '010401FB', '0105006F', '0102000C']
+        # adresy zwrotnic ustawianych tylko przy uruchomieiu programu
+        addr_zwrotnic_other = ['010501F7', '010501F8', '010501F9', '010501FA',
+                               '01050067', '01050134', '0105006C', '0105006D', '0105006E', '01010065', '01010066', '01020001', '01020002', '0102000B']
+
+        addr_zwrotnic = addr_zwrotnic_main + addr_zwrotnic_other
+        self.zwrotnice_ = []
+        for address in addr_zwrotnic_main:
+            find = False
+            for zwrot in can.zwrotnica:
+                if zwrot.agent.address.lower() == address.lower():
+                    self.zwrotnice_.append(zwrot)
+                    find = True
+                    break
+            # sprawdza czy znalazł zwrotnice
+            # gdy jej nie znalazł to wpisz wartośc None
+            # oraz wyswietl komunikat
+            if not find:
+                self.zwrotnice_.append(None)
+                QMessageBox.warning(self, "Zwrotnice", " Nie znalezono zwrotnicy o adresie: " + address, QMessageBox.Ok)
+
+            # poczatkowe ustawienie zwrotnic
+            # numer zwrotnicy : zwrot (False - right, True - Left
+            defaultDirect = {
+                0 : True,
+                1 : False,
+                2 : True,
+                3 : False
+            }
+            for num_switch in defaultDirect:
+                if defaultDirect[num_switch]:
+                    #left
+                    self.zwrotnice_[num_switch].lewo()
+                else:
+                    #right
+                    self.zwrotnice_[num_switch].prawo()
 
     # INICJALIZACJA LAYOUTU
     def initLayout(self):
@@ -358,20 +398,6 @@ class Window(QtGui.QMainWindow):
         self.setWindowTitle('PKM')
         self.show()
 
-    def init_zwrotnice(self):
-        addr_zwrotnic = ['01050128', '0102000C', '010003DF', '01020001']
-        addr_zwrotnic_stale = ['0102000B', '0102000C', '010003DF', '01020001']
-        self.zwrotnice_ = []
-        for zwrot in can.zwrotnica:
-            for address in addr_zwrotnic:
-                if zwrot.agent.address == address:
-                    self.zwrotnice_.append(zwrot)
-
-
-
-
-
-
     def doit(self):
         self.w = About()
         self.w.show()
@@ -393,6 +419,7 @@ class Window(QtGui.QMainWindow):
         self.slider_speed.setTickPosition(QtGui.QSlider.TicksBelow)
         self.slider_speed.setTickInterval(5)
         self.slider_speed.sliderReleased.connect(self.tUpdate)
+        #self.slider_speed.valueChanged.connect(self.symulate_kalman_slider)
         layout.addWidget(self.slider_speed)
 
         slider = QtGui.QWidget()
@@ -466,40 +493,68 @@ class Window(QtGui.QMainWindow):
             self.msg = None
 
     def change_state_switch1(self):
+        self.t1z1.setEnabled(False)
+        # zmiana zwrotnicy w GUI
         self.map.switch1.neg_status()
         self.map.repaint()
-        if self.map.switch1.status:
-            self.zwrotnice_[0].lewo()
-            print("test")
-        else:
-            self.zwrotnice_[0].prawo()
+        # rzeczywista zmiana zwrotnicy
+        try:
+            if self.map.switch1.status:
+                self.zwrotnice_[0].lewo()
+            else:
+                self.zwrotnice_[0].prawo()
+        except Exception as message:
+            QMessageBox.warning(self, 'Zwrotnica', str(message), QMessageBox.Ok)
+
+        self.t1z1.setEnabled(True)
 
     def change_state_switch2(self):
+        self.t1z2.setEnabled(False)
+        # zmiana zwrotnicy w GUI
         self.map.switch2.neg_status()
+        # rzeczywista zmiana zwrotnicy
+        try:
+            if self.map.switch2.status:
+                self.zwrotnice_[1].lewo()
+            else:
+                self.zwrotnice_[1].prawo()
+        except Exception as message:
+            QMessageBox.warning(self, 'Zwrotnica', str(message), QMessageBox.Ok)
+
+        self.t1z2.setEnabled(True)
         self.map.repaint()
-        if self.map.switch2.status:
-            self.zwrotnice_[1].lewo()
-            print("test")
-        else:
-            self.zwrotnice_[1].prawo()
 
     def change_state_switch3(self):
+        self.t2z1.setEnabled(False)
+        # zmiana zwrotnicy w GUI
         self.map.switch3.neg_status()
+        # rzeczywista zmiana zwrotnicy
+        try:
+            if self.map.switch3.status:
+                self.zwrotnice_[2].lewo()
+            else:
+                self.zwrotnice_[2].prawo()
+        except Exception as message:
+            QMessageBox.warning(self, 'Zwrotnica', str(message), QMessageBox.Ok)
+
+        self.t2z1.setEnabled(True)
         self.map.repaint()
-        if self.map.switch3.status:
-            self.zwrotnice_[2].lewo()
-            print("test")
-        else:
-            can.zwrotnica[2].prawo()
 
     def change_state_switch4(self):
+        self.t2z2.setEnabled(False)
+        # zmiana zwrotnicy w GUI
         self.map.switch4.neg_status()
+        # rzeczywista zmiana zwrotnicy
+        try:
+            if self.map.switch4.status:
+                self.zwrotnice_[3].lewo()
+            else:
+                self.zwrotnice_[3].prawo()
+        except Exception as message:
+            QMessageBox.warning(self, 'Zwrotnica', str(message), QMessageBox.Ok)
+
+        self.t2z2.setEnabled(True)
         self.map.repaint()
-        if self.map.switch4.status:
-            self.zwrotnice_[3].lewo()
-            print("test")
-        else:
-            self.zwrotnice_[3].prawo()
 
     # łączenie i rozłączenie z pociągami
     def connect_disconnect(self):
@@ -563,6 +618,10 @@ class Window(QtGui.QMainWindow):
 
     def resizeEvent(self, event):
         self.map.setscale()
+
+    def symulate_kalman_slider(self):
+        self.map.sym_kalman = 4*self.slider_speed.value()
+        self.map.repaint()
 
     def rozklad(self):
         self.timer_glowny = QBasicTimer()
