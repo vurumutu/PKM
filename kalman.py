@@ -64,6 +64,15 @@ class Model:
                              [0., 1., 0.]], dtype=float)
 
         if train_nr == 22:
+            self.A = np.mat([[-0.083, -1.186, 0],
+                             [1, 0, 0],  # Prędkość
+                             [0, 1, 0]], dtype=float)  # Droga
+            self.B = np.mat([[0.41996617639522],  # [0.44603076],
+                             [0],
+                             [0.]], dtype=float)
+            self.C = np.mat([[0., 0., 1.],
+                             [0., 1., 0.]], dtype=float)
+            """
             self.A = np.mat([[-8.483, -4.486, 0],
                              [1, 0, 0],  # Prędkość
                              [0, 1, 0]], dtype=float)  # Droga
@@ -72,7 +81,7 @@ class Model:
                              [0.]], dtype=float)
             self.C = np.mat([[0., 0., 1.],
                              [0., 1., 0.]], dtype=float)
-
+            """
         if train_nr == 5:
             self.A = np.mat([[-2.67, -1.783, 0],
                              [1, 0, 0],  # Prędkość
@@ -164,6 +173,8 @@ class Model:
             self.simulatesym(time, updatestate=True)  # aktualizujemy stan w celach optymalizacyjnych
         pozycja = self.get_position(False)  # zapisz pozycje gdzie sie pociag zatrzymal
         self.motorPower, self.simulateTime, self.X, self.P = power, time, state, P  # przywroc oryginalny stan
+        print(pozycja)
+        print(self.get_position(False))
         return pozycja - self.get_position(False)
 
     def update(self, distance):
@@ -236,8 +247,8 @@ if __name__ == "__main__":
     distances = [203, 230, 624, 272]
     times = [18.1354904881, 27.5069689903, 53.9750874511, 7.80411009911]
     times = [7.08, 6.68, 17.55, 7.9]
-    t1 = Model(1)
-    t = Model(1)
+    t1 = Model(22)
+    t = Model(11)
 
     # dla symulacji ustaw czas na 0
     t.updateTime = 0
@@ -245,6 +256,7 @@ if __name__ == "__main__":
     t1.updateTime = 0
     t1.simulateTime = 0
     print(t1.get_stop_distance(t1.simulateTime + 10.))
+    print("Pozycja: ", t1.get_position(False))
 
     # zmienne do wyswietlania
     tim = [0.]
@@ -303,4 +315,4 @@ if __name__ == "__main__":
     # plt.plot(tim, var)
     # plt.title('wariancja predkosci')
 
-    plt.show()
+    # plt.show()
