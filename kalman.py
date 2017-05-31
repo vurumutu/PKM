@@ -47,7 +47,7 @@ class Model:
                              [0., 1., 0.]], dtype=float)
         # Pociąg 2 do PRZODU
         if train_nr == 21:
-            self.A = np.mat([[-0.083, -1.186, 0],
+            self.A = np.mat([[-1.183, -1.186, 0],
                              [1, 0, 0],
                              [0, 1, 0]], dtype=float)
             self.B = np.mat([[0.41996617639522],
@@ -57,7 +57,7 @@ class Model:
                              [0., 1., 0.]], dtype=float)
         # Pociąg 2 do TYLU
         if train_nr == 22:
-            self.A = np.mat([[-0.083, -1.186, 0],
+            self.A = np.mat([[-1.183, -1.186, 0],
                              [1, 0, 0],
                              [0, 1, 0]], dtype=float)
             self.B = np.mat([[0.41996617639522],
@@ -226,8 +226,22 @@ class Model:
 
 # TESTOWANIE
 if __name__ == "__main__":
-    t = Model(6)
+    t = Model(22)
     t.set_power(65)
-    # dla symulacji ustaw czas na 0
+
+    # Symulacja pozycji z Kielpinka do Strzyza
+    zero = t.simulateTime
+    while t.get_position() + 28 < 888:
+        time.sleep(0.05)
+        print("Czas: " + str(t.simulateTime - zero) + " Pozycja z Kielpinka do Strzyza: " + str(t.get_position()))
+    t.set_power(0.001)
+    stop_time = 0
+    while stop_time < 10:
+        time.sleep(0.05)
+        stop_time += 0.05
+        print("Czas: " + str(t.simulateTime - zero) + " Pozycja z Kielpinka do Strzyza: " + str(t.get_position()))
+    """
+    # Symulacja drogi hamowania
     time.sleep(10)  # Poruszamy pociągiem przez 10 sekund
     print("Dystans hamowania: ", t.get_stop_distance())
+    """
