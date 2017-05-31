@@ -63,7 +63,7 @@ class Train:
 
     def negReverse(self):
         self.reverse = not self.reverse
-        self.setPositionInit(self.x)
+        #self.setPositionInit(self.x)
 
     def update_position(self):
         kalman_position = self.kalman_train.get_position()#self.kalman_train

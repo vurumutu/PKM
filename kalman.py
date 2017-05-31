@@ -47,7 +47,7 @@ class Model:
                              [0., 1., 0.]], dtype=float)
         # Pociąg 2 do PRZODU
         if train_nr == 21:
-            self.A = np.mat([[-0.083, -1.186, 0],
+            self.A = np.mat([[-1.183, -1.186, 0],
                              [1, 0, 0],
                              [0, 1, 0]], dtype=float)
             self.B = np.mat([[0.41996617639522],
@@ -57,7 +57,7 @@ class Model:
                              [0., 1., 0.]], dtype=float)
         # Pociąg 2 do TYLU
         if train_nr == 22:
-            self.A = np.mat([[-0.083, -1.186, 0],
+            self.A = np.mat([[-1.183, -1.186, 0],
                              [1, 0, 0],
                              [0, 1, 0]], dtype=float)
             self.B = np.mat([[0.41996617639522],

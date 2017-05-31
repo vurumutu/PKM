@@ -101,7 +101,7 @@ class Balisa:
 
     def wlacz(self, hist):
         self.histereza = hist
-        self.agent.send('33 ' + self.histereza)
+        self.agent.send('33 ' + str(self.histereza))
 
     def wylacz(self):
         self.agent.send('30')
@@ -202,7 +202,7 @@ def handle_data(data):
 
 
 ser_raw = serial.Serial(
-    port='COM3',
+    port='COM6',
     # port='COM21',
     baudrate=500000,
     parity=serial.PARITY_NONE,

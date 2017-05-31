@@ -24,6 +24,7 @@ class Railmap(QWidget):
 
         self.d_QWindow = q_window
         self.scale = 1
+        self.autoControl = False
 
         img_rail = self.load_image("Pictures/rail.png")
         img_railcomb = self.load_image("Pictures/rail_comb.png")
@@ -75,6 +76,7 @@ class Railmap(QWidget):
         self.trains_length = [73, 73, 16, 16]
         self.sym_kalman = 0
 
+    def createTrains(self):
         # inicjalizacja pociągów
         x1 = self.line3.get_length_fromobj(0) - self.trains_length[0]/2
         self.train1 = train.Train(0, x1, 1, self.kalman_trains[0], self.trainsLine[0], self.trains_length[0])
@@ -92,11 +94,14 @@ class Railmap(QWidget):
         self.train3.setColor(Qt.darkRed)
         self.train3.setReverse(False)
 
-        x4 = self.line1.get_x_fromobj(len(self.line1.map_object) - 6) + self.trains_length[3]/2
-        self.train4 = train.Train(0, x4, 6, self.kalman_trains[3], self.trainsLine[3], self.trains_length[3], 1)
+        x4 = self.line1.get_x_fromobj(len(self.line1.map_object) - 1) + self.trains_length[3]/2 + 12
+        self.train4 = train.Train(0, x4, 6, self.kalman_trains[3], self.trainsLine[3], self.trains_length[3], -2)
         self.train4.setColor(Qt.darkMagenta)
         self.train4.setUp(True)
         self.train4.setReverse(True)
+
+    def setAutoControl(self, control):
+        self.autoControl = control
 
     # liczenie skali proporcjonalnej do rzeczywistych wymiarow
     def setscale(self):
@@ -161,17 +166,18 @@ class Railmap(QWidget):
         #self.train3.kalman_train = self.sym_kalman
         #self.train4.kalman_train = self.sym_kalman
 
-        # aktualizacja pozycji pociągów na podstawie modelu z kalmana
-        self.train1.update_position()
-        self.train2.update_position()
-        self.train3.update_position()
-        self.train4.update_position()
+        if self.autoControl:
+            # aktualizacja pozycji pociągów na podstawie modelu z kalmana
+            self.train1.update_position()
+            self.train2.update_position()
+            self.train3.update_position()
+            self.train4.update_position()
 
-        # rysoanie pociągów
-        self.train1.draw(self)
-        self.train2.draw(self)
-        self.train3.draw(self)
-        self.train4.draw(self)
+            # rysoanie pociągów
+            self.train1.draw(self)
+            self.train2.draw(self)
+            self.train3.draw(self)
+            self.train4.draw(self)
 
 
     def draw_legend(self, x, y, paint=QPainter()):
