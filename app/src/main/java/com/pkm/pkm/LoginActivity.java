@@ -29,7 +29,7 @@ public class LoginActivity extends AppCompatActivity {
             public void onClick(View v) {
                 ip = inputIp.getText().toString();
                 Toast.makeText(getApplicationContext(),
-                        "Connecting...",Toast.LENGTH_SHORT).show();
+                        ("Connecting to" + ip), Toast.LENGTH_SHORT).show();
                 Intent myIntent = new Intent(LoginActivity.this, MainActivity.class);
                 myIntent.putExtra("key", ip); //Optional parameters
                 startActivity(myIntent);

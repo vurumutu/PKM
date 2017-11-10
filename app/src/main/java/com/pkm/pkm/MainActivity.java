@@ -71,7 +71,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-
+                sendNetworkRequest(trainn);
             }
         });
 
@@ -116,7 +116,7 @@ public class MainActivity extends AppCompatActivity {
         //pg1.setVisibility(View.INVISIBLE);
 
         //for debug only
-        ip = "http://10.0.2.2:7777/";
+        //ip = "http://10.0.2.2:7777/";
 
         builder = new Retrofit.Builder()
                 .baseUrl(ip)
@@ -137,7 +137,8 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onFailure(Call<List<Train>> call, Throwable t) {
-                Toast.makeText(MainActivity.this, "error", Toast.LENGTH_SHORT).show();
+
+                Toast.makeText(MainActivity.this, "Could not load trains", Toast.LENGTH_SHORT).show();
             }
         });
     }
