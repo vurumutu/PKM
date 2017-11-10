@@ -339,6 +339,15 @@ class Window(QtGui.QMainWindow):
         self.t2z2.resize(self.t2z2.sizeHint())
         self.t2z2.move(300+marginX, 60+marginY)
 
+        self.target = QtGui.QComboBox(Group_switch)
+        self.target.addItem('dziala')
+        self.target.addItem('dziala_bardziej')
+
+        #self.target.currentIndex()
+
+        self.system_start = QtGui.QPushButton('Start system', Group_switch)
+        self.system_start.clicked.connect(self.RUN_system_RUN)
+
         return Group_switch
 
     # podgrupa kontrolek do łączenia się z pociągami oraz wyboru typu sterowania
@@ -563,6 +572,19 @@ class Window(QtGui.QMainWindow):
         sleep(0.2)
         self.t2z2.setEnabled(True)
         self.map.repaint()
+
+    def RUN_system_RUN(self):
+        print(self.target.currentIndex())
+        #if(self.map.train1.actual_track_section_l0 == 23):
+        self.tablicaPPPP = [self.map.train1,self.map.train2,self.map.train3,self.map.train4]
+
+        for i in range(4):
+            if(self.tablicaPPPP[i].actual_track_section_l0 != 23 and self.tablicaPPPP[i].actual_track_section_l1 != 23):
+                print('moznaJechac')
+
+
+            print(self.tablicaPPPP[i].actual_track_section_l0)
+
 
     # łączenie i rozłączenie z pociągami
     def connect_disconnect(self):
