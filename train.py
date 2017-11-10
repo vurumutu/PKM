@@ -3,6 +3,7 @@
 
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
+#from train_map import Railline
 
 class Train:
 
@@ -24,6 +25,12 @@ class Train:
                         # True - góra (up)
 
         self.reverse = False # zmienna informuje czy pociąg jedzie do tyłu
+
+        self.actual_track_section_l0 = -1 # numer obiektu na którym znajduje się pociag dla lini0
+        self.actual_track_section_l1 = -1 # numer obiektu na którym znajduje się pociag dla lini1
+        # (-1 oznacza że nie znajduje się na tej lini)
+
+        self.is_track_section_changed = False
 
         self.number_obj_in_line0 = len(self.lines[0].map_object)
         self.num_switch1_in_line0 = self.lines[0].get_numobj_switch(0)
@@ -66,7 +73,7 @@ class Train:
         #self.setPositionInit(self.x)
 
     def update_position(self):
-        kalman_position = self.kalman_train.get_position()#self.kalman_train
+        kalman_position = self.kalman_train#self.kalman_train.get_position()
         lenToSwitch2line0 = self.lines[0].get_x_fromobj(self.num_switch2_in_line0)
         lenToSwitch2line1 = self.lines[1].get_x_fromobj(self.num_switch2_in_line1)
         if not self.reverse:
@@ -106,11 +113,42 @@ class Train:
             elif self.x <= self.lines[1].get_x_fromobj(self.num_switch1_in_line1):
                 self.dual = -1
 
+        self.prev_track_section_l0 = self.actual_track_section_l0
+        self.prev_track_section_l1 = self.actual_track_section_l1
+
+        self.check_track_section()
+
+        changetrack0 = not self.prev_track_section_l0 == self.actual_track_section_l0
+        changetrack1 = not self.prev_track_section_l1 == self.actual_track_section_l1
+
+        if (changetrack0 or changetrack1):
+            if not self.is_track_section_changed:
+                self.is_track_section_changed = True
+
+
+
+    def messageChangeTrack(self, q_window):
+        if self.is_track_section_changed:
+            title = 'Zmiana odcinka dla pociagu ' + str(self.number)
+            message1 = "Dlugosc poprzedniego odcinka trasy 0: " + str(
+                self.lines[0].get_length_fromobj(self.prev_track_section_l0)) + "                                +\n"
+            message2 = "Dlugosc akualnego odcinka trasy 0: " + str(
+                self.lines[0].get_length_fromobj(self.actual_track_section_l0)) + "\n"
+            message3 = "Dlugosc poprzedniego odcinka trasy 1: " + str(
+                self.lines[1].get_length_fromobj(self.prev_track_section_l1)) + "\n"
+            message4 = "Dlugosc akualnego odcinka trasy 1: " + str(
+                self.lines[1].get_length_fromobj(self.actual_track_section_l1))
+            QMessageBox.information(q_window, title, message1 + message2 + message3 + message4, QMessageBox.Ok)
+            self.is_track_section_changed = False
+
+
     def draw(self, q_window):
+        self.draw_section(q_window)
+
         if self.dual == -1:
             # konwersja poleozenia x na polozenia na mapie
-            x1 = self.lines[0].x + self.x
-            x2 = self.lines[1].x + self.x
+            x1 = self.lines[0].x + self.x*q_window.scale
+            x2 = self.lines[1].x + self.x*q_window.scale
             # rysowanie 2 pociagów
             self.draw_one_train(q_window, x1, self.lines[0].y)
             self.draw_one_train(q_window, x2, self.lines[1].y)
@@ -118,27 +156,88 @@ class Train:
         elif self.dual == -2:
             # konwersja poleozenia x na polozenia na mapie
             if self.flag_up:
-                x1 = self.lines[0].x + self.x
-                x2 = self.lines[1].x + self.x - self.diff
+                x1 = self.lines[0].x + self.x*q_window.scale
+                x2 = self.lines[1].x + (self.x - self.diff)*q_window.scale
             else:
-                x1 = self.lines[0].x + self.x + self.diff
-                x2 = self.lines[1].x + self.x
+                x1 = self.lines[0].x + (self.x + self.diff)*q_window.scale
+                x2 = self.lines[1].x + self.x*q_window.scale
             # rysowanie 2 pociagów
             self.draw_one_train(q_window, x1, self.lines[0].y)
             self.draw_one_train(q_window, x2, self.lines[1].y)
 
         elif self.dual == 1:
             # konwersja poleozenia x na polozenia na mapie
-            x = self.lines[0].x + self.x
+            x = self.lines[0].x + self.x*q_window.scale
             # rysowanie pociagu
             self.draw_one_train(q_window, x, self.lines[0].y)
 
         elif self.dual == 2:
             # konwersja poleozenia x na polozenia na mapie
-            x = self.lines[1].x + self.x
+            x = self.lines[1].x + self.x*q_window.scale
             # rysowanie pociagu
             self.draw_one_train(q_window, x, self.lines[1].y)
 
+
+    def check_track_section(self):
+        if self.dual == -1:
+            self.actual_track_section_l0 = self.get_number_section(self.lines[0], self.x)
+            self.actual_track_section_l1 = self.get_number_section(self.lines[1], self.x)
+
+        elif self.dual == -2:
+            if self.flag_up:
+                x1 = self.x
+                x2 = self.x - self.diff
+            else:
+                x1 = self.x + self.diff
+                x2 = self.x
+
+            self.actual_track_section_l0 = self.get_number_section(self.lines[0], x1)
+            self.actual_track_section_l1 = self.get_number_section(self.lines[1], x2)
+
+        elif self.dual == 1:
+            self.actual_track_section_l0 = self.get_number_section(self.lines[0], self.x)
+            self.actual_track_section_l1 = -1
+
+        elif self.dual == 2:
+            self.actual_track_section_l0 = -1
+            self.actual_track_section_l1 = self.get_number_section(self.lines[1], self.x)
+
+
+    def get_number_section(self, line, pos):
+        for i in range(len(line.map_object)):
+            if pos <= line.get_x_fromobj(i+1):
+                return i
+        return len(line.map_object) - 1
+
+
+    def draw_section(self, q_window):
+        paint = QPainter()
+        paint.begin(q_window)
+        paint.setRenderHint(QPainter.Antialiasing)
+
+        if self.actual_track_section_l0 >= 0:
+            x1 = self.lines[0].get_x_fromobj(self.actual_track_section_l0)
+            x2 = x1 + self.lines[0].get_length_fromobj(self.actual_track_section_l0)
+            pencil = QPen()
+            pencil.setColor(self.color)
+            pencil.setWidth(5)
+
+            paint.setPen(pencil)
+            paint.drawLine(x1 * q_window.scale + self.lines[0].x, self.lines[0].y,
+                           x2 * q_window.scale + self.lines[0].x, self.lines[0].y)
+
+        if self.actual_track_section_l1 >= 0:
+            x1 = self.lines[1].get_x_fromobj(self.actual_track_section_l1)
+            x2 = x1 + self.lines[1].get_length_fromobj(self.actual_track_section_l1)
+            pencil = QPen()
+            pencil.setColor(self.color)
+            pencil.setWidth(5)
+
+            paint.setPen(pencil)
+            paint.drawLine(x1 * q_window.scale + self.lines[1].x, self.lines[1].y,
+                           x2 * q_window.scale + self.lines[1].x, self.lines[1].y)
+
+        paint.end()
 
     def draw_one_train(self, q_window, x0 ,y0):
         paint = QPainter()
@@ -148,8 +247,7 @@ class Train:
         width_sc = round(self.length * q_window.scale)
         height_sc = round(10 * q_window.scale)
 
-        st_dim = QRect((x0 - width_sc/2)*q_window.scale, y0 - height_sc/2, width_sc, height_sc)
-
+        st_dim = QRect((x0 - width_sc/2), y0 - height_sc/2, width_sc, height_sc)
 
         paint.setPen(Qt.black)
         paint.setBrush(self.color)
