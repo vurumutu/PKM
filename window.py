@@ -145,12 +145,12 @@ class Window(QtGui.QMainWindow):
         self.map = train_map.Railmap(0, 30, self.height(), self.width(), self.kalman_train, self)
 
         # inicjalizacja zwotnic
+        self.initRequest()
         print(len(can.zwrotnica))
         self.initSwitches()
         self.initLayout()
         self.initUI()
         self.show()
-        self.initRequest()
 
     def initRequest(self):
 
