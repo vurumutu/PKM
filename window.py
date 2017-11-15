@@ -4,6 +4,9 @@ import sys
 from PyQt4 import QtGui, QtCore
 from PyQt4.Qt import *
 
+import requests
+import json
+
 import train_map
 import train
 import train_auto
@@ -147,7 +150,17 @@ class Window(QtGui.QMainWindow):
         self.initLayout()
         self.initUI()
         self.show()
+        self.initRequest()
 
+    def initRequest(self):
+
+        self.timer_requests = QBasicTimer()
+        try:
+            self.my_requests = requests.get('http://127.0.0.1:8000/trains/')
+            print("Connect to http://127.0.0.1:8000/trains/")
+            self.timer_requests.start(2000,self)
+        except:
+            print("http://127.0.0.1:8000/trains/ does not respond")
 
     # INICJALIZACJA ZWROTNIC
     def initSwitches(self):
@@ -1093,6 +1106,31 @@ class Window(QtGui.QMainWindow):
             self.change_state_switch2()
             self.change_state_switch1()
 
+
+        if event.timerId() == self.timer_requests.timerId():
+            r_buff = self.my_requests.text
+            j = json.loads(r_buff)
+            #for i in range(len(j)):
+            i = 0
+            x = j[i]
+            velocity =  x['velocity']
+            print ('velocity:', int(velocity))
+            train_identificator =  x['train_identificator']
+            print ('train_identificator:', int(train_identificator))
+
+            #{"device_type": "0", "velocity": 3, "train_identificator": 2}
+
+            self.trains_speed[train_identificator] = velocity
+            if self.client.connected:
+                if velocity > 0:
+                    self.msg = self.trains[train_identificator].move(velocity, 'Forward')
+                else:
+                    self.msg = self.trains[train_identificator].move(velocity, 'Backward')
+
+            if self.msg is not None and self.client.connected:
+                self.client.send(self.msg)
+                sleep(1)  # Czekaj 1s
+                self.msg = None
 
 def close_application():
     sys.exit()
