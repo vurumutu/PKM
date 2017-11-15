@@ -43,6 +43,8 @@ class Railmap(QWidget):
         self.line1.set_leng_rails([25, 5, 90, 50, 20, 20, 20, 20, 20, 300, 197, 10, 5, 40])  # lista stacji (dlugosc peronu, nazwa stacji)
         self.line1.set_map_object([1, 4, 2, 4, 3, 0, 2, 0, 2, 0, 2, 0, 2, 0, 2, 0, 2, 0, 2, 0, 2, 0, 1, 0, 3, 4, 2, 4])  # mapy obiektow - wektor
         self.line1.set_railswitch([self.switch1, self.switch2])
+        self.line1.lines_sections = self.line1.create_lines_sections()
+        print(self.line1.lines_sections)
 
         # utworzenie lini WRZESZCZ -> OSOWA
         self.line2 = Railline(15, 155)
@@ -51,6 +53,8 @@ class Railmap(QWidget):
         self.line2.set_map_object([1, 4, 2, 4, 3, 0, 2, 0, 2, 0, 1, 0, 3, 4, 2, 4])  # mapy obiektow - wektor
         self.line2.set_railswitch([self.switch1, self.switch2])
         self.line2.set_negation(True)
+        self.line2.lines_sections = self.line2.create_lines_sections()
+        print(self.line2.lines_sections)
 
         # utworzenie lini WRZESZCZ -> KIEŁPINEK
         self.line3 = Railline(15, 225)
@@ -58,6 +62,8 @@ class Railmap(QWidget):
         self.line3.set_leng_rails([80, 100, 5, 6.5, 249, 6, 37, 523, 234, 21.5, 10.5, 12.5])  # lista stacji (dlugosc peronu, nazwa stacji)
         self.line3.set_map_object([1, 2, 4, 2, 4, 2, 4, 3, 0, 2, 0, 2, 0, 1, 0, 2, 0, 2, 0, 3, 4, 2, 4, 1, 4])  # mapy obiektow - wektor
         self.line3.set_railswitch([self.switch3, self.switch4])
+        self.line3.lines_sections = self.line3.create_lines_sections()
+        print(self.line3.lines_sections)
 
         # utworzenie lini KIEŁPINEK -> WRZESZCZ
         self.line4 = Railline(15, 295)
@@ -66,6 +72,10 @@ class Railmap(QWidget):
         self.line4.set_map_object([1, 2, 4, 2, 4, 2, 4, 3, 0, 2, 0, 2, 0, 1, 0, 2, 0, 2, 0, 3, 4, 2, 4, 1, 4])  # mapy obiektow - wektor
         self.line4.set_railswitch([self.switch3, self.switch4])
         self.line4.set_negation(True)
+        self.line4.lines_sections = self.line4.create_lines_sections()
+        print(self.line4.lines_sections)
+
+
         self.setscale()
 
         # słownik z przypisanymi pociągami do danych linii
@@ -161,10 +171,10 @@ class Railmap(QWidget):
         self.line3.draw_line(self, self.images)
         self.line4.draw_line(self, self.images)
 
-        #self.train1.kalman_train = self.sym_kalman
-        #self.train2.kalman_train = self.sym_kalman
-        #self.train3.kalman_train = self.sym_kalman
-        #self.train4.kalman_train = self.sym_kalman
+        self.train1.kalman_train = self.sym_kalman
+        self.train2.kalman_train = self.sym_kalman
+        self.train3.kalman_train = self.sym_kalman
+        self.train4.kalman_train = self.sym_kalman
 
         if self.autoControl:
             # aktualizacja pozycji pociągów na podstawie modelu z kalmana
@@ -228,6 +238,20 @@ class Railline:
         # liczenie dlugosci calej lini kolejowej
         self.leng_line = self.count_leng_line()
 
+        # tablica zawierająca długości wszystkich odcinkow
+        self.lines_sections = self.create_lines_sections()
+
+    # funkcja tworzy tablice wszystkich odcinkóow
+    def create_lines_sections(self):
+        lines_sections = []
+
+        for i in range(len(self.map_object)):
+            if not self.map_object[i] == 2:
+                lines_sections.append(self.get_length_fromobj(i))
+
+        return lines_sections
+
+
     def count_leng_line(self):
         #if type(self.leng_railswitch) == int:
             #n = self.map_object.count(3)
@@ -286,7 +310,7 @@ class Railline:
             if obj == 4 or obj == 0:
                 rails += 1
             elif obj == 1:
-                stations += 1
+                stations += 2
             elif obj == 3:
                 switches += 1
         return 0
