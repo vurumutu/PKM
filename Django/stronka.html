@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<link rel="stylesheet" type="text/css" href="stylescss.css" media="screen" />
+		<title>Projekt PKM</title>
+	</head>
+	<body>
+		<h1>Panel kontrolny PKM</h1>
+		
+		<button>Default Button</button>
+		<a href="#" class="button">Link Button</a>
+		<button class="button">Button</button>
+		<input type="button" class="button" value="Input Button">
+		
+				
+		</br>
+		</br>
+		</br>
+		</br>
+		</br>
+		</br>
+		</br>
+		</br>
+		</br>
+		
+		<!-- Rounded switch -->
+		<label class="switch">
+		  <input type="checkbox">
+		  <span class="slider round"></span>
+		</label>
+		
+		</br>
+		</br>
+		</br>
+		</br>
+		</br>
+		</br>
+		</br>
+		</br>
+		</br>
+
+		
+		<div id="slidecontainer">
+			<input type="range" min="-50" max="50" value="0" class="slider" id="myRange">
+			<p>Value: <span id="demo"></span></p>
+		</div>
+		
+		
+		<script>
+			var slider = document.getElementById("myRange");
+			var output = document.getElementById("demo");
+			output.innerHTML = slider.value;
+
+			slider.oninput = function() {
+				output.innerHTML = this.value;
+			}
+		</script>
+		
+	</body>
+</html>
