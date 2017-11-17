@@ -21,6 +21,7 @@ from przyciski import views
 
 urlpatterns = [
     #url(r'^przyciski/', views.przyciski),
+	url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
 	url(r'^przyciski/$', views.home, name='home'),
     url(r'^admin/', admin.site.urls),
 ]

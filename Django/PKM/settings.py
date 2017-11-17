@@ -25,7 +25,7 @@ SECRET_KEY = '=6f4h5ck2c3i7$bs94l)6$9rmyi+ct2qa!iazlbojyw&&mm!1q'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['192.168.1.104']
+ALLOWED_HOSTS = ['192.168.1.104', '192.168.1.105']
 
 
 # Application definition
@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+	'rest_framework',
 	'przyciski',
 ]
 
@@ -55,7 +56,7 @@ ROOT_URLCONF = 'PKM.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [ os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -119,6 +120,11 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
 
 STATIC_URL = '/static/'
+
+STATICFILES_DIR = [
+	os.path.join(BASE_DIR, 'static')
+]
+	
 
 #STATIC_ROOT = os.path.join(BASE_DIR, '../static/przyciski/templates')
 #STATICFILES_FINDERS = (
