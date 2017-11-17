@@ -14,7 +14,7 @@ import numpy as np
 TCP_IP = '192.168.210.200'
 TCP_PORT = 5550
 
-to_find_trains = ["Train 1", "Train 2", "Train 3"]
+to_find_trains = ["train_one", "train_two", "train_six"]
 found_train = None
 # Pawła kod
 
@@ -56,19 +56,19 @@ def main():
     while True:
         client.send(train.move(127, 1))
         # find_train()
-        if found_train == "Train 1":
+        if found_train == "train_one":
             print("Znalazlem pociag 1")
-            to_find_trains.remove("Train 1")
+            to_find_trains.remove("train_one")
             found_train = None
             client.send(train.move(127, 0))
-        elif found_train == "Train 2":
+        elif found_train == "train_two":
             print("Znalazlem pociag 2")
-            to_find_trains.remove("Train 2")
+            to_find_trains.remove("train_two")
             found_train = None
             client.send(train.move(127, 0))
-        elif found_train == "Train 6":
+        elif found_train == "train_six":
             print("Znalazlem pociag 6")
-            to_find_trains.remove("Train 3")
+            to_find_trains.remove("train_six")
             found_train = None
             client.send(train.move(127, 0))
         if not to_find_trains:
