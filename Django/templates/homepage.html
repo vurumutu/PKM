@@ -1,0 +1,19 @@
+{%load staticfiles%}
+<!DOCTYPE html>
+<html>
+	<head>
+		<link rel="stylesheet" type="text/css" href="{% static 'style.css' %}" media="screen" />
+		<link rel="icon" href="{% static 'favicon.ico' %}" >
+		<title>Projekt PKM</title>
+	</head>
+	<body>
+		<h1>Panel kontrolny PKM</h1>
+
+		{% for tr in TrainRequest %}
+		  {{ tr.velocity }} <br>
+		{% endfor %}
+
+  </body>
+		<button>Przyciski</button>
+	</body>
+</html>
