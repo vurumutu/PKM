@@ -11,6 +11,36 @@ to_find_trains = ["Train 1", "Train 2", "Train 3"]
 found_train = None
 # Pawła kod
 
+def find_train():
+
+    url = 'http://192.168.2.1/?action=stream'
+    stream = requests.get(url, stream=True)
+    bytes = b''
+
+
+    while True:
+        bytes+=stream.raw.read(1024)
+        a = bytes.find('\xff\xd8')
+        b = bytes.find('\xff\xd9')
+        if a!=-1 and b!=-1:
+            jpg = bytes[a:b+2]
+            bytes= bytes[b+2:]
+            frame = cv2.imdecode(np.fromstring(jpg, dtype=np.uint8),cv2.IMREAD_COLOR)
+            cv2.imshow('frame',frame)
+            if cv2.waitKey(1) ==27:
+                exit(0)
+            
+            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            image = Image.fromarray(gray)
+            width, height = image.size
+            zbar_image = zbar.Image(width, height, 'Y800', image.tobytes())
+            scanner = zbar.ImageScanner()
+            scanner.scan(zbar_image)
+
+        # Prints data from image.
+            for decoded in zbar_image:
+                return decoded.data
+
 
 def main():
     client = Client()
