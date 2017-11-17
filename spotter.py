@@ -3,6 +3,13 @@
 from xpressnet import Client
 from xpressnet import Train
 
+import zbar
+from PIL import Image
+import cv2
+import urllib 
+import requests
+import numpy as np
+
 
 TCP_IP = '192.168.210.200'
 TCP_PORT = 5550
