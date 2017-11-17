@@ -1,3 +1,5 @@
+{%load staticfiles%}
+
 body {
     background-color: lightblue;
 }

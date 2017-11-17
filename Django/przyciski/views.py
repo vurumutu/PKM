@@ -1,4 +1,6 @@
 from django.shortcuts import render_to_response
+from django.http import HttpResponse
 
-def index (request):
-    return render_to_response('przyciski/webpage/stronka.html')
+def home (request):
+    #return HttpResponse('Hello, World!')
+    return render_to_response('stronka.html')

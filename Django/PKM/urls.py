@@ -16,8 +16,21 @@ Including another URLconf
 from django.conf.urls import include, url
 from django.contrib import admin
 
+from przyciski import views
+
 
 urlpatterns = [
-    url(r'^przyciski/', include('przyciski.urls')),
+    #url(r'^przyciski/', views.przyciski),
+	url(r'^przyciski/$', views.home, name='home'),
     url(r'^admin/', admin.site.urls),
 ]
+
+#from django.conf.urls import url
+#from django.contrib import admin
+
+#from boards import views
+
+#urlpatterns = [
+#    url(r'^$', views.home, name='home'),
+#    url(r'^admin/', admin.site.urls),
+#]
