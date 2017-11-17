@@ -9,32 +9,35 @@
 	<body>
 		<h1>Panel kontrolny PKM</h1>
 		
-		<button>Default Button</button>
-		<a href="#" class="button">Link Button</a>
-		<button class="button">Button</button>
-		<input type="button" class="button" value="Input Button">
+		</br>
+		<a href="{% url 'main_home_page' %}" class="button">Strona główna</a>
 		
 		</br>
-				</br>
-						<a href="{% url 'main_home_page' %}">Home</a>
 		</br>
-
-		
+		<h3>Ujemna prędkość oznacza jazdę do tyłu</h3>
+		</br>
 		<div id="slidecontainer">
 			<input type="range" min="-50" max="50" value="0" class="slider" id="myRange">
-			<p>Value: <span id="demo"></span></p>
+			<p>Prędkość: <span id="demo"></span></p>
 		</div>
-		
-		
+			
+			
 		<script>
 			var slider = document.getElementById("myRange");
 			var output = document.getElementById("demo");
 			output.innerHTML = slider.value;
-
 			slider.oninput = function() {
 				output.innerHTML = this.value;
 			}
 		</script>
+		
+
+		<form action="/action_page.php" method="get" target="_blank">
+		  First name: <input type="text" name="fname"><br>
+		  Last name:  <input type="text" name="lname"><br>
+		  </br>
+		  <input type="submit" value="Submit" class="button">
+		</form>
 		
 	</body>
 </html>
