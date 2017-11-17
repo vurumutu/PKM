@@ -8,12 +8,32 @@
 	</head>
 	<body>
 		<h1>Panel kontrolny PKM</h1>
+		
+		<a href="{% url 'home' %}" class="button">Przejdź do sterowania</a>
 
-		{% for tr in TrainRequest %}
-		  {{ tr.velocity }} <br>
-		{% endfor %}
-
-  </body>
-		<button>Przyciski</button>
+		 <table border="1">
+			  <thead>
+				<tr>
+				  <th>Board</th>
+				  <th>Posts</th>
+				  <th>Topics</th>
+				  <th>Last Post</th>
+				</tr>
+			  </thead>
+			  <tbody>
+				{% for tr in trainRequests %}
+				  <tr>
+					<td>
+					  {{ tr.velocity }}<br>
+					  <small style="color: #888">{{ tr.velocity}}</small>
+					</td>
+					<td>0</td>
+					<td>0</td>
+					<td></td>
+				  </tr>
+				{% endfor %}
+			  </tbody>
+			</table>
+			
 	</body>
 </html>
