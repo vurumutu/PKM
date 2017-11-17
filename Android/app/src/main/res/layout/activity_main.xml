@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context="com.pkm.pkm.MainActivity">
+    android:layout_height="match_parent">
 
     <SeekBar
         android:id="@+id/speed_seekBar"
@@ -23,6 +23,7 @@
         tools:layout_constraintRight_creator="1"
         tools:layout_constraintTop_creator="1"
         android:layout_marginTop="193dp"
+        android:maxHeight="1000dp"
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
@@ -64,7 +65,7 @@
     </RadioGroup>
 
     <Button
-        android:id="@+id/stop_btn"
+        android:id="@+id/stopall_btn"
         android:layout_width="0dp"
         android:layout_height="92dp"
         android:background="@color/colorAccent"
@@ -83,7 +84,7 @@
         android:layout_marginRight="64dp" />
 
     <Button
-        android:id="@+id/stopall_btn"
+        android:id="@+id/stop_btn"
         android:layout_width="0dp"
         android:layout_height="73dp"
         android:text="STOP"
@@ -98,5 +99,24 @@
         android:layout_marginEnd="64dp"
         android:layout_marginLeft="64dp"
         android:layout_marginRight="64dp" />
+
+    <ProgressBar
+        android:id="@+id/progressBar"
+        style="?android:attr/progressBarStyle"
+        android:layout_width="101dp"
+        android:layout_height="86dp"
+        android:layout_centerVertical="true"
+        android:layout_centerHorizontal="true"
+        tools:layout_constraintTop_creator="1"
+        tools:layout_constraintRight_creator="1"
+        tools:layout_constraintBottom_creator="1"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        tools:layout_constraintLeft_creator="1"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintHorizontal_bias="0.501"
+        app:layout_constraintVertical_bias="0.103" />
+
 
 </android.support.constraint.ConstraintLayout>

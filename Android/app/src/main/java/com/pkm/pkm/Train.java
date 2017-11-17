@@ -14,24 +14,23 @@ import java.util.List;
  */
 
 public class Train{
-    private int id;
-    private int speed;
+    private String device_type;
+    private int velocity;
+    private int train_identificator;
 
-    public int getId() {
-        return id;
+    public int getVelocity() {
+        return velocity;
     }
 
-    public int getSpeed() {
-        return speed;
+    public void setVelocity(int velocity) {
+        this.velocity = velocity;
     }
 
-    public void setSpeed(int speed) {
-        this.speed = speed;
+    public int getTrain_identificator() {
+        return train_identificator;
     }
 
-    public void setId(int id) {
-        this.id = id;
+    public void setTrain_identificator(int train_identificator) {
+        this.train_identificator = train_identificator;
     }
-//    public String name;
-
 }

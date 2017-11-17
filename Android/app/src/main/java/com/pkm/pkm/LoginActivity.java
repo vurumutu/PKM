@@ -16,6 +16,17 @@ public class LoginActivity extends AppCompatActivity {
     Button connectBtn;
     EditText inputIp;
 
+
+    public static Boolean containsIP(String s) {
+        java.util.regex.Matcher m = java.util.regex.Pattern.compile(
+                "(?<!\\d|\\d\\.)" +
+                        "(?:[01]?\\d\\d?|2[0-4]\\d|25[0-5])\\." +
+                        "(?:[01]?\\d\\d?|2[0-4]\\d|25[0-5])\\." +
+                        "(?:[01]?\\d\\d?|2[0-4]\\d|25[0-5])\\." +
+                        "(?:[01]?\\d\\d?|2[0-4]\\d|25[0-5])" +
+                        "(?!\\d|\\.\\d)").matcher(s);
+        return m.find() ? Boolean.TRUE : Boolean.FALSE;
+    }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -27,12 +38,22 @@ public class LoginActivity extends AppCompatActivity {
         connectBtn.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v) {
+
                 ip = inputIp.getText().toString();
-                Toast.makeText(getApplicationContext(),
-                        ("Connecting to" + ip), Toast.LENGTH_SHORT).show();
-                Intent myIntent = new Intent(LoginActivity.this, MainActivity.class);
-                myIntent.putExtra("key", ip); //Optional parameters
-                startActivity(myIntent);
+                if(containsIP(ip)){
+                    if(!ip.contains("http://")){
+                        ip = "http://" + ip;
+                    }
+                    Toast.makeText(getApplicationContext(),
+                            ("Connecting to " + ip), Toast.LENGTH_SHORT).show();
+                    Intent myIntent = new Intent(LoginActivity.this, MainActivity.class);
+                    myIntent.putExtra("key", ip); //Optional parameters
+                    startActivity(myIntent);
+                }
+                else {
+                    Toast.makeText(getApplicationContext(),
+                            ("Wrong ip format"), Toast.LENGTH_SHORT).show();
+                }
             }
         });
 

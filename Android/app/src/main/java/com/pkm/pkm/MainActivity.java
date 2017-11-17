@@ -6,6 +6,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.RadioButton;
@@ -24,15 +25,14 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 public class MainActivity extends AppCompatActivity {
-    //private ProgressBar pg1;
     private String ip;
-    private int actualTrain;
+    private int actualTrain; // state of radio button
     private int speed;
+    private ProgressBar pg1;
     private RadioGroup radioGroup;
     private TextView speedText;
     private SeekBar speedSeekBar;
     private List<Train> trains;
-    private Train trainn;
     private Retrofit.Builder builder;
     //private ArrayList<Train> trainsTest;
 
@@ -43,24 +43,17 @@ public class MainActivity extends AppCompatActivity {
         String ip = intent.getStringExtra("key");
         setContentView(R.layout.activity_main);
 
-        //pg1 = (ProgressBar) findViewById(R.id.progressBar);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
+                WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+
+        pg1 = (ProgressBar) findViewById(R.id.progressBar);
         speedText = (TextView)findViewById(R.id.speed_text);
         speedSeekBar = (SeekBar) findViewById(R.id.speed_seekBar);
         speedSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener(){
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                speed = (progress - 128);
+                speed = (progress - 128); // handle negative velocities
                 speedText.setText("Speed: " + speed);
-
-                trainn = new Train();
-                trainn.setSpeed(200);
-                trainn.setId(1);
-                //trainsTest.add(trainn);
-                Log.d("seekbar", String.valueOf(fromUser));
-                //if(fromUser){
-                sendNetworkRequest(trainn);
-                    //send request
-                //}
 
             }
 
@@ -71,7 +64,13 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                sendNetworkRequest(trainn);
+                // iterate though array list and find actualTrain
+                for (Train train: trains) {
+                    if(train.getTrain_identificator() == actualTrain){
+                        trains.get(actualTrain).setVelocity(speed);
+                        sendNetworkRequest(train);
+                    }
+                }
             }
         });
 
@@ -81,6 +80,15 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 //trains.get(actualTrain).setSpeed(0);
                 speedSeekBar.setProgress(128);
+
+                //could be handled by seekbar onStopTrackingTouch
+                for (Train train: trains) {
+                    if(train.getTrain_identificator() == actualTrain){
+                        trains.get(actualTrain).setVelocity(speed);
+                        sendNetworkRequest(train);
+                    }
+                }
+
             }
         });
         Button stopallBtn = (Button) findViewById(R.id.stopall_btn);
@@ -88,12 +96,12 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 speedSeekBar.setProgress(128);
+                //send request for all items in trains
+                for (Train train: trains) {
+                    train.setVelocity(0);
+                    sendNetworkRequest(train);
+                }
 
-//                // send requsts for items in list
-//                for (Train train : trains){
-//                    train.setSpeed(0);
-//                    sendNetworkRquest(train);
-//                }
             }
         });
 
@@ -103,13 +111,11 @@ public class MainActivity extends AppCompatActivity {
             public void onCheckedChanged(RadioGroup group, @IdRes int checkedId) {
 
                 RadioButton checkedRadioButton = (RadioButton) findViewById(checkedId);
-                actualTrain = checkedRadioButton.getId();
-                Toast.makeText(getApplicationContext(), String.valueOf(actualTrain), Toast.LENGTH_SHORT).show();
+                actualTrain = checkedRadioButton.getId() + 1;
+                //Toast.makeText(getApplicationContext(), String.valueOf(actualTrain), Toast.LENGTH_SHORT).show();
                 Log.d("radiobutton", String.valueOf(actualTrain));
             }
         });
-
-        //listView = (ListView)findViewById(R.id.trainView);
 
         Toast.makeText(getApplicationContext(),
                 ip, Toast.LENGTH_SHORT).show();
@@ -131,13 +137,14 @@ public class MainActivity extends AppCompatActivity {
             public void onResponse(Call<List<Train>> call, Response<List<Train>> response) {
                 trains = response.body();
                 // TODO check if trains exists
-                //pg1.setVisibility(View.INVISIBLE);
-                addRadioButtons(3); // replace with trains.size()
+                pg1.setVisibility(View.INVISIBLE);
+                getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+                addRadioButtons(trains.size()); // replace with trains.size()
             }
 
             @Override
             public void onFailure(Call<List<Train>> call, Throwable t) {
-
+                finish(); // call previous activity
                 Toast.makeText(MainActivity.this, "Could not load trains", Toast.LENGTH_SHORT).show();
             }
         });
@@ -145,11 +152,11 @@ public class MainActivity extends AppCompatActivity {
     private void sendNetworkRequest(Train train){
         Retrofit retrofit = builder.build();
         TrainClient client = retrofit.create(TrainClient.class);
-        Call<Train> call = client.setTrainSpeed(String.valueOf(train.getId()), train);
+        Call<Train> call = client.setTrainSpeed(String.valueOf(train.getTrain_identificator()), train);
         call.enqueue(new Callback<Train>() {
             @Override
             public void onResponse(Call<Train> call, Response<Train> response) {
-                Toast.makeText(MainActivity.this, "request sent", Toast.LENGTH_SHORT).show();
+                //Toast.makeText(MainActivity.this, "request sent", Toast.LENGTH_SHORT).show();
             }
 
             @Override
@@ -173,6 +180,7 @@ public class MainActivity extends AppCompatActivity {
             rb[i].setText("Train " + (i+1));
 
         }
+        rb[0].setChecked(true);
     }
 
 }

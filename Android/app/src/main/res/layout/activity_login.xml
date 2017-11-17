@@ -12,7 +12,7 @@
         android:layout_height="57dp"
         android:ems="10"
         android:inputType="none"
-        android:text="http://10.0.2.2:7777/"
+        android:text="http://192.168.1.113:8000"
         tools:layout_constraintTop_creator="1"
         tools:layout_constraintRight_creator="1"
         android:layout_marginStart="50dp"
