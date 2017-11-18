@@ -9,7 +9,7 @@ DEVICE_TYPE_ENUM = (
 
 
 class TrainRequest(models.Model):
-
+	id = models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')
 	device_type = models.CharField(max_length=1, choices=DEVICE_TYPE_ENUM)
 	velocity = models.IntegerField(
 		default=0,
@@ -20,6 +20,6 @@ class TrainRequest(models.Model):
 		validators=[MaxValueValidator(2), MinValueValidator(0)]
 	)
 	
-	def __str__(self):
-		return "Train"#str('Pociag: ',self.device_type)
+	#def __str__(self):
+	#	return "Pociąg numer "+str(self.train_identificator) + ". Prędkość: " + str(self.velocity)
 	

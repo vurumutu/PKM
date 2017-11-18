@@ -38,13 +38,12 @@ router.register(r'users', UserViewSet)
 
 
 urlpatterns = [
-    #url(r'^przyciski/', views.przyciski),
 	url(r'^$', views.main_home_page, name='main_home_page'),
 	url(r'^restoweapi/', include(router.urls)),
 	url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
 	url(r'^przyciski/$', views.home, name='home'),
     url(r'^przyciski', include('przyciski.urls')),
-	url(r'^trains/', views.przyciski_list, name='przyciski_list'),
-
+	url(r'^train/(?P<_pk>[0-9]+)/$', views.przyciski_detail, name='przyciski_detail'),
+	url(r'^trains/$', views.przyciski_list, name='przyciski_list'),
 	url(r'^admin/', admin.site.urls),
 ]

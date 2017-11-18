@@ -9,19 +9,14 @@ from django.contrib.auth import authenticate, login
 from django.shortcuts import render
 from django import forms
 
-#from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.renderers import JSONRenderer
 from rest_framework.parsers import JSONParser
-#from przyciski.models import przyciski
 from przyciski.serializers import PrzyciskiSerializer
 
 def home (request):
-	#train_request = get_object_or_404(TrainRequest, pk=pk)
-
 	if request.method == 'POST':
 		new_train_request = request.POST #['new_train']
-		print(new_train_request)
 
 		user = User.objects.first()  # TODO: get the currently logged in user
 
@@ -31,10 +26,7 @@ def home (request):
 			device_type = 0
 		)
 
-		#return redirect('przyciski')#, pk=board.pk)  # TODO: redirect to the created topic page
-
-    #return render(request, 'new_topic.html', {'board': board})
-	return render(request,'stronka.html')#,{'train': train})
+	return render(request,'stronka.html')
 	
 def main_home_page(request):
 	trainRequests = TrainRequest.objects.all()
@@ -61,17 +53,19 @@ def przyciski_list(request):
 
 
 @csrf_exempt
-def przyciski_detail(request, pk):
+def przyciski_detail(request, _pk):
     """
     Retrieve, update or delete a code snippet.
     """
+    print(_pk)
     try:
-        przyciski = TrainRequest.objects.get(pk=pk)
-    except TrainRequest.DoesNotExist:
+        lista_przyciski = list(TrainRequest.objects.all())#get(pk=_pk)
+        przyciski = lista_przyciski[int(_pk)]
+    except:# TrainRequest.DoesNotExist: #Exception as e:#TrainRequest.DoesNotExist:
         return HttpResponse(status=404)
 
     if request.method == 'GET':
-        serializer = SnippetSerializer(przyciski)
+        serializer = PrzyciskiSerializer(przyciski)
         return JsonResponse(serializer.data)
 
     elif request.method == 'PUT':
@@ -83,31 +77,7 @@ def przyciski_detail(request, pk):
         return JsonResponse(serializer.errors, status=400)
 
     elif request.method == 'DELETE':
-        przyciski .delete()
+        przyciski.delete()
         return HttpResponse(status=204)
 		
 		
-def new_train_request(request, pk):
-    train_request = get_object_or_404(train_request, pk=pk)
-
-    if request.method == 'POST':
-        subject = request.POST['subject']
-        message = request.POST['message']
-
-        user = User.objects.first()  # TODO: get the currently logged in user
-
-        topic = Topic.objects.create(
-            subject=subject,
-            board=board,
-            starter=user
-        )
-
-        post = Post.objects.create(
-            message=message,
-            topic=topic,
-            created_by=user
-        )
-
-        return redirect('board_topics', pk=board.pk)  # TODO: redirect to the created topic page
-
-    return render(request, 'new_topic.html', {'board': board})
