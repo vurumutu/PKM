@@ -1,6 +1,13 @@
-from django.shortcuts import render_to_response
+from django.shortcuts import render_to_response,render, redirect, get_object_or_404
 from django.http import HttpResponse, JsonResponse
 from .models import TrainRequest
+from django.template import RequestContext, Template
+
+#form
+from django.contrib.auth.models import User
+from django.contrib.auth import authenticate, login
+from django.shortcuts import render
+from django import forms
 
 #from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -10,12 +17,28 @@ from rest_framework.parsers import JSONParser
 from przyciski.serializers import PrzyciskiSerializer
 
 def home (request):
-    #return HttpResponse('Hello, World!')
-    return render_to_response('stronka.html')
+	#train_request = get_object_or_404(TrainRequest, pk=pk)
+
+	if request.method == 'POST':
+		new_train_request = request.POST #['new_train']
+		print(new_train_request)
+
+		user = User.objects.first()  # TODO: get the currently logged in user
+
+		new_created_train = TrainRequest.objects.create(
+			train_identificator= new_train_request.get("train_number"),
+			velocity=new_train_request.get("page_velocity"),
+			device_type = 0
+		)
+
+		#return redirect('przyciski')#, pk=board.pk)  # TODO: redirect to the created topic page
+
+    #return render(request, 'new_topic.html', {'board': board})
+	return render(request,'stronka.html')#,{'train': train})
 	
-def main_home_page(requst):
+def main_home_page(request):
 	trainRequests = TrainRequest.objects.all()
-	return render_to_response('homepage.html',{'trainRequests' : trainRequests})
+	return render(request, 'homepage.html',{'trainRequests' : trainRequests})
 
 
 @csrf_exempt
@@ -62,3 +85,29 @@ def przyciski_detail(request, pk):
     elif request.method == 'DELETE':
         przyciski .delete()
         return HttpResponse(status=204)
+		
+		
+def new_train_request(request, pk):
+    train_request = get_object_or_404(train_request, pk=pk)
+
+    if request.method == 'POST':
+        subject = request.POST['subject']
+        message = request.POST['message']
+
+        user = User.objects.first()  # TODO: get the currently logged in user
+
+        topic = Topic.objects.create(
+            subject=subject,
+            board=board,
+            starter=user
+        )
+
+        post = Post.objects.create(
+            message=message,
+            topic=topic,
+            created_by=user
+        )
+
+        return redirect('board_topics', pk=board.pk)  # TODO: redirect to the created topic page
+
+    return render(request, 'new_topic.html', {'board': board})

@@ -10,29 +10,39 @@
 		<h1>Panel kontrolny PKM</h1>
 		
 		<a href="{% url 'home' %}" class="button">Przejdź do sterowania</a>
-		</br>
-		</br>
+		<br>
+		<br>
 		
-		 <table border="1">
-			  <thead>
+		<table border="1">
+			<thead>
 				<tr>
-				  <th>Numer pociągu</th>
-				  <th>Prędkość</th>
-				  <th>Urządzenie</th>
+					<th>
+						Numer pociągu
+					</th>
+					<th>
+						Prędkość
+					</th>
+					<th>
+						Urządzenie
+					</th>
 				</tr>
-			  </thead>
-			  <tbody>
+			</thead>
+			<tbody>
 				{% for tr in trainRequests %}
-				  <tr>
-					<td>
-					  {{ tr.train_identificator }}<br>
-					</td>
-					<td>{{ tr.velocity }}</td>
-					<td>{{ tr.device_type }}</td>
-				  </tr>
+					<tr>
+						<td>
+							{{ tr.train_identificator }}<br>
+						</td>
+						<td>
+							{{ tr.velocity }}
+						</td>
+						<td>
+							{{ tr.device_type }}
+						</td>
+					</tr>
 				{% endfor %}
-			  </tbody>
-			</table>
+			</tbody>
+		</table>
 			
 	</body>
 </html>

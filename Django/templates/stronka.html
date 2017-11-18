@@ -8,48 +8,31 @@
 	</head>
 	<body>
 		<h1>Panel kontrolny PKM</h1>
-		
-		</br>
+		<br>
 		<a href="{% url 'main_home_page' %}" class="button">Strona główna</a>
 		
-		</br>
-		</br>
+		<br>
+		<br>
 		<h3>Ujemna prędkość oznacza jazdę do tyłu</h3>
-		</br>
-		<div id="slidecontainer">
-			<input type="range" min="-50" max="50" value="0" class="slider" id="myRange">
-			<p>Prędkość: <span id="demo"></span></p>
-		</div>
-			
-			
-		<script>
-			var slider = document.getElementById("myRange");
-			var output = document.getElementById("demo");
-			output.innerHTML = slider.value;
-			slider.oninput = function() {
-				output.innerHTML = this.value;
-			}
-		</script>
-		
-
-		<form action="/action_page.php" method="get" target="_blank">
-		  First name: <input type="text" name="fname"><br>
-		  Last name:  <input type="text" name="lname"><br>
-		  </br>
-		  <input type="submit" value="Submit" class="button">
-		</form>
-		
+		<br>
+	
 		<form method="post">
 			{% csrf_token %}
-			<div class="form-group">
-			  <label for="id_subject">Subject</label>
-			  <input type="text" class="form-control" id="id_subject" name="subject">
-			</div>
-			<div class="form-group">
-			  <label for="id_message">Message</label>
-			  <textarea class="form-control" id="id_message" name="message" rows="5"></textarea>
-			</div>
-			<button type="submit" class="btn btn-success">Post</button>
+			<input type="range" name="page_velocity" min="-127" max="127" id="myVelocity"></br>
+			<p>Prędkość: <span id="demo"></span></p>
+			
+			<script>
+				var slider = document.getElementById("myVelocity");
+				var output = document.getElementById("demo");
+				output.innerHTML = slider.value;
+				slider.oninput = function() {
+					output.innerHTML = this.value;
+				}
+			</script>
+		  
+			Numer pociągu:<input type="number" name="train_number" min="0" max="2"><br>		  
+			<br>
+			<input type="submit" class="button" name="new_train">
 	    </form>
 		
 	</body>
