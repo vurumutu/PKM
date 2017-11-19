@@ -1,3 +1,6 @@
 .idea/
 *.pyc
 __pycache__/
+codestyles/
+_linux/
+*.xml
