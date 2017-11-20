@@ -28,98 +28,114 @@ class Model:
         # Pociąg 1 do PRZODU
         if train_nr == 11:
             a_file = open('models/1_forward/A.txt', 'r')
-            self.AA = np.loadtxt(a_file, dtype=float)
+            self.A = np.loadtxt(a_file, dtype=float)
             a_file.close()
 
             b_file = open('models/1_forward/B.txt', 'r')
             temp_B = np.loadtxt(b_file, dtype=float)
-            self.BB = np.mat([[temp_B[0]],
+            self.B = np.mat([[temp_B[0]],
                              [temp_B[1]],
                              [temp_B[2]]], dtype=float)
             b_file.close()
 
             c_file = open('models/1_forward/C.txt', 'r')
-            self.CC = np.loadtxt(c_file, dtype=float)
+            self.C = np.loadtxt(c_file, dtype=float)
             c_file.close()
         # Pociąg 1 do TYLU
         if train_nr == 12:
             a_file = open('models/1_backward/A.txt', 'r')
-            self.AA = np.loadtxt(a_file, dtype=float)
+            self.A = np.loadtxt(a_file, dtype=float)
             a_file.close()
 
             b_file = open('models/1_backward/B.txt', 'r')
             temp_B = np.loadtxt(b_file, dtype=float)
-            self.BB = np.mat([[temp_B[0]],
+            self.B = np.mat([[temp_B[0]],
                              [temp_B[1]],
                              [temp_B[2]]], dtype=float)
             b_file.close()
 
             c_file = open('models/1_backward/C.txt', 'r')
-            self.CC = np.loadtxt(c_file, dtype=float)
+            self.C = np.loadtxt(c_file, dtype=float)
             c_file.close()
         # Pociąg 2 do PRZODU
         if train_nr == 21:
             a_file = open('models/2_forward/A.txt', 'r')
-            self.AA = np.loadtxt(a_file, dtype=float)
+            self.A = np.loadtxt(a_file, dtype=float)
             a_file.close()
 
             b_file = open('models/2_forward/B.txt', 'r')
             temp_B = np.loadtxt(b_file, dtype=float)
-            self.BB = np.mat([[temp_B[0]],
+            self.B = np.mat([[temp_B[0]],
                              [temp_B[1]],
                              [temp_B[2]]], dtype=float)
             b_file.close()
 
             c_file = open('models/2_forward/C.txt', 'r')
-            self.CC = np.loadtxt(c_file, dtype=float)
+            self.C = np.loadtxt(c_file, dtype=float)
             c_file.close()
         # Pociąg 2 do TYLU
         if train_nr == 22:
             a_file = open('models/2_backward/A.txt', 'r')
-            self.AA = np.loadtxt(a_file, dtype=float)
+            self.A = np.loadtxt(a_file, dtype=float)
             a_file.close()
 
             b_file = open('models/2_backward/B.txt', 'r')
             temp_B = np.loadtxt(b_file, dtype=float)
-            self.BB = np.mat([[temp_B[0]],
+            self.B = np.mat([[temp_B[0]],
                              [temp_B[1]],
                              [temp_B[2]]], dtype=float)
             b_file.close()
 
             c_file = open('models/2_backward/C.txt', 'r')
-            self.CC = np.loadtxt(c_file, dtype=float)
+            self.C = np.loadtxt(c_file, dtype=float)
             c_file.close()
         # Pociąg 5
         if train_nr == 5:
             a_file = open('models/5/A.txt', 'r')
-            self.AA = np.loadtxt(a_file, dtype=float)
+            self.A = np.loadtxt(a_file, dtype=float)
             a_file.close()
 
             b_file = open('models/5/B.txt', 'r')
             temp_B = np.loadtxt(b_file, dtype=float)
-            self.BB = np.mat([[temp_B[0]],
+            self.B = np.mat([[temp_B[0]],
                              [temp_B[1]],
                              [temp_B[2]]], dtype=float)
             b_file.close()
 
             c_file = open('models/5/C.txt', 'r')
-            self.CC = np.loadtxt(c_file, dtype=float)
+            self.C = np.loadtxt(c_file, dtype=float)
             c_file.close()
         # Pociąg 6
         if train_nr == 6:
             a_file = open('models/6/A.txt', 'r')
-            self.AA = np.loadtxt(a_file, dtype=float)
+            self.A = np.loadtxt(a_file, dtype=float)
             a_file.close()
 
             b_file = open('models/6/B.txt', 'r')
             temp_B = np.loadtxt(b_file, dtype=float)
-            self.BB = np.mat([[temp_B[0]],
+            self.B = np.mat([[temp_B[0]],
                              [temp_B[1]],
                              [temp_B[2]]], dtype=float)
             b_file.close()
 
             c_file = open('models/6/C.txt', 'r')
-            self.CC = np.loadtxt(c_file, dtype=float)
+            self.C = np.loadtxt(c_file, dtype=float)
+            c_file.close()
+	# Pociąg zwiadowca
+        if train_nr == 0:
+            a_file = open('models/scout/A.txt', 'r')
+            self.A = np.loadtxt(a_file, dtype=float)
+            a_file.close()
+
+            b_file = open('models/scout/B.txt', 'r')
+            temp_B = np.loadtxt(b_file, dtype=float)
+            self.B = np.mat([[temp_B[0]],
+                             [temp_B[1]],
+                             [temp_B[2]]], dtype=float)
+            b_file.close()
+
+            c_file = open('models/scout/C.txt', 'r')
+            self.C = np.loadtxt(c_file, dtype=float)
             c_file.close()
 
         # VARIANCES
@@ -162,7 +178,7 @@ class Model:
 
         while t < time:
             t += self.dT
-            X += (self.A * X + self.B * self.motorPower) * self.dT
+            X += (np.dot(self.A, X) + self.B * self.motorPower) * self.dT
         P = self.A * P * self.A.transpose() + self.Q * (t - self.updateTime)
 
         if update_state:
@@ -228,7 +244,7 @@ class Model:
         """
         if simulate:
             self.simulate()
-        return (self.C * self.X)[0, 0]
+        return (np.dot(self.C, self.X))[0, 0]
 
     def get_velocity(self, simulate=True):
         """Zwraca prędkość pociągu
@@ -243,7 +259,7 @@ class Model:
         """
         if simulate:
             self.simulate()
-        return (self.C * self.X)[1, 0]
+        return (np.dot(self.C, self.X))[1, 0]
 
     def set_power(self, power):
         """Ustawia z jaką mocą jedzie pociąg

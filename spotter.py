@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+import kalman
+
 from xpressnet import Client
 from xpressnet import Train
 
@@ -53,24 +55,32 @@ def main():
     client = Client()
     client.connect(TCP_IP, TCP_PORT)
     train = Train(5)  # lokomotywa z kamerą
+    spotter = kalman.Model(0)
+    client.send(train.move(50, 0))
+    spotter.set_power(50)
     while True:
-        client.send(train.move(127, 1))
-        # find_train()
-        if found_train == "train_one":
+        found_train = find_train()
+        if found_train == "train_one" and "train_one" in to_find_trains:
             print("Znalazlem pociag 1")
+            print(spotter.get_position())
             to_find_trains.remove("train_one")
             found_train = None
-            client.send(train.move(127, 0))
-        elif found_train == "train_two":
+            spotter.set_power(0)
+            client.send(train.move(0))
+        elif found_train == "train_two" and "train_two" in to_find_trains:
             print("Znalazlem pociag 2")
+            print(spotter.get_position())
             to_find_trains.remove("train_two")
             found_train = None
-            client.send(train.move(127, 0))
-        elif found_train == "train_six":
+            spotter.set_power(0)
+            client.send(train.move(0))
+        elif found_train == "train_six" and "train_six" in to_find_trains:
             print("Znalazlem pociag 6")
+            print(spotter.get_position())
             to_find_trains.remove("train_six")
             found_train = None
-            client.send(train.move(127, 0))
+            spotter.set_power(0)
+            client.send(train.move(0))
         if not to_find_trains:
             break
     client.disconnect()
