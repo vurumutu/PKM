@@ -615,16 +615,135 @@ class Window(QtGui.QMainWindow):
         self.map.repaint()
 
     def RUN_system_RUN(self):
-        print(self.target.currentIndex())
+        print("index", self.target.currentIndex())
         #if(self.map.train1.actual_track_section_l0 == 23):
         self.tablicaPPPP = [self.map.train1,self.map.train2,self.map.train3,self.map.train4]
+        tab_length = len(self.tablicaPPPP)
+        for i in range(tab_length):
+            if(i == 0):
+                if(self.tablicaPPPP[i].actual_track_section_l0 != 23 and self.tablicaPPPP[i].actual_track_section_l1 != 23):
+                    text11 = "Stacja Kielpinek wolna"
+                    print('Stacja Kielpinek wolna')
+                else:
+                    text11 = "Stacja Kielpinek zajeta"
+                    print("Stacja Kielpinek zajeta")
+                if(self.tablicaPPPP[i].actual_track_section_l0 != 0 and self.tablicaPPPP[i].actual_track_section_l1 != 0):
+                    text12 = "Stacja Wrzeszcz wolna"
+                else:
+                    text12 = "Stacja Wrzeszcz zajeta"
+                if(self.tablicaPPPP[i].actual_track_section_l0 >=20 and self.tablicaPPPP[i].actual_track_section_l0 < 23 and self.tablicaPPPP[i].actual_track_section_l1 >=20 and self.tablicaPPPP[i].actual_track_section_l1 < 23):
+                    text13 = "odcinek od zwrotnicy do stacji Kilpinek jest zajety" #za zwrotnica, zwortnica: 19
+                else:
+                    text13 = "odcinek od zwrotnicy do stacji Kilpinek jest wolny"
+                if(self.tablicaPPPP[i].actual_track_section_l0 > 13 and self.tablicaPPPP[i].actual_track_section_l0 < 19):
+                    text14 = "odcinek od stacji Strzyza do zwrotnicy jest zajety"
+                else:
+                    text14 = "odcinek od zwrotnicy do stacji Strzyza jest wolny"
+                if(self.tablicaPPPP[i].actual_track_section_l0 >= 6 and self.tablicaPPPP[i].actual_track_section_l0 <= 12):
+                    text15 = "odcinek od zwrotnicy do stacji Strzyza jest zajety"  #od balisy przed zwrotnica(6)
+                else:
+                    text15 = "odcinek od zwrotnicy do stacji Kilpinek jest wolny"
+                if(self.tablicaPPPP[i].actual_track_section_l0 > 0 and self.tablicaPPPP[i].actual_track_section_l0 <= 6 and self.tablicaPPPP[i].actual_track_section_l1 <= 6 and self.tablicaPPPP[i].actual_track_section_l1 > -1):
+                    text16 = "odcinek od stacji Wrzeszcz do zwrotnicy jest zajety"
+                else:
+                    text16 = "odcinek od stacji Wrzeszcz do zwrotnicy jest wolny"
+                if (self.tablicaPPPP[i].actual_track_section_l0 == 13 and self.tablicaPPPP[i].actual_track_section_l1 == -1):
+                    text17 = "stacja Strzyza jest zajeta"
+                else:
+                    text17 = "stacja Strzyza jest wolna"
 
-        for i in range(4):
-            if(self.tablicaPPPP[i].actual_track_section_l0 != 23 and self.tablicaPPPP[i].actual_track_section_l1 != 23):
-                print('moznaJechac')
+            elif(i == 1):
+                if(self.tablicaPPPP[i].actual_track_section_l0 != 0 and self.tablicaPPPP[i].actual_track_section_l1 != 0):
+                    text21 = "Stacja Wzreszcz wolna"
+                    print("Stacja Wzreszcz wolna")
+                else:
+                    text21 = "Stacja Wzreszcz zajeta"
+                    print("Stacja Wzreszcz zajeta")
+                if (self.tablicaPPPP[i].actual_track_section_l0 >= 20 and self.tablicaPPPP[i].actual_track_section_l0 < 23 and self.tablicaPPPP[i].actual_track_section_l1 >= 20 and self.tablicaPPPP[i].actual_track_section_l1 < 23):
+                    text22 = "odcinek od stacji Kilpinek do zwrotnicy jest zajety"  # za zwrotnica, zwortnica: 19
+                else:
+                    text22 = "odcinek od stacji Kilpinek do zwrotnicy jest wolny"
+                if (self.tablicaPPPP[i].actual_track_section_l0 > 13 and self.tablicaPPPP[i].actual_track_section_l0 < 19):
+                    text23 = "odcinek od zwrotnicy do stacji Strzyza jest zajety"
+                else:
+                    text23 = "odcinek od zwrotnicy do stacji Strzyza jest wolny"
+                if (self.tablicaPPPP[i].actual_track_section_l0 >= 6 and self.tablicaPPPP[i].actual_track_section_l0 <= 12):
+                    text24 = "odcinek od stacji Strzyza do zwrotnicy jest zajety"  # od balisy przed zwrotnica(6)
+                else:
+                    text24 = "odcinek od stacji Strzyza do zwrotnicy jest wolny"
+                if (self.tablicaPPPP[i].actual_track_section_l0 > 0 and self.tablicaPPPP[i].actual_track_section_l0 <= 6 and self.tablicaPPPP[i].actual_track_section_l1 <= 6 and self.tablicaPPPP[i].actual_track_section_l1 > -1):
+                    text25 = "odcinek od zwrotnicy do stacji Wrzeszcz jest zajety"
+                else:
+                    text25 = "odcinek od zwrotnicy do stacji Wrzeszcz jest wolny"
+                if (self.tablicaPPPP[i].actual_track_section_l0 == 23 and self.tablicaPPPP[i].actual_track_section_l1 == 23):
+                    text26 = "stacja Kielpinek jest zajeta"
+                else:
+                    text26 = "stacja Kielpinek jest wolna"
+                if (self.tablicaPPPP[i].actual_track_section_l0 == 13 and self.tablicaPPPP[i].actual_track_section_l1 == -1):
+                    text27 = "stacja Strzyza jest zajeta"
+                else:
+                    text27 = "stacja Strzyza jest wolna"
 
 
-            print(self.tablicaPPPP[i].actual_track_section_l0)
+            elif(i == 2):
+                if(self.tablicaPPPP[i].actual_track_section_l0 != 27 and self.tablicaPPPP[i].actual_track_section_l1 != 15):
+                    text31 = "Stacja Wzreszcz jest wolna"
+                else:
+                    text31 = "Stacja Wzreszcz jest zajeta"
+                if(self.tablicaPPPP[i].actual_track_section_l0 != 22 and self.tablicaPPPP[i].actual_track_section_l1 != 22):
+                    text32 = "Stacja Osowa jest wolna"
+                else:
+                    text32 = "Stacja Osowa jest zajeta"
+                if(self.tablicaPPPP[i].actual_track_section_l0 <=4 and self.tablicaPPPP[i].actual_track_section_l1 <=4 and self.tablicaPPPP[i].actual_track_section_l1 > -1):
+                    text33 = "odcinek od stacji Wrzeszcz do zwrotnicy jest zajety"
+                else:
+                    text33 = "odcinek od stacji Wrzeszcz do zwrotnicy jest wolny"
+                if(self.tablicaPPPP[i].actual_track_section_l0 > 4 and self.tablicaPPPP[i].actual_track_section_l0 <19 and self.tablicaPPPP[i].actual_track_section_l1 == -1):
+                    text34 = "odcinek od zwrotnicy do balisy przed stacją Osowa zajety"
+                else:
+                    text34 = "odcinek od zwrotnicy do balisy przed stacją Osowa wolny"
+                if(self.tablicaPPPP[i].actual_track_section_l0 > 20 and self.tablicaPPPP[i].actual_track_section_l0 < 22 and self.tablicaPPPP[i].actual_track_section_l1 == -1):
+                    text35 = "odcinek od balisy przed stacją Osowa do Stacji Osowa zajety"
+                else:
+                    text35 = "odcinek od balisy przed stacją Osowa do Stacji Osowa wolny"
+                if(self.tablicaPPPP[i].actual_track_section_l0 > 22 and self.tablicaPPPP[i].actual_track_section_l0 < 24 and self.tablicaPPPP[i].actual_track_section_l1 == -1):
+                    text36 = "odcinek od stacji Osowa do zwrotnicy zajety"
+                else:
+                    text36 = "odcinek od stacji Osowa do zwrotnicy wolny"
+                if(self.tablicaPPPP[i].actual_track_section_l0 > 24 and self.tablicaPPPP[i].actual_track_section_l0 <= 27 and self.tablicaPPPP[i].actual_track_section_l1 == 15):
+                    text37 = "odcinek od zwrotnicy do konca toru jest zajety"
+                else:
+                    text37 = "odcinek od zwrotnicy do konca toru jest wolny"
+
+            elif(i == 3):
+                if(self.tablicaPPPP[i].actual_track_section_l0 < 27 and self.tablicaPPPP[i].actual_track_section_l0 > 24 and self.tablicaPPPP[i].actual_track_section_l1 < 15 and self.tablicaPPPP[i].actual_track_section_l1 > 13):
+                    text41 = "odcinek od zwrotnicy do konca toru jest zajety"
+                else:
+                    text41 = "odcinek od zwrotnicy do konca toru jest wolny"
+                if(self.tablicaPPPP[i].actual_track_section_l0 > 22 and self.tablicaPPPP[i].actual_track_section_l0 < 24 and self.tablicaPPPP[i].actual_track_section_l1 == -1):
+                    text42 = "odcinek od stacji Osowa do zwrotnicy zajety"
+                else:
+                    text42 = "odcinek od stacji Osowa do zwrotnicy wolny"
+                if(self.tablicaPPPP[i].actual_track_section_l0 != 22 and self.tablicaPPPP[i].actual_track_section_l1 != 22):
+                    text43 = "Stacja Osowa jest wolna"
+                else:
+                    text43 = "Stacja Osowa jest zajeta"
+                if(self.tablicaPPPP[i].actual_track_section_l0 > 20 and self.tablicaPPPP[i].actual_track_section_l0 < 22 and self.tablicaPPPP[i].actual_track_section_l1 == -1):
+                    text44 = "odcinek od Stacji Osowa do balisy przed stacją Osowa zajety"
+                else:
+                    text44 = "odcinek od Stacji Osowa do balisy przed stacją Osowa wolny"
+                if(self.tablicaPPPP[i].actual_track_section_l0 > 4 and self.tablicaPPPP[i].actual_track_section_l0 < 19 and self.tablicaPPPP[i].actual_track_section_l1 == -1):
+                    text45 = "odcinek od balisy przed stacją Osowa do zwrotnicy zajety"
+                else:
+                    text45 = "odcinek od balisy przed stacją Osowa do zwrotnicy wolny"
+                if(self.tablicaPPPP[i].actual_track_section_l0 <= 4 and self.tablicaPPPP[i].actual_track_section_l1 <= 4 and self.tablicaPPPP[i].actual_track_section_l1 > -1):
+                    text46 = "odcinek od zwrotnicy do stacji Wrzeszcz jest zajety"
+                else:
+                    text46 = "odcinek od zwrotnicy do stacji Wrzeszcz jest wolny"
+                if (self.tablicaPPPP[i].actual_track_section_l0 != 0 and self.tablicaPPPP[i].actual_track_section_l1 != 0):
+                    text43 = "Stacja Wrzeszcz jest wolna"
+                else:
+                    text43 = "Stacja Wrzeszcz jest zajeta"
 
 
     # łączenie i rozłączenie z pociągami
