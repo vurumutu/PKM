@@ -20,8 +20,8 @@ import train_map
 import train
 import train_auto
 import kalman
-from CAN import *
-import CAN as can
+#from CAN import *
+#import CAN as can
 import CAN_const as can_const
 from xpressnet import Client
 from xpressnet import Train
@@ -145,7 +145,7 @@ class Window(QtGui.QMainWindow):
 
         self.createTimers()
 
-        self.kalman_train = None
+        self.kalman_train = [0,0,0,0]
 
         self.zwrotnice_ = []
         self.trains_speed = [0, 0, 0, 0, 0, 0]
@@ -157,11 +157,12 @@ class Window(QtGui.QMainWindow):
         self.initRequest()
         self.initAgentSystem()
 
-        print(len(can.zwrotnica))
-        self.initSwitches()
+        #print(len(can.zwrotnica))
+        #self.initSwitches()
         self.initLayout()
         self.initUI()
         self.show()
+        self.setAutoControl()
 
     def initAgentSystem(self):
         set_ams('localhost', 8001, debug=False)
@@ -467,12 +468,12 @@ class Window(QtGui.QMainWindow):
 
         self.slider_speed = QtGui.QSlider(QtCore.Qt.Horizontal, self)
         self.slider_speed.setMinimum(0)
-        self.slider_speed.setMaximum(127)
-        self.slider_speed.setValue(20)
+        self.slider_speed.setMaximum(427)
+        self.slider_speed.setValue(0)
         self.slider_speed.setTickPosition(QtGui.QSlider.TicksBelow)
         self.slider_speed.setTickInterval(5)
-        self.slider_speed.sliderReleased.connect(self.tUpdate)
-        #self.slider_speed.valueChanged.connect(self.symulate_kalman_slider)
+        #self.slider_speed.sliderReleased.connect(self.tUpdate)
+        self.slider_speed.valueChanged.connect(self.symulate_kalman_slider)
 
         self.speed_label = QtGui.QLabel("Speed: " +  str(self.slider_speed.value()), self)
         self.speed_label.setAlignment(QtCore.Qt.AlignCenter)
@@ -765,10 +766,10 @@ class Window(QtGui.QMainWindow):
 
     # ustawienie sterowania pociagiem automatycznie
     def setAutoControl(self):
-        self.enableButtons(False)
+        #self.enableButtons(False)
         self.autoControl = True
 
-        self.rozklad()
+        #self.rozklad()
         self.map.kalman_trains = self.kalman_train
         self.map.createTrains()
         self.map.setAutoControl(self.autoControl)

@@ -3,6 +3,7 @@
 
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
+from section_track import *
 #from train_map import Railline
 
 class Train:
@@ -14,6 +15,8 @@ class Train:
         self.kalman_train = kalman_train
         self.lines = lines      #linie na których jest rysowany pociag
         self.length = length    #dlugosc pociagu
+
+        self.actualTrack = SectionTrack(self.lines[0], self.lines[1])
         self.color = Qt.darkGreen
         self.target = target    #cel podrozy, mozna by oznaczac, jako x na kokretnym torze, przy jakim pociag ma sie zatrzymac
         self.priority = priority    #jak by mialy watpliwosci, ktory ustepuje, moze po prostu na poczatku taki prior, jaki nr pociagu
@@ -129,6 +132,7 @@ class Train:
         self.prev_track_section_l1 = self.actual_track_section_l1
 
         self.check_track_section()
+        print(self.actualTrack.getActualTrack())
 
         changetrack0 = not self.prev_track_section_l0 == self.actual_track_section_l0
         changetrack1 = not self.prev_track_section_l1 == self.actual_track_section_l1
@@ -194,6 +198,7 @@ class Train:
         if self.dual == -1:
             self.actual_track_section_l0 = self.get_number_section(self.lines[0], self.x)
             self.actual_track_section_l1 = self.get_number_section(self.lines[1], self.x)
+            self.actualTrack.setActualTrackOld(self.dual, self.actual_track_section_l0)
 
         elif self.dual == -2:
             if self.flag_up:
@@ -205,14 +210,17 @@ class Train:
 
             self.actual_track_section_l0 = self.get_number_section(self.lines[0], x1)
             self.actual_track_section_l1 = self.get_number_section(self.lines[1], x2)
+            self.actualTrack.setActualTrackOld(self.dual, self.actual_track_section_l0)
 
         elif self.dual == 1:
             self.actual_track_section_l0 = self.get_number_section(self.lines[0], self.x)
             self.actual_track_section_l1 = -1
+            self.actualTrack.setActualTrackOld(self.dual, self.actual_track_section_l0)
 
         elif self.dual == 2:
             self.actual_track_section_l0 = -1
             self.actual_track_section_l1 = self.get_number_section(self.lines[1], self.x)
+            self.actualTrack.setActualTrackOld(self.dual, self.actual_track_section_l1)
 
 
     def get_number_section(self, line, pos):

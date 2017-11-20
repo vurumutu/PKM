@@ -1,6 +1,6 @@
 import numpy as np
 from PyQt4 import QtGui, QtCore
-from CAN import *
+#from CAN import *
 
 class TimeTable:
     def __init__(self, q_window):
