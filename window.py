@@ -20,8 +20,8 @@ import train_map
 import train
 import train_auto
 import kalman
-from CAN import *
-import CAN as can
+#from CAN import *
+#import CAN as can
 import CAN_const as can_const
 from xpressnet import Client
 from xpressnet import Train
@@ -145,7 +145,7 @@ class Window(QtGui.QMainWindow):
 
         self.createTimers()
 
-        self.kalman_train = None
+        self.kalman_train = [0,0,0,0]
 
         self.zwrotnice_ = []
         self.trains_speed = [0, 0, 0, 0, 0, 0]
@@ -154,29 +154,31 @@ class Window(QtGui.QMainWindow):
         self.map = train_map.Railmap(0, 30, self.height(), self.width(), self.kalman_train, self)
 
         # inicjalizacja zwotnic
+        #print(len(can.zwrotnica))
+        #self.initSwitches()
+
         self.initRequest()
         self.initAgentSystem()
 
-        print(len(can.zwrotnica))
-        self.initSwitches()
         self.initLayout()
         self.initUI()
         self.show()
+        self.setAutoControl()
 
     def initAgentSystem(self):
         set_ams('localhost', 8001, debug=False)
 
         self.agentsList = list()
 
-        agente_train_1 = agent.AgenteHelloWorld(AID(name='agente_hello1'))
+        agente_train_1 = agent.AgenteHelloWorld(AID(name='agente_hello1'), 100, -1)
         agente_train_1.ams = {'name': 'localhost', 'port': 8001}
         self.agentsList.append(agente_train_1)
 
-        agente_train_2 = agent.AgenteHelloWorld(AID(name='agente_hello2'))
+        agente_train_2 = agent.AgenteHelloWorld(AID(name='agente_hello2'), 100, -2)
         agente_train_2.ams = {'name': 'localhost', 'port': 8001}
         self.agentsList.append(agente_train_2)
 
-        agente_train_3 = agent.AgenteHelloWorld(AID(name='agente_hello5'))
+        agente_train_3 = agent.AgenteHelloWorld(AID(name='agente_hello5'), 100, 1)
         agente_train_3.ams = {'name': 'localhost', 'port': 8001}
         self.agentsList.append(agente_train_3)
 
@@ -380,15 +382,6 @@ class Window(QtGui.QMainWindow):
         self.t2z2.resize(self.t2z2.sizeHint())
         self.t2z2.move(300+marginX, 60+marginY)
 
-        self.target = QtGui.QComboBox(Group_switch)
-        self.target.addItem('dziala')
-        self.target.addItem('dziala_bardziej')
-
-        #self.target.currentIndex()
-
-        self.system_start = QtGui.QPushButton('Start system', Group_switch)
-        self.system_start.clicked.connect(self.RUN_system_RUN)
-
         return Group_switch
 
     # podgrupa kontrolek do łączenia się z pociągami oraz wyboru typu sterowania
@@ -467,12 +460,12 @@ class Window(QtGui.QMainWindow):
 
         self.slider_speed = QtGui.QSlider(QtCore.Qt.Horizontal, self)
         self.slider_speed.setMinimum(0)
-        self.slider_speed.setMaximum(127)
-        self.slider_speed.setValue(20)
+        self.slider_speed.setMaximum(427)
+        self.slider_speed.setValue(0)
         self.slider_speed.setTickPosition(QtGui.QSlider.TicksBelow)
         self.slider_speed.setTickInterval(5)
-        self.slider_speed.sliderReleased.connect(self.tUpdate)
-        #self.slider_speed.valueChanged.connect(self.symulate_kalman_slider)
+        #self.slider_speed.sliderReleased.connect(self.tUpdate)
+        self.slider_speed.valueChanged.connect(self.symulate_kalman_slider)
 
         self.speed_label = QtGui.QLabel("Speed: " +  str(self.slider_speed.value()), self)
         self.speed_label.setAlignment(QtCore.Qt.AlignCenter)
@@ -614,19 +607,6 @@ class Window(QtGui.QMainWindow):
         self.t2z2.setEnabled(True)
         self.map.repaint()
 
-    def RUN_system_RUN(self):
-        print(self.target.currentIndex())
-        #if(self.map.train1.actual_track_section_l0 == 23):
-        self.tablicaPPPP = [self.map.train1,self.map.train2,self.map.train3,self.map.train4]
-
-        for i in range(4):
-            if(self.tablicaPPPP[i].actual_track_section_l0 != 23 and self.tablicaPPPP[i].actual_track_section_l1 != 23):
-                print('moznaJechac')
-
-
-            print(self.tablicaPPPP[i].actual_track_section_l0)
-
-
     # łączenie i rozłączenie z pociągami
     def connect_disconnect(self):
         if self.client.connected:
@@ -646,10 +626,10 @@ class Window(QtGui.QMainWindow):
 
     # ustawienie sterowania pociagiem automatycznie
     def setAutoControl(self):
-        self.enableButtons(False)
+        #self.enableButtons(False)
         self.autoControl = True
 
-        self.rozklad()
+        #self.rozklad()
         self.map.kalman_trains = self.kalman_train
         self.map.createTrains()
         self.map.setAutoControl(self.autoControl)
@@ -706,6 +686,10 @@ class Window(QtGui.QMainWindow):
     def symulate_kalman_slider(self):
         self.map.sym_kalman = 4*self.slider_speed.value()
         self.map.repaint()
+        #self.map.train1.messageChangeTrack(self)
+        #self.map.train2.messageChangeTrack(self)
+        #self.map.train3.messageChangeTrack(self)
+        #self.map.train4.messageChangeTrack(self)
 
     def rozklad(self):
         self.timer_glowny.start(50, self)
@@ -1134,7 +1118,6 @@ class Window(QtGui.QMainWindow):
             self.change_state_switch2()
             self.change_state_switch1()
 
-
         if event.timerId() == self.timer_requests.timerId():
             r_buff = self.my_requests.text
             j = json.loads(r_buff)
@@ -1146,10 +1129,10 @@ class Window(QtGui.QMainWindow):
 
             #{"device_type": "0", "velocity": 3, "train_identificator": 2}
 
-            self.agentsList[train_identificator].newOrder()
-            #for i in range(3):
-            #    if i != train_identificator:
-            #        self.agentsList[i].react()
+            message = self.agentsList[train_identificator].newOrder()
+            for i in range(3):
+                if i != train_identificator:
+                    self.agentsList[i].react(message)
 
             self.trains_speed[train_identificator] = velocity
             if self.client.connected:
@@ -1159,7 +1142,7 @@ class Window(QtGui.QMainWindow):
                     self.msg = self.trains[train_identificator].move(velocity, 'Backward')
 
             if self.msg is not None and self.client.connected:
-                #self.client.send(self.msg)
+                self.client.send(self.msg)
                 sleep(1)  # Czekaj 1s
                 self.msg = None
 

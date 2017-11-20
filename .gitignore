@@ -4,3 +4,4 @@ __pycache__/
 codestyles/
 _linux/
 *.xml
+*.db

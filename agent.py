@@ -8,10 +8,14 @@ import threading
 import time
 
 class AgenteHelloWorld(Agent):
-    def __init__(self, aid):
+    def __init__(self, aid, position, dual):
         super(AgenteHelloWorld, self).__init__(aid=aid, debug=False)
         display_message(self.aid.localname, 'Salam dunya!')
-        position = 100
+        self.position = position
+        self.dual = dual
+        print self.position
+        print self.dual
+
 
     def newOrder(self):
         display_message(self.aid.localname, 'Nowy cel')
@@ -19,9 +23,9 @@ class AgenteHelloWorld(Agent):
         message.add_receiver(AID('Destinatario'))
         message.set_content('Ola')
         self.send(message)
-        print("cos")
+        print("Gdzie jestescie?")
 
     def react(self, message):
         display_message(self.aid.localname, 'Mensagem recebida')
-        print("cos_w_odpowiedzi")
+        print("X: " + str(self.position))
 
