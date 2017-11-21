@@ -162,6 +162,8 @@ class Railmap(QWidget):
         paint.drawText(10, 260, "4. Kierunek KIELPINEK -> WRZESZCZ")
 
         self.draw_legend(20, 320, paint)
+        if self.autoControl:
+            self.draw_actual_track(600, 330, paint)
 
         paint.end()
 
@@ -189,6 +191,26 @@ class Railmap(QWidget):
             self.train3.draw(self)
             self.train4.draw(self)
 
+    def draw_actual_track(self, x, y, paint=QPainter()):
+        paint.setPen(Qt.black)
+        paint.setFont(QFont('Arial', 9))
+        str_train1 = "pociag " + str(self.train1.number) + ": " + str(
+            self.train1.actualTrack.getActualTrack()[0]) + " " + str(self.train1.actualTrack.getActualTrack()[1])
+        str_train2 = "pociag " + str(self.train2.number) + ": " + str(
+            self.train2.actualTrack.getActualTrack()[0]) + " " + str(self.train2.actualTrack.getActualTrack()[1])
+        str_train3 = "pociag " + str(self.train3.number) + ": " + str(
+            self.train3.actualTrack.getActualTrack()[0]) + " " + str(self.train3.actualTrack.getActualTrack()[1])
+        str_train4 = "pociag " + str(self.train4.number) + ": " + str(
+            self.train4.actualTrack.getActualTrack()[0]) + " " + str(self.train4.actualTrack.getActualTrack()[1])
+
+        length_section_train1 = " dlugosc odcinka: " + str(self.train1.actualTrack.getLenghtActualTrack())
+        length_section_train2 = " dlugosc odcinka: " + str(self.train2.actualTrack.getLenghtActualTrack())
+        length_section_train3 = " dlugosc odcinka: " + str(self.train3.actualTrack.getLenghtActualTrack())
+        length_section_train4 = " dlugosc odcinka: " + str(self.train4.actualTrack.getLenghtActualTrack())
+        paint.drawText(x + 100, y + 40, str_train1 + length_section_train1)
+        paint.drawText(x + 100, y + 57, str_train2 + length_section_train2)
+        paint.drawText(x + 100, y + 73, str_train3 + length_section_train3)
+        paint.drawText(x + 100, y + 90, str_train4 + length_section_train4)
 
     def draw_legend(self, x, y, paint=QPainter()):
         paint.setBrush(Qt.white)

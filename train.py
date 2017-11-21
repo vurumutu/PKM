@@ -3,18 +3,24 @@
 
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
+from section_track import *
 #from train_map import Railline
 
 class Train:
 
-    def __init__(self, x, x_init, number, kalman_train, lines, length = 30, dual = -1):                             #i - numer pociagu
+    def __init__(self, x, x_init, number, kalman_train, lines, length = 30, dual = -1, target = 1, priority = 1, track = 1):                             #i - numer pociagu
         self.x = x  #pozycja pociągu
         self.x_init = x_init    #pozycja pociągu początkowa
         self.number = number
         self.kalman_train = kalman_train
         self.lines = lines      #linie na których jest rysowany pociag
         self.length = length    #dlugosc pociagu
+
+        self.actualTrack = SectionTrack(self.lines[0], self.lines[1])
         self.color = Qt.darkGreen
+        self.target = target    #cel podrozy, mozna by oznaczac, jako x na kokretnym torze, przy jakim pociag ma sie zatrzymac
+        self.priority = priority    #jak by mialy watpliwosci, ktory ustepuje, moze po prostu na poczatku taki prior, jaki nr pociagu
+        self.track = track      #musimy teraz juz wiedziec, ktory pociag jest na ktorym torze, zeby mogly sie mijac
         self.dual = dual    #wartość mówiąca w jaki sposób ma być rysowany pociąg
                             # -1 podwojnie po lewej
                             # -2 podwojnie po prawej
@@ -43,6 +49,15 @@ class Train:
         lenToSwitch2line0 = self.lines[0].get_x_fromobj(self.num_switch2_in_line0)
         lenToSwitch2line1 = self.lines[1].get_x_fromobj(self.num_switch2_in_line1)
         self.diff = lenToSwitch2line0 - lenToSwitch2line1
+
+    def setTarget(self, target):
+        self.target = target
+
+    def getTarget(self):
+        return self.target
+
+    def getPriority(self):
+        return self.priority
 
     def setPosition(self, x):
         self.x = x
@@ -117,6 +132,7 @@ class Train:
         self.prev_track_section_l1 = self.actual_track_section_l1
 
         self.check_track_section()
+        print(self.actualTrack.getActualTrack())
 
         changetrack0 = not self.prev_track_section_l0 == self.actual_track_section_l0
         changetrack1 = not self.prev_track_section_l1 == self.actual_track_section_l1
@@ -182,6 +198,7 @@ class Train:
         if self.dual == -1:
             self.actual_track_section_l0 = self.get_number_section(self.lines[0], self.x)
             self.actual_track_section_l1 = self.get_number_section(self.lines[1], self.x)
+            self.actualTrack.setActualTrackOld(self.dual, self.actual_track_section_l0)
 
         elif self.dual == -2:
             if self.flag_up:
@@ -193,14 +210,17 @@ class Train:
 
             self.actual_track_section_l0 = self.get_number_section(self.lines[0], x1)
             self.actual_track_section_l1 = self.get_number_section(self.lines[1], x2)
+            self.actualTrack.setActualTrackOld(self.dual, self.actual_track_section_l0)
 
         elif self.dual == 1:
             self.actual_track_section_l0 = self.get_number_section(self.lines[0], self.x)
             self.actual_track_section_l1 = -1
+            self.actualTrack.setActualTrackOld(self.dual, self.actual_track_section_l0)
 
         elif self.dual == 2:
             self.actual_track_section_l0 = -1
             self.actual_track_section_l1 = self.get_number_section(self.lines[1], self.x)
+            self.actualTrack.setActualTrackOld(self.dual, self.actual_track_section_l1)
 
 
     def get_number_section(self, line, pos):
