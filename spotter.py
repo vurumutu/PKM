@@ -49,6 +49,26 @@ def find_train():
         # Prints data from image.
             for decoded in zbar_image:
                 return decoded.data
+                
+def find_train_simulator():
+    cap = cv2.VideoCapture(0)
+    
+    while True:
+        ret, frame = cap.read()
+        cv2.imshow('frame',frame)
+        if cv2.waitKey(1) ==27:
+            exit(0)
+            
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        image = Image.fromarray(gray)
+        width, height = image.size
+        zbar_image = zbar.Image(width, height, 'Y800', image.tobytes())
+        scanner = zbar.ImageScanner()
+        scanner.scan(zbar_image)
+
+        # Prints data from image.
+        for decoded in zbar_image:
+            return decoded.data
 
 
 def main():
@@ -59,7 +79,7 @@ def main():
     client.send(train.move(50, 0))
     spotter.set_power(50)
     while True:
-        found_train = find_train()
+        found_train = find_train_simulator()
         if found_train == "train_one" and "train_one" in to_find_trains:
             print("Znalazlem pociag 1")
             print(spotter.get_position())
@@ -87,3 +107,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
