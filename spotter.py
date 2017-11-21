@@ -16,7 +16,7 @@ import numpy as np
 TCP_IP = '192.168.210.200'
 TCP_PORT = 5550
 
-to_find_trains = ["train_one", "train_two", "train_six"]
+to_find_trains = ["train_one", "train_two", "train_five"]
 found_train = None
 # Pawła kod
 
@@ -74,12 +74,13 @@ def find_train_simulator():
 def main():
     client = Client()
     client.connect(TCP_IP, TCP_PORT)
-    train = Train(5)  # lokomotywa z kamerą
+    train = Train(6)  # lokomotywa z kamerą
     spotter = kalman.Model(0)
     client.send(train.move(50, 0))
     spotter.set_power(50)
     while True:
-        found_train = find_train_simulator()
+        print(spotter.get_position())
+        found_train = find_train()
         if found_train == "train_one" and "train_one" in to_find_trains:
             print("Znalazlem pociag 1")
             print(spotter.get_position())
@@ -94,10 +95,10 @@ def main():
             found_train = None
             spotter.set_power(0)
             client.send(train.move(0))
-        elif found_train == "train_six" and "train_six" in to_find_trains:
-            print("Znalazlem pociag 6")
+        elif found_train == "train_six" and "train_five" in to_find_trains:
+            print("Znalazlem pociag 5")
             print(spotter.get_position())
-            to_find_trains.remove("train_six")
+            to_find_trains.remove("train_five")
             found_train = None
             spotter.set_power(0)
             client.send(train.move(0))

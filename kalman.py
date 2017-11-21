@@ -123,18 +123,18 @@ class Model:
             c_file.close()
 	# Pociąg zwiadowca
         if train_nr == 0:
-            a_file = open('models/scout/A.txt', 'r')
+            a_file = open('models/scout/A1.txt', 'r')
             self.A = np.loadtxt(a_file, dtype=float)
             a_file.close()
 
-            b_file = open('models/scout/B.txt', 'r')
+            b_file = open('models/scout/B1.txt', 'r')
             temp_B = np.loadtxt(b_file, dtype=float)
             self.B = np.mat([[temp_B[0]],
                              [temp_B[1]],
                              [temp_B[2]]], dtype=float)
             b_file.close()
 
-            c_file = open('models/scout/C.txt', 'r')
+            c_file = open('models/scout/C1.txt', 'r')
             self.C = np.loadtxt(c_file, dtype=float)
             c_file.close()
 
