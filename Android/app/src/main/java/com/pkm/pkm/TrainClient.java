@@ -13,11 +13,11 @@ import retrofit2.http.Path;
  */
 
 public interface TrainClient {
-    @GET("/trains")
+    @GET("/trains/")
     Call<List<Train>> handleTrains();
-    @GET("trains/{train}")
+    @GET("/train/{train}/")
     Call<Train> getTrainSpeed(@Path("train") String train);
-    @PUT("trains/{train}")
-    Call<Train> setTrainSpeed(@Path("train") String train, @Body Train trains);
+    @PUT("/train/0/")
+    Call<Train> setTrainSpeed(@Body Train trains);
 
 }

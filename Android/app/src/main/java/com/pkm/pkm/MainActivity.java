@@ -25,14 +25,14 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 public class MainActivity extends AppCompatActivity {
-    private String ip;
+    //private String ip;
     private int actualTrain; // state of radio button
     private int speed;
     private ProgressBar pg1;
     private RadioGroup radioGroup;
     private TextView speedText;
     private SeekBar speedSeekBar;
-    private List<Train> trains;
+    //private List<Train> trains;
     private Retrofit.Builder builder;
     //private ArrayList<Train> trainsTest;
 
@@ -64,13 +64,14 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
+                sendNetworkRequest(new Train(0, "0", speed, actualTrain));
                 // iterate though array list and find actualTrain
-                for (Train train: trains) {
-                    if(train.getTrain_identificator() == actualTrain){
-                        trains.get(actualTrain).setVelocity(speed);
-                        sendNetworkRequest(train);
-                    }
-                }
+//                for (Train train: trains) {
+//                    if(train.getTrain_identificator() == actualTrain){
+//                        trains.get(actualTrain).setVelocity(speed);
+//                        sendNetworkRequest(train);
+//                    }
+//                }
             }
         });
 
@@ -80,14 +81,14 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 //trains.get(actualTrain).setSpeed(0);
                 speedSeekBar.setProgress(128);
-
+                sendNetworkRequest(new Train(0, "0", 0, actualTrain));
                 //could be handled by seekbar onStopTrackingTouch
-                for (Train train: trains) {
-                    if(train.getTrain_identificator() == actualTrain){
-                        trains.get(actualTrain).setVelocity(speed);
-                        sendNetworkRequest(train);
-                    }
-                }
+//                for (Train train: trains) {
+//                    if(train.getTrain_identificator() == actualTrain){
+//                        trains.get(actualTrain).setVelocity(speed);
+//                        sendNetworkRequest(train);
+//                    }
+//                }
 
             }
         });
@@ -97,10 +98,13 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 speedSeekBar.setProgress(128);
                 //send request for all items in trains
-                for (Train train: trains) {
-                    train.setVelocity(0);
-                    sendNetworkRequest(train);
+                for(int i = 0; i < 3; i++) {
+                    sendNetworkRequest(new Train(0, "0", 0, i));
                 }
+//                for (Train train: trains) {
+//                    train.setVelocity(0);
+//                    sendNetworkRequest(train);
+//                }
 
             }
         });
@@ -135,11 +139,10 @@ public class MainActivity extends AppCompatActivity {
         call.enqueue(new Callback<List<Train>>() {
             @Override
             public void onResponse(Call<List<Train>> call, Response<List<Train>> response) {
-                trains = response.body();
-                // TODO check if trains exists
+                //trains = response.body();
                 pg1.setVisibility(View.INVISIBLE);
                 getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
-                addRadioButtons(trains.size()); // replace with trains.size()
+                addRadioButtons(3); // replace with trains.size()
             }
 
             @Override
@@ -152,7 +155,8 @@ public class MainActivity extends AppCompatActivity {
     private void sendNetworkRequest(Train train){
         Retrofit retrofit = builder.build();
         TrainClient client = retrofit.create(TrainClient.class);
-        Call<Train> call = client.setTrainSpeed(String.valueOf(train.getTrain_identificator()), train);
+        //Call<Train> call = client.setTrainSpeed(String.valueOf(train.getTrain_identificator()), train);
+        Call<Train> call = client.setTrainSpeed(train);
         call.enqueue(new Callback<Train>() {
             @Override
             public void onResponse(Call<Train> call, Response<Train> response) {

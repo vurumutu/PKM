@@ -45,6 +45,8 @@
         android:layout_marginLeft="146dp"
         android:layout_marginRight="146dp" />
 
+
+
     <RadioGroup
         android:id="@+id/radiogroup"
         android:layout_width="0dp"
