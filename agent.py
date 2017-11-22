@@ -29,3 +29,4 @@ class AgenteHelloWorld(Agent):
     def updateTrack(self, actualTrack):
         self.actualTrack = actualTrack
 
+        print self.actualTrack

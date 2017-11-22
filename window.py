@@ -4,7 +4,7 @@ import sys
 from PyQt4 import QtGui, QtCore
 from PyQt4.Qt import *
 
-# import requests
+import requests
 import json
 
 from pade.misc.utility import display_message
@@ -169,15 +169,22 @@ class Window(QtGui.QMainWindow):
 
         self.agentsList = list()
 
-        agente_train_1 = agent.AgenteHelloWorld(AID(name='agente_hello1'))
+        d.acquire()
+        self.train1_section = train1_section
+        self.train2_section = train2_section
+        self.train3_section = train3_section
+        self.train4_section = train4_section
+        d.release()
+
+        agente_train_1 = agent.AgenteHelloWorld(AID(name='agente_hello1'), self.train1_section)
         agente_train_1.ams = {'name': 'localhost', 'port': 8001}
         self.agentsList.append(agente_train_1)
 
-        agente_train_2 = agent.AgenteHelloWorld(AID(name='agente_hello2'))
+        agente_train_2 = agent.AgenteHelloWorld(AID(name='agente_hello2'), self.train2_section)
         agente_train_2.ams = {'name': 'localhost', 'port': 8001}
         self.agentsList.append(agente_train_2)
 
-        agente_train_3 = agent.AgenteHelloWorld(AID(name='agente_hello5'))
+        agente_train_3 = agent.AgenteHelloWorld(AID(name='agente_hello5'), self.train3_section)
         agente_train_3.ams = {'name': 'localhost', 'port': 8001}
         self.agentsList.append(agente_train_3)
 
@@ -188,6 +195,7 @@ class Window(QtGui.QMainWindow):
             self.my_requests = requests.get('http://127.0.0.1:8000/trains/')
             print("Connect to http://127.0.0.1:8000/trains/")
             self.timer_requests.start(2000,self)
+            self.lastRequest = [0, 0]    #train, v
         except:
             print("http://127.0.0.1:8000/trains/ does not respond")
 
@@ -1475,10 +1483,21 @@ class Window(QtGui.QMainWindow):
 
             #{"device_type": "0", "velocity": 3, "train_identificator": 2}
 
-            self.agentsList[train_identificator].newOrder()
-            #for i in range(3):
-            #    if i != train_identificator:
-            #        self.agentsList[i].react()
+            d.acquire()
+            self.train1_section = train1_section
+            self.train2_section = train2_section
+            self.train3_section = train3_section
+            self.train4_section = train4_section
+            d.release()
+
+            self.agentsList[0].updateTrack(self.train1_section)
+            self.agentsList[1].updateTrack(self.train2_section)
+            self.agentsList[2].updateTrack(self.train3_section)
+
+            message = self.agentsList[train_identificator].newOrder()
+            for i in range(3):
+                if i != train_identificator:
+                    react =  self.agentsList[i].react(message)
 
             self.trains_speed[train_identificator] = velocity
             if self.client.connected:

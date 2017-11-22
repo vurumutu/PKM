@@ -9,9 +9,9 @@ import threading
 
 import __builtin__
 __builtin__.train1_section = [0, 0]
-__builtin__.train2_section = [0, 0]
-__builtin__.train3_section = [0, 0]
-__builtin__.train4_section = [0, 0]
+__builtin__.train2_section = [1, 1]
+__builtin__.train3_section = [2, 2]
+__builtin__.train4_section = [3, 0]
 __builtin__.d = threading.Condition()
 
 class Turn(Enum):
