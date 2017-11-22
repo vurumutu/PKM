@@ -151,6 +151,15 @@ def main():
             client.send(train.move(50, 1))
             spotter.set_power(50)
 
+        if found_qr_code == "track_end" and start_position is False and on_the_route is True:
+            print("Koniec %s, nie znaleziono pociągów, wracam na punkt startowy" (actual_track))
+            tracks.remove(actual_track)
+            spotter.set_power(0)
+            client.send(train.move(0))
+            sleep(5)
+            spotter = kalman.Model(0)
+            client.send(train.move(50, 1))
+            spotter.set_power(50)
         if not to_find_trains or not tracks:
             break
     client.disconnect()
