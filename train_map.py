@@ -5,6 +5,14 @@ from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from enum import Enum
 import train
+import threading
+
+import __builtin__
+__builtin__.train1_section = [0, 0]
+__builtin__.train2_section = [0, 0]
+__builtin__.train3_section = [0, 0]
+__builtin__.train4_section = [0, 0]
+__builtin__.d = threading.Condition()
 
 class Turn(Enum):
     left = 0
@@ -184,6 +192,13 @@ class Railmap(QWidget):
             self.train2.update_position()
             self.train3.update_position()
             self.train4.update_position()
+
+            __builtin__.d.acquire()
+            __builtin__.train1_section = self.train1.actualTrack.getActualTrack()
+            __builtin__.train2_section = self.train2.actualTrack.getActualTrack()
+            __builtin__.train3_section = self.train3.actualTrack.getActualTrack()
+            __builtin__.train4_section = self.train4.actualTrack.getActualTrack()
+            __builtin__.d.release()
 
             # rysoanie pociągów
             self.train1.draw(self)
