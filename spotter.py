@@ -86,14 +86,15 @@ def main():
     while True:
         # Ruszanie ze stacji jeżeli zwiadowca znajduje się na niej, istnieją pociągi do znalezienia oraz istnieją
         # trasy do przejechania
-        if start_position is True and to_find_trains is True and tracks is True:
+        if start_position and to_find_trains and tracks:
             actual_track = tracks[0]
             start_position = False
             on_the_route = True
             client.send(train.move(50, 0))
             spotter.set_power(50)
+            print("test")
 
-        found_qr_code = find_train()
+        found_qr_code = find_train_simulator()
         # Zatrzymanie zwiadowcy na stacji i przygotowanie do ponownego wyjazdu
         if found_qr_code == "train_station" and start_position is False and on_the_route is False:
             start_position = True
@@ -103,7 +104,7 @@ def main():
             spotter = kalman.Model(0)
 
         if found_qr_code == "train_one" and "train_one" in to_find_trains and on_the_route is True:
-            print("Znalazłem pociąg 1 na trasie: %s" (actual_track))
+            print("Znalazłem pociąg 1 na trasie: " + (actual_track))
             print(spotter.get_position() + spotter.get_stop_distance() + camera_distance)
 
             to_find_trains.remove("train_one")
@@ -119,7 +120,7 @@ def main():
             client.send(train.move(50, 1))
             spotter.set_power(50)
         elif found_qr_code == "train_two" and "train_two" in to_find_trains and on_the_route is True:
-            print("Znalazłem pociąg 2 na trasie: %s" (actual_track))
+            print("Znalazłem pociąg 2 na trasie: " + (actual_track))
             print(spotter.get_position() + spotter.get_stop_distance() + camera_distance)
 
             to_find_trains.remove("train_two")
@@ -135,7 +136,7 @@ def main():
             client.send(train.move(50, 1))
             spotter.set_power(50)
         elif found_qr_code == "train_six" and "train_five" in to_find_trains and on_the_route is True:
-            print("Znalazłem pociąg 5 na trasie: %s" (actual_track))
+            print("Znalazłem pociąg 5 na trasie: "+  (actual_track))
             print(spotter.get_position() + spotter.get_stop_distance() + camera_distance)
 
             to_find_trains.remove("train_five")
@@ -152,7 +153,7 @@ def main():
             spotter.set_power(50)
 
         if found_qr_code == "track_end" and start_position is False and on_the_route is True:
-            print("Koniec %s, nie znaleziono pociągów, wracam na punkt startowy" (actual_track))
+            print("Koniec " + actual_track+ ", nie znaleziono pociągów, wracam na punkt startowy")
             tracks.remove(actual_track)
             spotter.set_power(0)
             client.send(train.move(0))
