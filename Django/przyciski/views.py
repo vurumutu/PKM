@@ -1,6 +1,6 @@
 from django.shortcuts import render_to_response,render, redirect, get_object_or_404
 from django.http import HttpResponse, JsonResponse
-from .models import TrainRequest
+from .models import TrainRequest, AvailableTrain
 from django.template import RequestContext, Template
 
 #form
@@ -25,12 +25,19 @@ def home (request):
 			velocity=new_train_request.get("page_velocity"),
 			device_type = 0
 		)
+		
+		t = AvailableTrain.objects.get(id=new_train_request.get("train_number"))
+		print(t)
+		t.velocity = new_train_request.get("page_velocity")  # change field
+		t.save() # this will update only
 
 	return render(request,'stronka.html')
 	
 def main_home_page(request):
 	trainRequests = TrainRequest.objects.all()
-	return render(request, 'homepage.html',{'trainRequests' : trainRequests})
+	availableTrains = AvailableTrain.objects.all()
+	print(availableTrains)
+	return render(request, 'homepage.html',{'trainRequests' : trainRequests, 'availableTrains': availableTrains})
 
 
 @csrf_exempt
@@ -71,7 +78,38 @@ def przyciski_detail(request, _pk):
     elif request.method == 'PUT':
         data = JSONParser().parse(request)
         serializer = PrzyciskiSerializer(przyciski, data=data)
+        print('bla')
         if serializer.is_valid():
+            print('123')
+            serializer.save()
+            return JsonResponse(serializer.data)
+        return JsonResponse(serializer.errors, status=400)
+
+    elif request.method == 'DELETE':
+        przyciski.delete()
+        return HttpResponse(status=204)
+		
+@csrf_exempt
+def przyciski_posting(request):
+    """
+    Retrieve, update or delete a code snippet.
+    """
+    #try:
+    #    lista_przyciski = list(TrainRequest.objects.all())#get(pk=_pk)
+    #    przyciski = lista_przyciski[int(_pk)]
+    #except:# TrainRequest.DoesNotExist: #Exception as e:#TrainRequest.DoesNotExist:
+    #    return HttpResponse(status=404)
+
+    #if request.method == 'GET':
+    #    serializer = PrzyciskiSerializer(przyciski)
+    #    return JsonResponse(serializer.data)
+
+    if request.method == 'PUT':
+        data = JSONParser().parse(request)
+        serializer = PrzyciskiSerializer(przyciski, data=data)
+        print('bla')
+        if serializer.is_valid():
+            print('123')
             serializer.save()
             return JsonResponse(serializer.data)
         return JsonResponse(serializer.errors, status=400)

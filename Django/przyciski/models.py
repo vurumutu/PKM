@@ -7,6 +7,23 @@ DEVICE_TYPE_ENUM = (
 ('1', 'AndroidApp'),
 )
 
+class AvailableTrain(models.Model):
+	id = models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')
+	velocity = models.IntegerField(
+		default=0,
+		validators=[MaxValueValidator(127), MinValueValidator(-127)]
+	)
+	train_identificator = models.IntegerField(
+		default=1,
+		validators=[MaxValueValidator(2), MinValueValidator(0)]
+	)
+	
+	def __str__(self):
+		return "Pociąg numer "+str(self.train_identificator) + ". Jadący z prędkością: " + str(self.velocity)
+		
+	def change_velocity():
+		pass
+
 
 class TrainRequest(models.Model):
 	id = models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')
@@ -20,6 +37,8 @@ class TrainRequest(models.Model):
 		validators=[MaxValueValidator(2), MinValueValidator(0)]
 	)
 	
-	#def __str__(self):
-	#	return "Pociąg numer "+str(self.train_identificator) + ". Prędkość: " + str(self.velocity)
+	def __str__(self):
+		return "Żądanie dla pociągu numer "+str(self.train_identificator) + ". Żądana prędkość: " + str(self.velocity)
+		
+
 	
