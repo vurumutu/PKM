@@ -1,5 +1,5 @@
 .idea/
 *.pyc
 __pycache__/
--linux/
+_linux/
 codestyles/
