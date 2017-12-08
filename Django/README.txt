@@ -29,7 +29,7 @@ Instrukcja obs³ugi Django:
 	python manage.py flush - usuwa aktualn¹ bazê danych
 	
 	Stworzenie nowej:
-	python manage.py makemigrations
+	python manage.py makemigrations przyciski
 	python manage.py sqlmigrate przyciski 0001 - pierwsza migracja dla aplikacji przyciski, mog¹ byæ inne numery i inne aplikacje
 	python manage.py migrate
 	

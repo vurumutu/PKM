@@ -18,7 +18,16 @@ class AvailableTrain(models.Model):
 	)
 	train_identificator = models.IntegerField(
 		default=1,
-		validators=[MaxValueValidator(2), MinValueValidator(0)]
+		validators=[MaxValueValidator(10), MinValueValidator(1)]
+	)
+	
+	position = models.IntegerField(
+		default=0,
+		validators=[MinValueValidator(0), MaxValueValidator(10000)]
+	)
+	track_number = models.IntegerField(
+		default=1,
+		validators=[MinValueValidator(1), MaxValueValidator(4)]
 	)
 	
 	def __str__(self):
@@ -39,6 +48,8 @@ class TrainRequest(models.Model):
 		default=1,
 		validators=[MaxValueValidator(2), MinValueValidator(0)]
 	)
+	
+	was_carried_out = models.BooleanField() # czy wykonano rozkaz
 	
 	def __str__(self):
 		return "Żądanie dla pociągu numer "+str(self.train_identificator) + ". Żądana prędkość: " + str(self.velocity)

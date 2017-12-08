@@ -4,6 +4,7 @@ from .models import TrainRequest, AvailableTrain
 from django.template import RequestContext, Template
 
 #form
+#import pade
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login
 from django.shortcuts import render
@@ -26,7 +27,7 @@ def obslugaAgentowa (nr):
 	agentsList = list()
 
 	for i in range(len(AvailableTrain.objects.all())): #tworzymy tyle agentow, ile jest pociagow w bazie
-		print i
+		print (i)
 		agente_train = agent.AgenteHelloWorld(AID(name='agente_hello'), [1,1]) #kazdemu zamiast [1, 1] powinnismy przypisywac sektor w jakim sie znajduje, ale nie wiem, skad to wytrzasnac
 		agentsList.append(agente_train)
 
@@ -44,30 +45,37 @@ def obslugaAgentowa (nr):
 
 def home (request):
 	if request.method == 'POST':
-		new_train_request = request.POST #['new_train']
-
-		user = User.objects.first()  # TODO: get the currently logged in user
-        
-		new_created_train = TrainRequest.objects.create(
-			train_identificator= new_train_request.get("train_number"),
-			velocity=new_train_request.get("page_velocity"),
-			device_type = 0
-		)
-		
-		nr = new_train_request.get("train_number")
-		t = AvailableTrain.objects.get(id=nr)
-		print(int(nr), t)
-		
-		wolne = obslugaAgentowa(int(nr))
-
-		if wolne:
-			t.velocity = new_train_request.get("page_velocity")  # change field
-			t.save() # this will update only
-
+		if 'stop_trains' in request.POST:
+			return render(request,'stronka.html')
+				#TODO Dodać kod na zatrzymanie wszystkich pociągów tutaj
+		elif 'trains_list' in request.POST:
+			return render(request,'stronka.html')
+				#TODO Dodać kod na pobranie listy pociągów tutaj
 		else:
-			print "Rozkaz zabroniony. Tor zablokowany"
-			t.velocity = 0
-			t.save()
+			new_train_request = request.POST #['new_train']
+
+			user = User.objects.first()  # TODO: get the currently logged in user
+			
+			new_created_train = TrainRequest.objects.create(
+				train_identificator= new_train_request.get("train_number"),
+				velocity=new_train_request.get("page_velocity"),
+				device_type = 0
+			)
+			
+			nr = new_train_request.get("train_number")
+			t = AvailableTrain.objects.get(id=nr)
+			print(int(nr), t)
+			
+			wolne = obslugaAgentowa(int(nr))
+
+			if wolne:
+				t.velocity = new_train_request.get("page_velocity")  # change field
+				t.save() # this will update only
+
+			else:
+				print ("Rozkaz zabroniony. Tor zablokowany")
+				t.velocity = 0
+				t.save()
 
 	return render(request,'stronka.html')
 	
