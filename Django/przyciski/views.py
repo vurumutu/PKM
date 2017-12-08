@@ -14,22 +14,60 @@ from rest_framework.renderers import JSONRenderer
 from rest_framework.parsers import JSONParser
 from przyciski.serializers import PrzyciskiSerializer
 
+
+import agent
+
+from pade.misc.utility import display_message
+from pade.misc.common import set_ams, start_loop
+from pade.core.agent import Agent
+from pade.acl.aid import AID
+
+def obslugaAgentowa (nr):
+	agentsList = list()
+
+	for i in range(len(AvailableTrain.objects.all())): #tworzymy tyle agentow, ile jest pociagow w bazie
+		print i
+		agente_train = agent.AgenteHelloWorld(AID(name='agente_hello'), [1,1]) #kazdemu zamiast [1, 1] powinnismy przypisywac sektor w jakim sie znajduje, ale nie wiem, skad to wytrzasnac
+		agentsList.append(agente_train)
+
+	message = agentsList[nr].newOrder() #czyli agent ktory otrzymal rozkaz
+
+	for i in range(len(AvailableTrain.objects.all())):
+		if i != nr: #odpowiadaja pozostale
+			agentsList[i].react(message)	
+	
+	#tu bedzie dodane sprawdzanie czy nic nie stoi na drodze
+	#zakladamy, ze nic, wiec:
+	wolne = False # True
+
+	return wolne	
+
 def home (request):
 	if request.method == 'POST':
 		new_train_request = request.POST #['new_train']
 
 		user = User.objects.first()  # TODO: get the currently logged in user
-
+        
 		new_created_train = TrainRequest.objects.create(
 			train_identificator= new_train_request.get("train_number"),
 			velocity=new_train_request.get("page_velocity"),
 			device_type = 0
 		)
 		
-		t = AvailableTrain.objects.get(id=new_train_request.get("train_number"))
-		print(t)
-		t.velocity = new_train_request.get("page_velocity")  # change field
-		t.save() # this will update only
+		nr = new_train_request.get("train_number")
+		t = AvailableTrain.objects.get(id=nr)
+		print(int(nr), t)
+		
+		wolne = obslugaAgentowa(int(nr))
+
+		if wolne:
+			t.velocity = new_train_request.get("page_velocity")  # change field
+			t.save() # this will update only
+
+		else:
+			print "Rozkaz zabroniony. Tor zablokowany"
+			t.velocity = 0
+			t.save()
 
 	return render(request,'stronka.html')
 	
