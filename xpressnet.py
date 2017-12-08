@@ -250,6 +250,58 @@ class Client(object):
         command = '2110'
         return command
 
+    @staticmethod
+    def get_locomotive_status(address):
+        """Żądanie od sterownika sprawdzenia stanu lokomotywy o podanym adresie.
+            XpressNet: Locomotive information requests
+
+            Args:
+                address (int): Adres od 1 do 9999
+
+            Returns:
+                command (string): Zwraca komendę
+
+        """
+        if 1 <= address <= 9999:
+            if address <= 15:
+                command = 'E300' + '000' + str(hex(address)[2])
+                return command
+            elif 16 <= address <= 99:
+                command = 'E300' + '00' + str(hex(address)[2:])
+                return command
+            else:
+                command = 'E300' + str(hex(address + 49152)[2:])
+                return command
+        else:
+            raise ValueError("Adres musi w zakresie od 1 do 9999!")
+
+    @staticmethod
+    def get_next_address_in_stack(address):
+        """Żądanie od sterownika sprawdzenia adresu następnej lokomotywy w bazie lokomotyw sterownika. Lokomotywy w
+            bazie sterownika nie są przechowywane według kolejności adresu lecz według czasu pierwszego użycia przez
+            urządzenia podłączone do sterownika.
+            XpressNet: Address inquiry locomotive at command station stack request
+
+            Args:
+                address (int): Adres od 0 do 9999 (natomiast możliwe adresy pociągów to 1 do 9999)
+
+            Returns:
+                command (string): Zwraca komendę
+
+        """
+        if 0 <= address <= 9999:
+            if address <= 15:
+                command = 'E305' + '000' + str(hex(address)[2])
+                return command
+            elif 16 <= address <= 99:
+                command = 'E305' + '00' + str(hex(address)[2:])
+                return command
+            else:
+                command = 'E305' + str(hex(address + 49152)[2:])
+                return command
+        else:
+            raise ValueError("Adres musi w zakresie od 0 do 9999!")
+
 
 class Train(object):
     """Klasa do obsługi sterownia poszczególnych pociągów
