@@ -40,7 +40,6 @@ INSTALLED_APPS = [
 	'rest_framework',
 	'przyciski',
 	'pade',
-    'bootstrap3',
 ]
 
 MIDDLEWARE_CLASSES = [
