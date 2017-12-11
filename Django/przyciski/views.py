@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from django.shortcuts import render_to_response,render, redirect, get_object_or_404
 from django.http import HttpResponse, JsonResponse
 from .models import TrainRequest, AvailableTrain
@@ -83,7 +84,10 @@ def home (request):
 				t.save()
 			#TODO send request
 
-	return render(request,'stronka.html')
+	trainRequests = TrainRequest.objects.all()
+	availableTrains = AvailableTrain.objects.all()
+	print(availableTrains)
+	return render(request, 'stronka.html',{'trainRequests' : trainRequests, 'availableTrains': availableTrains})
 	
 def main_home_page(request):
 	trainRequests = TrainRequest.objects.all()
@@ -94,80 +98,79 @@ def main_home_page(request):
 
 @csrf_exempt
 def przyciski_list(request):
-    """
-    List all code snippets, or create a new snippet.
-    """
-    if request.method == 'GET':
-        przyciski = TrainRequest.objects.all()
-        serializer = PrzyciskiSerializer(przyciski, many=True)
-        return JsonResponse(serializer.data, safe=False)
+	"""
+	List all code snippets, or create a new snippet.
+	"""
+	if request.method == 'GET':
+		przyciski = TrainRequest.objects.all()
+		serializer = PrzyciskiSerializer(przyciski, many=True)
+		return JsonResponse(serializer.data, safe=False)
 
-    elif request.method == 'POST':
-        data = JSONParser().parse(request)
-        serializer = PrzyciskiSerializer(data=data)
-        if serializer.is_valid():
-            serializer.save()
-            return JsonResponse(serializer.data, status=201)
-        return JsonResponse(serializer.errors, status=400)
+	elif request.method == 'POST':
+		data = JSONParser().parse(request)
+		serializer = PrzyciskiSerializer(data=data)
+		if serializer.is_valid():
+			serializer.save()
+			return JsonResponse(serializer.data, status=201)
+		return JsonResponse(serializer.errors, status=400)
 
 
 @csrf_exempt
 def przyciski_detail(request, _pk):
-    """
-    Retrieve, update or delete a code snippet.
-    """
-    print(_pk)
-    try:
-        lista_przyciski = list(TrainRequest.objects.all())#get(pk=_pk)
-        przyciski = lista_przyciski[int(_pk)]
-    except:# TrainRequest.DoesNotExist: #Exception as e:#TrainRequest.DoesNotExist:
-        return HttpResponse(status=404)
+	"""
+	Retrieve, update or delete a code snippet.
+	"""
+	print(_pk)
+	try:
+		lista_przyciski = list(TrainRequest.objects.all())#get(pk=_pk)
+		przyciski = lista_przyciski[int(_pk)]
+	except:# TrainRequest.DoesNotExist: #Exception as e:#TrainRequest.DoesNotExist:
+		return HttpResponse(status=404)
 
-    if request.method == 'GET':
-        serializer = PrzyciskiSerializer(przyciski)
-        return JsonResponse(serializer.data)
+	if request.method == 'GET':
+		serializer = PrzyciskiSerializer(przyciski)
+		return JsonResponse(serializer.data)
 
-    elif request.method == 'PUT':
-        data = JSONParser().parse(request)
-        serializer = PrzyciskiSerializer(przyciski, data=data)
-        print('bla')
-        if serializer.is_valid():
-            print('123')
-            serializer.save()
-            return JsonResponse(serializer.data)
-        return JsonResponse(serializer.errors, status=400)
+	elif request.method == 'PUT':
+		data = JSONParser().parse(request)
+		serializer = PrzyciskiSerializer(przyciski, data=data)
+		print('bla')
+		if serializer.is_valid():
+			print('123')
+			serializer.save()
+			return JsonResponse(serializer.data)
+		return JsonResponse(serializer.errors, status=400)
 
-    elif request.method == 'DELETE':
-        przyciski.delete()
-        return HttpResponse(status=204)
+	elif request.method == 'DELETE':
+		przyciski.delete()
+		return HttpResponse(status=204)
 		
 @csrf_exempt
 def przyciski_posting(request):
-    """
-    Retrieve, update or delete a code snippet.
-    """
-    #try:
-    #    lista_przyciski = list(TrainRequest.objects.all())#get(pk=_pk)
-    #    przyciski = lista_przyciski[int(_pk)]
-    #except:# TrainRequest.DoesNotExist: #Exception as e:#TrainRequest.DoesNotExist:
-    #    return HttpResponse(status=404)
+	"""
+	Retrieve, update or delete a code snippet.
+	"""
+	#try:
+	#    lista_przyciski = list(TrainRequest.objects.all())#get(pk=_pk)
+	#    przyciski = lista_przyciski[int(_pk)]
+	#except:# TrainRequest.DoesNotExist: #Exception as e:#TrainRequest.DoesNotExist:
+	#    return HttpResponse(status=404)
 
-    #if request.method == 'GET':
-    #    serializer = PrzyciskiSerializer(przyciski)
-    #    return JsonResponse(serializer.data)
+	#if request.method == 'GET':
+	#    serializer = PrzyciskiSerializer(przyciski)
+	#    return JsonResponse(serializer.data)
 
-    if request.method == 'PUT':
-        data = JSONParser().parse(request)
-        serializer = PrzyciskiSerializer(przyciski, data=data)
-        print('bla')
-        if serializer.is_valid():
-            print('123')
-            serializer.save()
-            return JsonResponse(serializer.data)
-        return JsonResponse(serializer.errors, status=400)
+	if request.method == 'PUT':
+		data = JSONParser().parse(request)
+		serializer = PrzyciskiSerializer(przyciski, data=data)
+		print('bla')
+		if serializer.is_valid():
+			print('123')
+			serializer.save()
+			return JsonResponse(serializer.data)
+		return JsonResponse(serializer.errors, status=400)
 
-    elif request.method == 'DELETE':
-        #przyciski.delete()
-        return HttpResponse(status=204)
-		
+	elif request.method == 'DELETE':
+		#przyciski.delete()
+		return HttpResponse(status=204)
 		
