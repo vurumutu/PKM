@@ -15,7 +15,7 @@ from rest_framework.renderers import JSONRenderer
 from rest_framework.parsers import JSONParser
 from przyciski.serializers import PrzyciskiSerializer
 
-
+import xpressnet
 import agent
 
 from pade.misc.utility import display_message
@@ -46,11 +46,16 @@ def obslugaAgentowa (nr):
 def home (request):
 	if request.method == 'POST':
 		if 'stop_trains' in request.POST:
+			availableTrains = AvailableTrain.objects.all()
+			for at in availableTrains:
+				at.velocity = 0
+				at.save()
+				#TODO send request
+				
 			return render(request,'stronka.html')
-				#TODO Dodać kod na zatrzymanie wszystkich pociągów tutaj
 		elif 'trains_list' in request.POST:
 			return render(request,'stronka.html')
-				#TODO Dodać kod na pobranie listy pociągów tutaj
+				#TODO Dodac kod na pobranie listy pociagow tutaj
 		else:
 			new_train_request = request.POST #['new_train']
 
@@ -76,6 +81,7 @@ def home (request):
 				print ("Rozkaz zabroniony. Tor zablokowany")
 				t.velocity = 0
 				t.save()
+			#TODO send request
 
 	return render(request,'stronka.html')
 	
@@ -161,7 +167,7 @@ def przyciski_posting(request):
         return JsonResponse(serializer.errors, status=400)
 
     elif request.method == 'DELETE':
-        przyciski.delete()
+        #przyciski.delete()
         return HttpResponse(status=204)
 		
 		
