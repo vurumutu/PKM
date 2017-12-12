@@ -171,7 +171,7 @@ def przyciski_list(request):
 	List all code snippets, or create a new snippet.
 	"""
 	if request.method == 'GET':
-		przyciski = TrainRequest.objects.all()
+		przyciski = AvailableTrain.objects.all()
 		serializer = PrzyciskiSerializer(przyciski, many=True)
 		return JsonResponse(serializer.data, safe=False)
 
@@ -200,9 +200,9 @@ def przyciski_detail(request, _pk):
 		serializer = PrzyciskiSerializer(przyciski)
 		return JsonResponse(serializer.data)
 
-	elif request.method == 'PUT':
+	elif request.method == 'POST':
 		data = JSONParser().parse(request)
-		serializer = PrzyciskiSerializer(przyciski, data=data)
+		serializer = PostPrzyciskiSerializer(przyciski, data=data)
 		print('bla')
 		if serializer.is_valid():
 			print('123')
