@@ -17,6 +17,9 @@ from rest_framework.parsers import JSONParser
 from przyciski.serializers import PrzyciskiSerializer
 
 #import xpressnet
+from xpressnet import Client, Train
+from time import sleep
+
 import agent
 import czyWolny
 
@@ -24,6 +27,10 @@ from pade.misc.utility import display_message
 from pade.misc.common import set_ams, start_loop
 from pade.core.agent import Agent
 from pade.acl.aid import AID
+
+TCP_IP = '192.168.210.200'
+TCP_PORT = 5550
+
 
 def obslugaAgentowa (nr):
 	agentsList = list()
@@ -52,7 +59,12 @@ def home (request):
 	print('')
 	print(str(request))
 	print('')
+
+	client = Client()
+	client.connect(TCP_IP, TCP_PORT)
+
 	if request.method == 'POST':
+
 		if 'stop_trains' in request.POST:
 			# wez wszystkie pociag
 			availableTrains = AvailableTrain.objects.all()
@@ -61,13 +73,45 @@ def home (request):
 				at.velocity = 0
 				at.save()
 				#TODO send request
-			
+
+			# Kod odpowiedzialny za zatrzymanie pociągów, aktualnie zatrzymywany jest tylko pociąg 5
+			#TODO pobrać listę pociągów z bazy Django i w pętli zadać im prędkość 0 analogicznie do poniższego kodu
+			train_number = 5
+			train = Train(train_number)
+			msg = train.move(0)
+			client.send(msg)
+
 			availableTrains = AvailableTrain.objects.all()
 			return render(request, 'stronka.html',{'availableTrains': availableTrains})
+
 		elif 'trains_list' in request.POST:
+
+			# Pobieranie listy pociągów ze sterownika
+			address = 0
+			while True:
+				msg = client.get_next_address_in_stack(address)
+				rec = client.send(msg)
+				print(rec)
+				if rec[3] is '0':
+					print("Znaleziony adres lokomotywy: " + rec[7:8])
+					AvailableTrain.objects.create(
+						train_identificator= int(rec[7:8], 16),
+						velocity=0,
+						position = 1,
+						track_number = 0
+					)
+					address = int(rec[4:8], 16)
+					msg = client.get_locomotive_status(address)
+					rec2 = client.send(msg)
+					rec2 = bin(int(rec, 16))[2:]
+				else:
+        			 break
+				sleep(1)
+
 			availableTrains = AvailableTrain.objects.all()
 			return render(request, 'stronka.html',{'availableTrains': availableTrains})
 				#TODO Dodac kod na pobranie listy pociagow tutaj
+		#Sterowanie
 		else:
 			new_train_request = request.POST #['new_train']
 
@@ -90,6 +134,15 @@ def home (request):
 				)
 				t.velocity = new_train_request.get("page_velocity")  # change field
 				t.save() # this will update only
+
+				# zadawanie prędkości pociągom
+				train = Train(int(nr))
+				if int(t.velocity) >= 0:
+					direction = 1
+				else:
+					direction = 0
+				msg = train.move(abs(int(t.velocity)), direction)
+				client.send(msg)
 
 			else:
 				new_created_train = TrainRequest.objects.create(
