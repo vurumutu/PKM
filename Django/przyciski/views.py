@@ -5,7 +5,7 @@ from .models import TrainRequest, AvailableTrain
 from django.template import RequestContext, Template
 
 #form
-#import pade
+import pade
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login
 from django.shortcuts import render
@@ -16,8 +16,9 @@ from rest_framework.renderers import JSONRenderer
 from rest_framework.parsers import JSONParser
 from przyciski.serializers import PrzyciskiSerializer
 
-import xpressnet
+#import xpressnet
 import agent
+import czyWolny
 
 from pade.misc.utility import display_message
 from pade.misc.common import set_ams, start_loop
@@ -29,7 +30,10 @@ def obslugaAgentowa (nr):
 
 	for i in range(len(AvailableTrain.objects.all())): #tworzymy tyle agentow, ile jest pociagow w bazie
 		print (i)
-		agente_train = agent.AgenteHelloWorld(AID(name='agente_hello'), [1,1]) #kazdemu zamiast [1, 1] powinnismy przypisywac sektor w jakim sie znajduje, ale nie wiem, skad to wytrzasnac
+		t = AvailableTrain.objects.get(train_identificator=nr)
+		sector = t.position
+		track = t.track_number
+		agente_train = agent.AgenteHelloWorld(AID(name='agente_hello'), [sector,track])
 		agentsList.append(agente_train)
 
 	message = agentsList[nr].newOrder() #czyli agent ktory otrzymal rozkaz
@@ -37,62 +41,74 @@ def obslugaAgentowa (nr):
 	for i in range(len(AvailableTrain.objects.all())):
 		if i != nr: #odpowiadaja pozostale
 			agentsList[i].react(message)	
-	
-	#tu bedzie dodane sprawdzanie czy nic nie stoi na drodze
-	#zakladamy, ze nic, wiec:
-	wolne = False # True
+
+	#checkLinesAvaliability() nr, [] - sektor startu odczytany z poc(nr), [] - cel, lista[x,y]
+
+	wolne = True # True
 
 	return wolne	
 
 def home (request):
+	print('')
+	print(str(request))
+	print('')
 	if request.method == 'POST':
 		if 'stop_trains' in request.POST:
+			# wez wszystkie pociag
 			availableTrains = AvailableTrain.objects.all()
+			# ustaw predkosc kazdego na zero
 			for at in availableTrains:
 				at.velocity = 0
 				at.save()
 				#TODO send request
-				
-			return render(request,'stronka.html')
+			
+			availableTrains = AvailableTrain.objects.all()
+			return render(request, 'stronka.html',{'availableTrains': availableTrains})
 		elif 'trains_list' in request.POST:
-			return render(request,'stronka.html')
+			availableTrains = AvailableTrain.objects.all()
+			return render(request, 'stronka.html',{'availableTrains': availableTrains})
 				#TODO Dodac kod na pobranie listy pociagow tutaj
 		else:
 			new_train_request = request.POST #['new_train']
 
 			user = User.objects.first()  # TODO: get the currently logged in user
 			
-			new_created_train = TrainRequest.objects.create(
-				train_identificator= new_train_request.get("train_number"),
-				velocity=new_train_request.get("page_velocity"),
-				device_type = 0
-			)
+			print(new_train_request.get("page_velocity"))
 			
 			nr = new_train_request.get("train_number")
-			t = AvailableTrain.objects.get(id=nr)
+			t = AvailableTrain.objects.get(train_identificator=nr)
 			print(int(nr), t)
 			
 			wolne = obslugaAgentowa(int(nr))
 
 			if wolne:
+				new_created_train = TrainRequest.objects.create(
+					train_identificator= new_train_request.get("train_number"),
+					velocity=new_train_request.get("page_velocity"),
+					was_carried_out = 1,
+					device_type = 0
+				)
 				t.velocity = new_train_request.get("page_velocity")  # change field
 				t.save() # this will update only
 
 			else:
+				new_created_train = TrainRequest.objects.create(
+					train_identificator= new_train_request.get("train_number"),
+					velocity=new_train_request.get("page_velocity"),
+					was_carried_out = 1,
+					device_type = 0
+				)
 				print ("Rozkaz zabroniony. Tor zablokowany")
 				t.velocity = 0
 				t.save()
 			#TODO send request
 
-	trainRequests = TrainRequest.objects.all()
 	availableTrains = AvailableTrain.objects.all()
-	print(availableTrains)
-	return render(request, 'stronka.html',{'trainRequests' : trainRequests, 'availableTrains': availableTrains})
+	return render(request, 'stronka.html',{'availableTrains': availableTrains})
 	
 def main_home_page(request):
 	trainRequests = TrainRequest.objects.all()
 	availableTrains = AvailableTrain.objects.all()
-	print(availableTrains)
 	return render(request, 'homepage.html',{'trainRequests' : trainRequests, 'availableTrains': availableTrains})
 
 
