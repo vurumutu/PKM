@@ -39,6 +39,7 @@ def search_track(frame):
     cv2.drawContours(frame, contours, -1, (0, 255, 0), 3)
     return frame
 
+
 last_train_key = 'track'
 def search_train(frame):
     global last_train_key
@@ -54,6 +55,8 @@ def search_train(frame):
     values[last_train_key] *= 0.9  # histereza
     factor = 1.0 / sum(values.values())
     normalised_d = {k: (1-v * factor) for k, v in values.items()}
+    factor = 1.0 / sum(normalised_d.values())
+    normalised_d = {k: v*factor for k, v in normalised_d.items()}
     print(normalised_d)
     result = max(normalised_d, key=normalised_d.get)
     last_train_key = result
@@ -61,9 +64,11 @@ def search_train(frame):
 
 
 def run_movie(num):
-    #video = load_videos()
-    #cap = cv2.VideoCapture(video[num])
-    cap = cv2.VideoCapture(0)
+    if num >= 0:
+        video = load_videos()
+        cap = cv2.VideoCapture(video[num])
+    else:
+        cap = cv2.VideoCapture(0)
 
     ret, frame = cap.read()
     frame = getROItrack(frame)
@@ -80,8 +85,8 @@ def run_movie(num):
 
         train = search_train(frame)
         #res = search_track(frame)
-        cv2.putText(frame, str(int(cap.get(cv2.CAP_PROP_POS_FRAMES))), (50,50), cv2.FONT_HERSHEY_PLAIN, 5.0, (150, 200, 0), 5)
-        cv2.putText(frame, train, (50,100), cv2.FONT_HERSHEY_PLAIN, 5.0, (150, 200, 0), 5)
+        cv2.putText(frame, str(int(cap.get(cv2.CAP_PROP_POS_FRAMES))), (50, 50), cv2.FONT_HERSHEY_PLAIN, 5.0, (150, 200, 0), 5)
+        cv2.putText(frame, train, (50, 100), cv2.FONT_HERSHEY_PLAIN, 5.0, (150, 200, 0), 5)
         # cv2.rectangle(frame, *box['left'], (100, 200, 20), thickness=4)
         # cv2.rectangle(frame, *box['center'], (100, 200, 200), thickness=4)
         # cv2.rectangle(frame, *box['right'], (200, 100, 20), thickness=4)
@@ -92,14 +97,18 @@ def run_movie(num):
             break
 
 
-temp_names = {'track': ['tory.jpg', 'tory2.jpg', 'tory3.jpg'],
-              'train5': ['pociag5.jpg']}
+temp_names = {'track': ['tory.jpg', 'tory2.jpg', 'tory3.jpg', 'tory4.jpg'],
+              'train5': ['pociag5.jpg'],
+              'train2': ['pociag2.jpg', 'pociag2-3.jpg']}
 temp = dict((k, []) for k in temp_names.keys())
 
 for key in temp_names.keys():
     for f in temp_names[key]:
-        frame = cv2.imread('wzorce/'+f)
+        frame = cv2.imread('wzorce/' + f)
         hist, bins = np.histogram(frame[250:400, 210:300].ravel(), 16, [0, 255])
         temp[key].append(hist)
 
-run_movie(7)
+run_movie(-1)
+
+
+
