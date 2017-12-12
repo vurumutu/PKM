@@ -14,7 +14,6 @@ class Client(object):
         *Zapewnia poprawną inicjalizacje połączenia z sterownikiem.
         *Zapewnia prawidłowe kodowanie wysyłanych komunikatów.
         *Zapewnia poprawne odkodowanie otrzymanych komunikatów
-        *Pozwala na wysłanie podstawowych komunikatów operujących sterownikiem
     """
     def __init__(self):
         """Domyślne ustawienia klasy"""
@@ -23,6 +22,7 @@ class Client(object):
         self.address = ''
         self.port = ''
         self.lock = threading.Lock()
+        # TODO Debug mode dla print
         pass
 
     def keep_alive(self, once=False):
@@ -82,16 +82,16 @@ class Client(object):
         self.port = port
         if not self.connected:
             try:
-                print str(datetime.now().strftime('%H:%M:%S')) + ": Próba połączenia z sterownikiem"
+                print(str(datetime.now().strftime('%H:%M:%S')) + ": Próba połączenia z sterownikiem")
                 self.connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 self.connection.connect((self.address, self.port))
                 self.connected = True
                 threading._start_new_thread(self.keep_alive, (False,))
-                print str(datetime.now().strftime('%H:%M:%S')) + ": Połączono z sterownikiem"
+                print(str(datetime.now().strftime('%H:%M:%S')) + ": Połączono z sterownikiem")
 
             except socket.error as message:
-                print str(datetime.now().strftime('%H:%M:%S')) + ": Nie udało sie połączyć z sterownikiem"
-                print message
+                print(str(datetime.now().strftime('%H:%M:%S')) + ": Nie udało sie połączyć z sterownikiem")
+                print(message)
                 self.connected = False
 
     def disconnect(self):
@@ -119,7 +119,7 @@ class Client(object):
             self.lock.acquire()
             self.connection.send(msg)
             self.lock.release()
-            print str(datetime.now().strftime('%H:%M:%S')) + ": Wysłano wiadomość: " + str(message)
+            print(str(datetime.now().strftime('%H:%M:%S')) + ": Wysłano wiadomość: " + str(message))
             response = self.receive()
             return response
 
@@ -133,7 +133,20 @@ class Client(object):
         message = self.connection.recv(64)
         message = binascii.hexlify(message)
         message = message[4:]  # wycinanie nagłówka fffe
+        # TODO Rozpoznawanie otrzymanych wiadomości na podstawie wartości hex
         return message
+
+    @staticmethod
+    def get_version_of_lan_interface():
+        # TODO Metoda zwracająca wersje LAN Interface (strona 15)
+        """Zatrzymanie wszystkich pociągów
+
+            Returns:
+                command (string): Zwraca komendę
+
+        """
+        command = '80'
+        return command
 
     @staticmethod
     def stop_all_locomotives():
@@ -178,6 +191,116 @@ class Client(object):
         """
         command = '2124'
         return command
+
+    @staticmethod
+    def get_address_of_locomotive_rm(register):
+        """Żądanie wejścia sterownika w tryb serwisowy (Service Mode) i odczytanie dekodera który znajduje się na
+            wydzielonym torze programowym używając Register Mode. Sterownik dokona próby odczytu rejestru, który jest
+            oznaczony jako wartość od 1 do 8. Wynik musi być oddzielnie zażądany.
+            XpressNet: Register Mode read request
+
+            Args:
+                register (int): Numer  rejestru od 1 do 8
+
+            Returns:
+                command (string): Zwraca komendę
+
+        """
+        if 1 <= register <= 8:
+            command = '22110' + str(hex(register)[2])
+            return command
+        else:
+            raise ValueError("Rejestr musi w zakresie od 1 do 8!")
+
+    @staticmethod
+    def get_address_of_locomotive_cv(cv_value):
+        """Żądanie wejścia sterownika w tryb serwisowy (Service Mode) i odczytanie dekodera który znajduje się na
+            wydzielonym torze programowym używając Direct CV Mode. Sterownik dokona próby odczytu CV, który jest
+            oznaczony jako wartość od 1 do 256. Wynik musi być oddzielnie zażądany.
+            XpressNet: Direct Mode CV read request
+
+            Args:
+                cv_value (int): Wartość CV od 1 do 256
+
+            Returns:
+                command (string): Zwraca komendę
+
+        """
+        if 1 <= cv_value <= 256:
+            if cv_value is 256:
+                command = '221500'
+            else:
+                if cv_value <= 15:
+                    command = '22150' + str(hex(cv_value)[2])
+                else:
+                    command = '2215' + str(hex(cv_value)[2:])
+            return command
+        else:
+            raise ValueError("Wartość musi w zakresie od 1 do 256!")
+
+    @staticmethod
+    def get_service_mode_results():
+        """Żądanie od sterownika wyniku akcji w trybie serwisowym.
+            XpressNet: Request for Service Mode results
+
+            Returns:
+                command (string): Zwraca komendę
+
+        """
+        command = '2110'
+        return command
+
+    @staticmethod
+    def get_locomotive_status(address):
+        """Żądanie od sterownika sprawdzenia stanu lokomotywy o podanym adresie.
+            XpressNet: Locomotive information requests
+
+            Args:
+                address (int): Adres od 1 do 9999
+
+            Returns:
+                command (string): Zwraca komendę
+
+        """
+        if 1 <= address <= 9999:
+            if address <= 15:
+                command = 'E300' + '000' + str(hex(address)[2])
+                return command
+            elif 16 <= address <= 99:
+                command = 'E300' + '00' + str(hex(address)[2:])
+                return command
+            else:
+                command = 'E300' + str(hex(address + 49152)[2:])
+                return command
+        else:
+            raise ValueError("Adres musi w zakresie od 1 do 9999!")
+
+    @staticmethod
+    def get_next_address_in_stack(address):
+        """Żądanie od sterownika sprawdzenia adresu następnej lokomotywy w bazie lokomotyw sterownika. Lokomotywy w
+            bazie sterownika nie są przechowywane według kolejności adresu lecz według czasu pierwszego użycia przez
+            urządzenia podłączone do sterownika.
+            XpressNet: Address inquiry locomotive at command station stack request
+
+            Args:
+                address (int): Adres od 0 do 9999 (natomiast możliwe adresy pociągów to 1 do 9999)
+
+            Returns:
+                command (string): Zwraca komendę
+
+        """
+        if 0 <= address <= 9999:
+            if address <= 15:
+                command = 'E305' + '000' + str(hex(address)[2])
+                return command
+            elif 16 <= address <= 99:
+                command = 'E305' + '00' + str(hex(address)[2:])
+                return command
+            else:
+                command = 'E305' + str(hex(address + 49152)[2:])
+                return command
+        else:
+            raise ValueError("Adres musi w zakresie od 0 do 9999!")
 
 
 class Train(object):

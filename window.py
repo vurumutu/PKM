@@ -7,6 +7,15 @@ from PyQt4.Qt import *
 import requests
 import json
 
+from pade.misc.utility import display_message
+from pade.misc.common import set_ams, start_loop
+from pade.core.agent import Agent
+from pade.acl.aid import AID
+import thread
+import twisted.internet
+
+import agent
+
 import train_map
 import train
 import train_auto
@@ -146,11 +155,30 @@ class Window(QtGui.QMainWindow):
 
         # inicjalizacja zwotnic
         self.initRequest()
+        self.initAgentSystem()
+
         print(len(can.zwrotnica))
         self.initSwitches()
         self.initLayout()
         self.initUI()
         self.show()
+
+    def initAgentSystem(self):
+        set_ams('localhost', 8001, debug=False)
+
+        self.agentsList = list()
+
+        agente_train_1 = agent.AgenteHelloWorld(AID(name='agente_hello1'))
+        agente_train_1.ams = {'name': 'localhost', 'port': 8001}
+        self.agentsList.append(agente_train_1)
+
+        agente_train_2 = agent.AgenteHelloWorld(AID(name='agente_hello2'))
+        agente_train_2.ams = {'name': 'localhost', 'port': 8001}
+        self.agentsList.append(agente_train_2)
+
+        agente_train_3 = agent.AgenteHelloWorld(AID(name='agente_hello5'))
+        agente_train_3.ams = {'name': 'localhost', 'port': 8001}
+        self.agentsList.append(agente_train_3)
 
     def initRequest(self):
 
@@ -1110,15 +1138,18 @@ class Window(QtGui.QMainWindow):
         if event.timerId() == self.timer_requests.timerId():
             r_buff = self.my_requests.text
             j = json.loads(r_buff)
-            #for i in range(len(j)):
-            i = 0
-            x = j[i]
+            x = j[-1]
             velocity =  x['velocity']
             print ('velocity:', int(velocity))
             train_identificator =  x['train_identificator']
             print ('train_identificator:', int(train_identificator))
 
             #{"device_type": "0", "velocity": 3, "train_identificator": 2}
+
+            self.agentsList[train_identificator].newOrder()
+            #for i in range(3):
+            #    if i != train_identificator:
+            #        self.agentsList[i].react()
 
             self.trains_speed[train_identificator] = velocity
             if self.client.connected:
@@ -1128,7 +1159,7 @@ class Window(QtGui.QMainWindow):
                     self.msg = self.trains[train_identificator].move(velocity, 'Backward')
 
             if self.msg is not None and self.client.connected:
-                self.client.send(self.msg)
+                #self.client.send(self.msg)
                 sleep(1)  # Czekaj 1s
                 self.msg = None
 
