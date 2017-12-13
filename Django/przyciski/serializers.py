@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from przyciski.models import TrainRequest#, DEVICE_TYPE_ENUM
+from przyciski.models import TrainRequest, AvailableTrain#, DEVICE_TYPE_ENUM
 # from snippets.models import Snippet, LANGUAGE_CHOICES, STYLE_CHOICES
 
 class PostPrzyciskiSerializer(serializers.Serializer):
@@ -15,18 +15,21 @@ class PostPrzyciskiSerializer(serializers.Serializer):
     velocity = serializers.IntegerField(default=0)
 		
     train_identificator = serializers.IntegerField(default=1)
-    
+	
+    was_carried_out = serializers.BooleanField(default=1)
 
     def create(self, validated_data):
         """
         Create and return a new `Snippet` instance, given the validated data.
         """
-        return przyciski.objects.create(**validated_data)
+        print('Tworze')
+        return TrainRequest.objects.create(**validated_data)
 
     def update(self, instance, validated_data):
         """
         Update and return an existing `Snippet` instance, given the validated data.
         """
+        print('Updatuje')
         instance.id = validated_data.get('id', instance.id)
         instance.device_type = validated_data.get('device_type', instance.device_type)
         instance.velocity = validated_data.get('velocity', instance.velocity)
@@ -34,6 +37,7 @@ class PostPrzyciskiSerializer(serializers.Serializer):
 
 		
         instance.save()
+		
 	return instance
 
 class PrzyciskiSerializer(serializers.Serializer):

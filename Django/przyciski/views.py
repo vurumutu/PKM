@@ -14,7 +14,9 @@ from django import forms
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.renderers import JSONRenderer
 from rest_framework.parsers import JSONParser
-from przyciski.serializers import PrzyciskiSerializer
+from rest_framework import status
+from rest_framework.response import Response
+from przyciski.serializers import PrzyciskiSerializer, PostPrzyciskiSerializer
 
 #import xpressnet
 from xpressnet import Client, Train
@@ -56,10 +58,6 @@ def obslugaAgentowa (nr):
 	return wolne	
 
 def home (request):
-	print('')
-	print(str(request))
-	print('')
-
 	client = Client()
 	client.connect(TCP_IP, TCP_PORT)
 
@@ -70,22 +68,22 @@ def home (request):
 			availableTrains = AvailableTrain.objects.all()
 			# ustaw predkosc kazdego na zero
 			for at in availableTrains:
+				# update bazy
 				at.velocity = 0
 				at.save()
-				#TODO send request
-
-			# Kod odpowiedzialny za zatrzymanie pociągów, aktualnie zatrzymywany jest tylko pociąg 5
-			#TODO pobrać listę pociągów z bazy Django i w pętli zadać im prędkość 0 analogicznie do poniższego kodu
-			train_number = 5
-			train = Train(train_number)
-			msg = train.move(0)
-			client.send(msg)
+				
+				# wysylanie rozkazu 
+				train_number = 	at.train_identificator
+				train = Train(train_number)
+				msg = train.move(0)
+				client.send(msg)
+				
+					
 
 			availableTrains = AvailableTrain.objects.all()
 			return render(request, 'stronka.html',{'availableTrains': availableTrains})
 
 		elif 'trains_list' in request.POST:
-
 			# Pobieranie listy pociągów ze sterownika
 			address = 0
 			while True:
@@ -94,11 +92,11 @@ def home (request):
 				print(rec)
 				if rec[3] is '0':
 					print("Znaleziony adres lokomotywy: " + rec[7:8])
-					AvailableTrain.objects.create(
+					# jezeli nie istnieje taki wpis to rob udpate
+					AvailableTrain.objects.update_or_create(
 						train_identificator= int(rec[7:8], 16),
-						velocity=0,
-						position = 1,
-						track_number = 0
+						position = 1#,
+						#track_number = 0
 					)
 					address = int(rec[4:8], 16)
 					msg = client.get_locomotive_status(address)
@@ -110,15 +108,13 @@ def home (request):
 
 			availableTrains = AvailableTrain.objects.all()
 			return render(request, 'stronka.html',{'availableTrains': availableTrains})
-				#TODO Dodac kod na pobranie listy pociagow tutaj
+				
 		#Sterowanie
 		else:
 			new_train_request = request.POST #['new_train']
 
 			user = User.objects.first()  # TODO: get the currently logged in user
-			
-			print(new_train_request.get("page_velocity"))
-			
+						
 			nr = new_train_request.get("train_number")
 			t = AvailableTrain.objects.get(train_identificator=nr)
 			print(int(nr), t)
@@ -177,11 +173,21 @@ def przyciski_list(request):
 
 	elif request.method == 'POST':
 		data = JSONParser().parse(request)
-		serializer = PrzyciskiSerializer(data=data)
-		if serializer.is_valid():
-			serializer.save()
-			return JsonResponse(serializer.data, status=201)
-		return JsonResponse(serializer.errors, status=400)
+		serializer = PostPrzyciskiSerializer(przyciski, data=data)
+		if serializer.is_valid() or True:
+			return JsonResponse(serializer.errors, status=403)
+	
+	elif request.method == 'PUT':
+		data = JSONParser().parse(request)
+		serializer = PostPrzyciskiSerializer(przyciski, data=data)
+		if serializer.is_valid() or True:
+			return JsonResponse(serializer.errors, status=403)
+
+	elif request.method == 'DELETE':
+		data = JSONParser().parse(request)
+		serializer = PostPrzyciskiSerializer(przyciski, data=data)
+		if serializer.is_valid() or True:
+			return JsonResponse(serializer.errors, status=403)
 
 
 @csrf_exempt
@@ -189,57 +195,33 @@ def przyciski_detail(request, _pk):
 	"""
 	Retrieve, update or delete a code snippet.
 	"""
-	print(_pk)
 	try:
-		lista_przyciski = list(TrainRequest.objects.all())#get(pk=_pk)
+		lista_przyciski = list(TrainRequest.objects.all())
 		przyciski = lista_przyciski[int(_pk)]
-	except:# TrainRequest.DoesNotExist: #Exception as e:#TrainRequest.DoesNotExist:
+	except:
 		return HttpResponse(status=404)
+	
+	serializer = PrzyciskiSerializer(przyciski)
 
 	if request.method == 'GET':
-		serializer = PrzyciskiSerializer(przyciski)
-		return JsonResponse(serializer.data)
+		#serializer = PrzyciskiSerializer(przyciski)
+		return JsonResponse(serializer.data, status=200)
 
 	elif request.method == 'POST':
 		data = JSONParser().parse(request)
-		serializer = PostPrzyciskiSerializer(przyciski, data=data)
-		print('bla')
+		serializer = PostPrzyciskiSerializer(data=data)
 		if serializer.is_valid():
-			print('123')
 			serializer.save()
 			return JsonResponse(serializer.data)
 		return JsonResponse(serializer.errors, status=400)
-
-	elif request.method == 'DELETE':
-		przyciski.delete()
-		return HttpResponse(status=204)
 		
-@csrf_exempt
-def przyciski_posting(request):
-	"""
-	Retrieve, update or delete a code snippet.
-	"""
-	#try:
-	#    lista_przyciski = list(TrainRequest.objects.all())#get(pk=_pk)
-	#    przyciski = lista_przyciski[int(_pk)]
-	#except:# TrainRequest.DoesNotExist: #Exception as e:#TrainRequest.DoesNotExist:
-	#    return HttpResponse(status=404)
-
-	#if request.method == 'GET':
-	#    serializer = PrzyciskiSerializer(przyciski)
-	#    return JsonResponse(serializer.data)
-
-	if request.method == 'PUT':
+	elif request.method == 'PUT':
 		data = JSONParser().parse(request)
-		serializer = PrzyciskiSerializer(przyciski, data=data)
-		print('bla')
-		if serializer.is_valid():
-			print('123')
-			serializer.save()
-			return JsonResponse(serializer.data)
-		return JsonResponse(serializer.errors, status=400)
+		if serializer.is_valid() or True:
+			return JsonResponse(serializer.errors, status=403)
 
 	elif request.method == 'DELETE':
-		#przyciski.delete()
-		return HttpResponse(status=204)
-		
+		data = JSONParser().parse(request)
+		if serializer.is_valid() or True:
+			return JsonResponse(serializer.errors, status=403)
+			
