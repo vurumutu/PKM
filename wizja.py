@@ -3,9 +3,12 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 import operator
+import requests
 
 
 def load_videos():
+    ''' zwraca liste nazw filmow avi znajdujacych sie katalogu roboczym
+        lub w jego subfolderach '''
     video = []
     for root, dir, files in os.walk('.'):
         for file in files:
@@ -16,35 +19,26 @@ def load_videos():
 
 
 def getROItrack(frame):
+    ''' przycina obraz do fragmentu gdzie wystepuje pociag '''
     h, w = frame.shape[:2]
     return frame[int(h/1.8):, 15:-120]
 
 
 def save_frame(cap, number=323, filename='pociag5.jpg'):
+    ''' zapisuje dana klatke ze strumienia do pliku '''
     cap.set(cv2.CAP_PROP_POS_FRAMES, number)
     ret, frame = cap.read()
     cv2.imwrite(filename, frame)
     cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
 
 
-def search_track(frame):
-    roi = getROItrack(frame)
-    roi = cv2.blur(roi[:, :, 2], (5, 5))
-
-    ret, thres = cv2.threshold(roi, 100, 255, 0)
-    thres = cv2.dilate(thres, (25, 25))
-    thres = cv2.erode(thres, (25, 25))
-
-    _, contours, hierarchy = cv2.findContours(thres, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_NONE)
-    cv2.drawContours(frame, contours, -1, (0, 255, 0), 3)
-    return frame
-
-
 last_train_key = 'track'
 def search_train(frame):
+    ''' poszukuje pociagu na podanym (oryginalnym) obrazku
+        porownujac go do podanych wzorcow ze slownika temp (templates) '''
     global last_train_key
     p1, p2 = (210, 250), (300, 400)
-    cv2.rectangle(frame, p1, p2, (100, 200, 50), thickness=4)
+    #cv2.rectangle(frame, p1, p2, (100, 200, 50), thickness=4)
     roi = frame[250:400, 210:300]
     hist, bins = np.histogram(roi.ravel(), 16, [0, 255])
     values = dict((k, float('inf')) for k in temp.keys())
@@ -63,14 +57,49 @@ def search_train(frame):
     return result
 
 
-def run_movie(num):
+def get_video_stream(num):
+    ''' pobierz stream nzgodny z numerkiem '''
     if num >= 0:
         video = load_videos()
         cap = cv2.VideoCapture(video[num])
-    else:
+    elif num == -1:
         cap = cv2.VideoCapture(0)
+        print(cap)
+    elif num == -2:
+        url = 'http://192.168.2.1/?action=stream'
+        cap = requests.get(url, stream=True)
+    else:
+        raise Exception("run_movie '>=0' -> video, '-1'->camera, '-2'-camera stream")
+    return cap
 
-    ret, frame = cap.read()
+
+
+def get_new_frame(cap):
+    ''' pobierz ramkę uwzględniajac rodzaj strumienia '''
+    print(type(cap))
+    if isinstance(cap, requests.models.Response):
+        bytes = cap.raw.read(1024)
+        a = bytes.find('\xff\xd8')
+        b = bytes.find('\xff\xd9')
+        if a != -1 and b != -1:
+            jpg = bytes[a:b + 2]
+            bytes = bytes[b + 2:]
+            frame = cv2.imdecode(np.fromstring(jpg, dtype=np.uint8), cv2.IMREAD_COLOR)
+            return True, frame
+        else:
+            return False, None
+    elif cap is not None:
+        print('vc')
+        ret, frame = cap.read()
+        return ret, frame
+    else:
+        raise Exception('Error')
+
+
+def run_movie(num):
+    cap = get_video_stream(num)
+    ret, frame = get_new_frame(cap)
+    print(ret, frame)
     frame = getROItrack(frame)
     h, w = frame.shape[:2]
     box_size = int(w/5)
@@ -97,18 +126,24 @@ def run_movie(num):
             break
 
 
+# zdefiniuj etykiety i miejsce gdzie mozna znaleźć ich wzorce
 temp_names = {'track': ['tory.jpg', 'tory2.jpg', 'tory3.jpg', 'tory4.jpg'],
               'train5': ['pociag5.jpg'],
-              'train2': ['pociag2.jpg', 'pociag2-3.jpg']}
+              #'train2': ['pociag2.jpg', 'pociag2-3.jpg']
+              }
 temp = dict((k, []) for k in temp_names.keys())
 
+# odczytaj wzorce
 for key in temp_names.keys():
     for f in temp_names[key]:
         frame = cv2.imread('wzorce/' + f)
         hist, bins = np.histogram(frame[250:400, 210:300].ravel(), 16, [0, 255])
         temp[key].append(hist)
 
-run_movie(-1)
+# wystartuj
+# -1 -> obraz z domyslnej kamerki systemu
+# -2 -> obraz z pociagu
+run_movie(-2)
 
 
 
