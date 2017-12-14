@@ -23,7 +23,7 @@ from xpressnet import Client, Train
 from time import sleep
 
 import agent
-import czyWolny
+from czyWolny import checkLinesAvaliability
 
 from pade.misc.utility import display_message
 from pade.misc.common import set_ams, start_loop
@@ -36,6 +36,7 @@ TCP_PORT = 5550
 
 def obslugaAgentowa (nr):
 	agentsList = list()
+	otherList = list()
 
 	for i in range(len(AvailableTrain.objects.all())): #tworzymy tyle agentow, ile jest pociagow w bazie
 		print (i)
@@ -44,6 +45,11 @@ def obslugaAgentowa (nr):
 		track = t.track_number
 		agente_train = agent.AgenteHelloWorld(AID(name='agente_hello'), [sector,track])
 		agentsList.append(agente_train)
+		if i == nr:
+			start = [sector,track]
+			destination = [2,2]
+		else:
+			otherList.append([sector,track])
 
 	message = agentsList[nr].newOrder() #czyli agent ktory otrzymal rozkaz
 
@@ -51,7 +57,7 @@ def obslugaAgentowa (nr):
 		if i != nr: #odpowiadaja pozostale
 			agentsList[i].react(message)	
 
-	#checkLinesAvaliability() nr, [] - sektor startu odczytany z poc(nr), [] - cel, lista[x,y]
+	checkLinesAvaliability(nr, start, destination, otherList)
 
 	wolne = True # True
 
@@ -195,6 +201,7 @@ def przyciski_detail(request, _pk):
 	"""
 	Retrieve, update or delete a code snippet.
 	"""
+	print("przyciski_detail")
 	try:
 		lista_przyciski = list(TrainRequest.objects.all())
 		przyciski = lista_przyciski[int(_pk)]
@@ -210,8 +217,60 @@ def przyciski_detail(request, _pk):
 	elif request.method == 'POST':
 		data = JSONParser().parse(request)
 		serializer = PostPrzyciskiSerializer(data=data)
+		
+		client = Client()
+		client.connect(TCP_IP, TCP_PORT)
+		
 		if serializer.is_valid():
 			serializer.save()
+			# pobieramy ostatnie zadanie
+			all_requests = TrainRequest.objects.all()
+			new_train_request = all_requests.latest('id')
+			print(new_train_request)
+			
+			
+			#robimy to samo co dla strony
+			new_train_request = all_requests.latest('id')
+
+			user = User.objects.first()  # TODO: get the currently logged in user
+						
+			nr = new_train_request.train_identificator
+			t = AvailableTrain.objects.get(train_identificator=nr)
+			print(int(nr), t)
+			
+			wolne = obslugaAgentowa(int(nr))
+
+			if wolne:
+			#	new_created_train = TrainRequest.objects.create(
+		#			train_identificator= new_train_request.get("train_number"),
+		#			velocity=new_train_request.get("page_velocity"),
+		#			was_carried_out = 1,
+		#			device_type = 0
+		#		)
+				t.velocity = new_train_request.velocity  # change field
+				t.save() # this will update only
+
+				# zadawanie prędkości pociągom
+				train = Train(int(nr))
+				if int(t.velocity) >= 0:
+					direction = 1
+				else:
+					direction = 0
+				msg = train.move(abs(int(t.velocity)), direction)
+				client.send(msg)
+
+			else:
+		#		new_created_train = TrainRequest.objects.create(
+		#			train_identificator= new_train_request.get("train_number"),
+		#			velocity=new_train_request.get("page_velocity"),
+		#			was_carried_out = 1,
+		#			device_type = 0
+		#		)
+				print ("Rozkaz zabroniony. Tor zablokowany")
+				t.velocity = 0
+				t.save()
+			
+			
 			return JsonResponse(serializer.data)
 		return JsonResponse(serializer.errors, status=400)
 		
