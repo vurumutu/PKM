@@ -14,21 +14,29 @@ import java.util.List;
  */
 
 public class Train{
-    private int id;
-    private String device_type;
-    private int velocity;
-    private int train_identificator;
 
-    public Train(int id, String device_type, int velocity, int train_identificator) {
-        this.id = id;
-        this.device_type = device_type;
-        this.velocity = velocity;
-        this.train_identificator = train_identificator;
+    private int id;
+    private int velocity;
+    public int train_identificator;
+    private int position;
+    private int track_number;
+
+    public int getId() {
+        return id;
     }
 
     public int getVelocity() {
         return velocity;
     }
+
+    public int getPosition() {
+        return position;
+    }
+
+    public int getTrack_number() {
+        return track_number;
+    }
+
 
     public void setVelocity(int velocity) {
         this.velocity = velocity;
@@ -38,8 +46,13 @@ public class Train{
         return train_identificator;
     }
 
-    public void setTrain_identificator(int train_identificator) {
+    public Train(int id, int velocity, int train_identificator, int posotion, int track_number) {
+        this.id = id;
+        this.velocity = velocity;
         this.train_identificator = train_identificator;
+        this.position = posotion;
+        this.track_number = track_number;
     }
+
 
 }

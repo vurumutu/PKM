@@ -1,4 +1,7 @@
 package com.pkm.pkm;
+import org.json.JSONObject;
+
+import java.nio.ByteBuffer;
 import java.util.List;
 
 import retrofit2.Call;
@@ -16,8 +19,8 @@ public interface TrainClient {
     @GET("/trains/")
     Call<List<Train>> handleTrains();
     @GET("/train/{train}/")
-    Call<Train> getTrainSpeed(@Path("train") String train);
-    @PUT("/train/0/")
-    Call<Train> setTrainSpeed(@Body Train trains);
+    Call<Train> getTrainSpeed(@Path("train") Train train);
+    @POST("/train/post/0/")
+    Call<TrainPost> setTrainSpeed(@Body TrainPost trains);
 
 }
