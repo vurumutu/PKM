@@ -172,6 +172,7 @@ def przyciski_list(request):
 	"""
 	List all code snippets, or create a new snippet.
 	"""
+	print('przyciski_list')
 	if request.method == 'GET':
 		przyciski = AvailableTrain.objects.all()
 		serializer = PrzyciskiSerializer(przyciski, many=True)
@@ -211,16 +212,17 @@ def przyciski_detail(request, _pk):
 	serializer = PrzyciskiSerializer(przyciski)
 
 	if request.method == 'GET':
-		#serializer = PrzyciskiSerializer(przyciski)
 		return JsonResponse(serializer.data, status=200)
 
 	elif request.method == 'POST':
 		data = JSONParser().parse(request)
-		serializer = PostPrzyciskiSerializer(data=data)
+		try:
+			serializer = PostPrzyciskiSerializer(data=data)
+		except Exception as e:
+			print(e.message())
 		
-		client = Client()
-		client.connect(TCP_IP, TCP_PORT)
-		
+		# print(serializer.encode('utf8'))
+		print(serializer.is_valid())
 		if serializer.is_valid():
 			serializer.save()
 			# pobieramy ostatnie zadanie
@@ -257,7 +259,7 @@ def przyciski_detail(request, _pk):
 				else:
 					direction = 0
 				msg = train.move(abs(int(t.velocity)), direction)
-				client.send(msg)
+				# client.send(msg)
 
 			else:
 		#		new_created_train = TrainRequest.objects.create(
