@@ -1,0 +1,49 @@
+{%load staticfiles%}
+<!DOCTYPE html>
+<html>
+	<head>
+		<link rel="stylesheet" type="text/css" href="{% static 'style.css' %}" media="screen" />
+		<link rel="icon" href="{% static 'favicon.ico' %}" >
+		<title>Projekt PKM</title>
+	</head>
+	<body>
+		<h1>Panel kontrolny PKM</h1>
+		<br>
+		<a href="{% url 'main_home_page' %}" class="button">Strona główna</a>
+		
+		<br>
+		<br>
+		<h3>Ujemna prędkość oznacza jazdę do tyłu</h3>
+		<br>
+	
+		<form method="post">
+			{% csrf_token %}
+			<input type="range" name="page_velocity" min="-127" max="127" id="myVelocity"></br>
+			<p>Prędkość: <span id="demo"></span></p>
+			
+			<script>
+				var slider = document.getElementById("myVelocity");
+				var output = document.getElementById("demo");
+				output.innerHTML = slider.value;
+				slider.oninput = function() {
+					output.innerHTML = this.value;
+				}
+			</script>
+		  
+			Numer pociągu:<input type="number" name="train_number" min="0" max="10" value="1"><br>		  
+			<br>
+			<input type="submit" value="Wyślij żądanie" class="button" name="new_train">
+	    </form>
+		
+		<form method="post">
+			{% csrf_token %}
+			<input type="submit" value="Zatrzymaj wszystkie" class="button" name="stop_trains">
+	    </form>
+		
+		<form method="post">
+			{% csrf_token %}
+			<input type="submit" value="Pobierz listę pociągów" class="button" name="trains_list">
+	    </form>
+		
+	</body>
+</html>

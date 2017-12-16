@@ -1,0 +1,82 @@
+{%load staticfiles%}
+<!DOCTYPE html>
+<html>
+	<head>
+		<link rel="stylesheet" type="text/css" href="{% static 'style.css' %}" media="screen" />
+		<link rel="icon" href="{% static 'favicon.ico' %}" >
+		<title>Projekt PKM</title>
+	</head>
+	<body>
+		<h1>Panel kontrolny PKM</h1>
+		
+		<a href="{% url 'home' %}" class="button">Przejdź do sterowania</a>
+		<br>
+		<br>
+		
+		<h2>Transmisja ze zwiadowcy:</h2>
+		<img src="http://192.168.2.1/?action=stream" width="512px" height="384px"  />		
+		<br>
+		
+		<br>
+		
+		<table border="1">
+			<thead>
+				<tr>
+					<th>
+						Numer pociągu
+					</th>
+					<th>
+						Prędkość
+					</th>
+				</tr>
+			</thead>
+			<tbody>
+				{% for at in availableTrains %}
+					<tr>
+						<td>
+							{{ at.train_identificator }}<br>
+						</td>
+						<td>
+							{{ at.velocity }}
+						</td>
+					</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+		
+		<br>
+		<br>
+		
+		<table border="1">
+			<thead>
+				<tr>
+					<th>
+						Numer pociągu
+					</th>
+					<th>
+						Prędkość
+					</th>
+					<th>
+						Urządzenie
+					</th>
+				</tr>
+			</thead>
+			<tbody>
+				{% for tr in trainRequests %}
+					<tr>
+						<td>
+							{{ tr.train_identificator }}<br>
+						</td>
+						<td>
+							{{ tr.velocity }}
+						</td>
+						<td>
+							{{ tr.device_type }}
+						</td>
+					</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+			
+	</body>
+</html>
