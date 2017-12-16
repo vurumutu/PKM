@@ -1,3 +1,8 @@
 .idea/
 *.pyc
 __pycache__/
+_linux/
+codestyles/
+/debugger.xml
+/editor.xml
+/ide.general.xml
