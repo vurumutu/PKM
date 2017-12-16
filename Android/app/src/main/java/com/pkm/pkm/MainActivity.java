@@ -49,7 +49,7 @@ public class MainActivity extends AppCompatActivity {
         speedSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                speed = (progress - 128); // handle negative velocities
+                speed = (progress - 128);
                 speedText.setText("Speed: " + speed);
 
             }
@@ -108,35 +108,43 @@ public class MainActivity extends AppCompatActivity {
         Toast.makeText(getApplicationContext(),
                 ip, Toast.LENGTH_SHORT).show();
 
-        builder = new Retrofit.Builder()
-                .baseUrl(ip)
-                .addConverterFactory(GsonConverterFactory.create());
+        try{
+            builder = new Retrofit.Builder()
+                    .baseUrl(ip)
+                    .addConverterFactory(GsonConverterFactory.create());
+            Retrofit retrofit = builder.build();
+            TrainClient train = retrofit.create(TrainClient.class);
+            Call<List<Train>> call = train.handleTrains();
 
-        Retrofit retrofit = builder.build();
-        TrainClient train = retrofit.create(TrainClient.class);
-        Call<List<Train>> call = train.handleTrains();
-
-        call.enqueue(new Callback<List<Train>>() {
-            @Override
-            public void onResponse(Call<List<Train>> call, Response<List<Train>> response) {
-                trains = response.body();
-                //Collections.sort(trains, new TrainComparer());
-                pg1.setVisibility(View.INVISIBLE);
-                getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
-                int cnt = 0;
-                for (Train train : trains) {
-                    trainsAdapter.insert(Integer.toString(train.getTrain_identificator()), cnt);
-                    cnt++;
+            call.enqueue(new Callback<List<Train>>() {
+                @Override
+                public void onResponse(Call<List<Train>> call, Response<List<Train>> response) {
+                    trains = response.body();
+                    //Collections.sort(trains, new TrainComparer());
+                    pg1.setVisibility(View.INVISIBLE);
+                    getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+                    int cnt = 0;
+                    for (Train train : trains) {
+                        trainsAdapter.insert(Integer.toString(train.getTrain_identificator()), cnt);
+                        cnt++;
+                    }
+                    trainsAdapter.notifyDataSetChanged();
                 }
-                trainsAdapter.notifyDataSetChanged();
-            }
 
-            @Override
-            public void onFailure(Call<List<Train>> call, Throwable t) {
-                finish();
-                Toast.makeText(MainActivity.this, "Nie udało się pobrać listy pociągów", Toast.LENGTH_SHORT).show();
-            }
-        });
+                @Override
+                public void onFailure(Call<List<Train>> call, Throwable t) {
+                    finish();
+                    Toast.makeText(MainActivity.this, "Nie udało się pobrać listy pociągów", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+        catch(IllegalArgumentException | NullPointerException e){
+            Toast.makeText(MainActivity.this, "Niepoprawny adres IP", Toast.LENGTH_SHORT).show();
+            finish();
+        }
+//        builder = new Retrofit.Builder()
+//                .baseUrl(ip)
+//                .addConverterFactory(GsonConverterFactory.create());
 
         trainsSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -159,15 +167,15 @@ public class MainActivity extends AppCompatActivity {
         TrainClient client = retrofit.create(TrainClient.class);
         //Call<Train> call = client.setTrainSpeed(String.valueOf(train.getTrain_identificator()), train);
 
-        Call<TrainPost> call = client.setTrainSpeed(new TrainPost(train.getId(), 1, train.getVelocity(), train.getTrain_identificator(), 1));
-        call.enqueue(new Callback<TrainPost>() {
+        Call<Void> call = client.setTrainSpeed(new TrainPost(train.getId(), 1, train.getVelocity(), train.getTrain_identificator(), 1));
+        call.enqueue(new Callback<Void>() {
             @Override
-            public void onResponse(Call<TrainPost> call, Response<TrainPost> response) {
+            public void onResponse(Call<Void> call, Response<Void> response) {
                 //Toast.makeText(MainActivity.this, "request sent", Toast.LENGTH_SHORT).show();
             }
 
             @Override
-            public void onFailure(Call<TrainPost> call, Throwable t) {
+            public void onFailure(Call<Void> call, Throwable t) {
                 Toast.makeText(MainActivity.this, "request failed", Toast.LENGTH_SHORT).show();
             }
         });

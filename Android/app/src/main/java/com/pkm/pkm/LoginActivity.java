@@ -40,19 +40,17 @@ public class LoginActivity extends AppCompatActivity {
             public void onClick(View v) {
 
                 ip = inputIp.getText().toString();
+                // tak, to jest glupie
                 if(containsIP(ip)){
-                    if(!ip.contains("http://")){
-                        ip = "http://" + ip;
-                    }
                     Toast.makeText(getApplicationContext(),
-                            ("Connecting to " + ip), Toast.LENGTH_SHORT).show();
+                            ("Łącze z " + ip), Toast.LENGTH_SHORT).show();
                     Intent myIntent = new Intent(LoginActivity.this, MainActivity.class);
                     myIntent.putExtra("key", ip); //Optional parameters
                     startActivity(myIntent);
                 }
                 else {
                     Toast.makeText(getApplicationContext(),
-                            ("Wrong ip format"), Toast.LENGTH_SHORT).show();
+                            ("Niepoprawny format adresu, spróbuj http://x.x.x.x:port"), Toast.LENGTH_SHORT).show();
                 }
             }
         });

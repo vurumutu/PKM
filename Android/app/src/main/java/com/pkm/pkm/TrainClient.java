@@ -21,6 +21,6 @@ public interface TrainClient {
     @GET("/train/{train}/")
     Call<Train> getTrainSpeed(@Path("train") Train train);
     @POST("/train/post/0/")
-    Call<TrainPost> setTrainSpeed(@Body TrainPost trains);
+    Call<Void> setTrainSpeed(@Body TrainPost trains);
 
 }
