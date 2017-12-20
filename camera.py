@@ -37,7 +37,14 @@ class Camera:
             print(cap)
         elif num == -2:
             url = 'http://192.168.2.1/?action=stream'
+            print('camera request ', url)
             cap = requests.get(url, stream=True)
+            print('camera request ready')
+        elif num == -3:
+            url = 'http://127.0.0.1:5000/video_feed'
+            print('camera request ', url)
+            cap = requests.get(url, stream=True)
+            print('camera request ready')
         else:
             raise Exception("run_movie '>=0' -> video, '-1'->camera, '-2'-camera stream")
         return cap
@@ -58,6 +65,8 @@ class Camera:
         elif self.cap is not None:
             self.frame_counter = int(self.cap.get(cv2.CAP_PROP_POS_FRAMES))
             ret, frame = self.cap.read()
+            if self.frame_counter >= self.cap.get(cv2.CAP_PROP_FRAME_COUNT):
+                self.cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
             return ret, frame
         else:
             raise Exception('Error')

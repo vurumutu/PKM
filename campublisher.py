@@ -3,10 +3,11 @@ from flask import Flask, render_template, Response
 from camera import Camera, ImageAnalyzer
 
 # wybierz kamere:
+#   -3 -> stream z localhosta
 #   -2 -> pociag
 #   -1 -> kamera systemowa
 #   0+ -> numer .avi z aktualnego folderu
-cam = Camera(-1)
+cam = Camera(7)
 ia = ImageAnalyzer()
 app = Flask(__name__, template_folder='.')
 
@@ -29,6 +30,6 @@ def video_feed():
     return Response(gen(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', debug=False)
+    app.run(host='0.0.0.0', port=5000, debug=False, threaded=True)
 
 
